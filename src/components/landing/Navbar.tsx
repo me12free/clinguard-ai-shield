@@ -1,5 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Shield, Menu, X } from "lucide-react";
 
 const Navbar = () => {
@@ -37,8 +38,12 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost">Sign In</Button>
-            <Button>Get Started</Button>
+            <Link to="/login">
+              <Button variant="ghost">Sign In</Button>
+            </Link>
+            <Link to="/register">
+              <Button>Get Started</Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -65,8 +70,12 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="ghost" className="w-full">Sign In</Button>
-                <Button className="w-full">Get Started</Button>
+                <Link to="/login">
+                  <Button variant="ghost" className="w-full">Sign In</Button>
+                </Link>
+                <Link to="/register">
+                  <Button className="w-full">Get Started</Button>
+                </Link>
               </div>
             </div>
           </div>
