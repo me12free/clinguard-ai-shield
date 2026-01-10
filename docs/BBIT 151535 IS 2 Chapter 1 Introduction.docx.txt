@@ -1,0 +1,72 @@
+﻿JOHN EKIRU EWOI
+BBIT 151535
+IS PROJECT 2
+ClinGuard for Healthcare
+A Browser Extension for Real-Time PHI Detection and Redaction in AI Prompts
+Field: Healthcare Security, AI Privacy, Clinical Informatics
+Chapter 1: Introduction
+1.1 Background
+The increasing integration of artificial intelligence (AI) into healthcare has transformed clinical workflows, particularly through the use of cloud-based AI assistants for drafting notes, summaries, and communications. Clinicians and administrative staff frequently interact with these tools, often including Protected Health Information (PHI) such as patient names, medical record numbers, diagnoses, lab results, and medication lists in their prompts. This practice, while enhancing efficiency, introduces significant risks related to patient privacy and regulatory compliance.
+Recent studies highlight the vulnerability of healthcare data when using AI chatbots and cloud services. Li et al. (2023) emphasize the necessity for strict data-security measures in healthcare institutions utilizing chatbots [1]. Furthermore, coverage from the University of Southern California and the HIPAA Journal warns that clinicians using generative AI tools like ChatGPT may inadvertently violate HIPAA and similar regulations [2]. The phenomenon of prompt leakage where sensitive information can be extracted from AI prompts has become an active area of research (PLeak, 2024; Automated Prompt Leakage, 2025) [3][4].
+In Kenya, the Data Protection Act 2019 mandates stringent controls over the handling of personal and health data, aligning with global standards such as HIPAA in the United States [5]. Despite these regulations, existing Data Loss Prevention (DLP) and endpoint security tools are not tailored to inspect AI prompt content in real-time, low-friction, policy-driven ways suitable for clinical environments. This gap exposes healthcare organizations to risks of privacy breaches, regulatory penalties, and reputational harm.
+1.2 Problem Statement
+There is a critical gap in the protection of PHI within clinical workflows that leverage cloud-based AI assistants. Current DLP and endpoint solutions do not provide real-time, context-aware inspection of AI prompts, leaving hospitals vulnerable to accidental or negligent disclosure of sensitive patient data. This deficiency threatens compliance with the Kenya Data Protection Act 2019 and HIPAA-like frameworks, potentially resulting in privacy breaches, regulatory fines, and loss of patient trust.
+1.3 Objectives
+1.3.1 General Objective
+To develop and evaluate Clinguard, a local-first browser extension with a hybrid detection engine and centralized policy management, designed to prevent PHI leakage in clinical AI workflows while maintaining usability and compliance.
+1.3.2 Specific Objectives
+1. To analyze the current practices and challenges in protecting PHI during AI-assisted clinical documentation.
+2. To design and implement a Chrome extension, Laravel API, and Python-based detection engine for real-time PHI detection and redaction.
+3. To evaluate the effectiveness of the hybrid detection pipeline (regex, entropy, lightweight transformer) in reducing PHI leakage.
+4. To ensure compliance with the Kenya Data Protection Act 2019 and international best practices for health data security.
+5. To assess the usability and workflow impact of Clinguard among clinicians through pilot studies.
+1.4 Research Questions
+1. What are the main risks and challenges associated with PHI leakage in AI-assisted clinical workflows?
+2. How effective is a hybrid detection approach (regex, entropy, ML) in identifying and redacting PHI in real time?
+3. What are the regulatory and ethical requirements for PHI protection in Kenya and globally?
+4. How does Clinguard impact clinical workflow efficiency and user satisfaction?
+1.5 Justification
+The adoption of AI in healthcare is accelerating, but so are the associated risks to patient privacy. Clinguard addresses a critical need for real-time, policy-driven PHI protection in clinical AI workflows. By defaulting to local processing, minimizing data retention, and enabling organizational policy management, Clinguard aligns with the Kenya Data Protection Act 2019 and HIPAA-like standards. Its implementation will help healthcare institutions avoid regulatory penalties, protect patient trust, and set a benchmark for responsible AI adoption in clinical settings. The project’s outcomes will contribute to the broader field of health informatics and data security, providing a scalable model for PHI protection in the era of AI-driven healthcare.
+1.6 Scope and Limitations
+Scope
+Clinguard is designed to operate as a browser extension for Chrome, integrated with a Laravel API and a Python-based detection engine. It targets the interception and inspection of prompts entered into web-based AI assistants and EHR copy/paste actions by clinicians. The system supports local-first processing, organizational policy management, and encrypted audit logging. Evaluation will focus on PHI detection accuracy, leakage reduction, latency, and user experience in simulated and real clinical environments.
+Limitations
+Clinguard’s detection capabilities are limited by the quality of training data and the evolving nature of PHI patterns. While the hybrid detection pipeline aims for high accuracy, some contextual PHI may evade detection, and false positives may occur. The extension is initially limited to Chrome and may not cover all AI assistant platforms or EHR systems. Emergency bypass features, while necessary for patient safety, may introduce audit and compliance complexities.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+References
+[1] Li, X., et al. (2023). Data Security in Healthcare Chatbots. PubMed Central. https://pmc.ncbi.nlm.nih.gov/articles/PMC10716748/ 
+[2] HIPAA Journal. (2023). and HIPAA Compliance.
+https://www.hipaajournal.com/chatgpt-hipaa-compliance/ 
+[3] PLeak: Prompt Leakage in LLMs. (2024). https://arxiv.org/abs/2405.06823 
+[4] Automating Prompt Leakage. (2025). https://arxiv.org/abs/2502.12630 
+[5] Kenya Data Protection Act 2019.
+https://www.kentrade.go.ke/wp-content/uploads/2022/09/Data-Protection-Act-1.pdf

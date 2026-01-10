@@ -1,0 +1,628 @@
+﻿A Web Application to Prevent Protected Health Information in AI Service Prompts Using RAG and OpenAI
+
+
+John Ekiru Ewoi
+BBIT 151535
+IS PROJECT 2
+
+
+
+
+
+
+
+
+Submitted in partial fulfillment of the requirements of the Bachelor of Business in Information Technology at Strathmore University
+December 2025
+Declaration and Approval
+ I declare that this work has not been previously submitted and approved for the award of a degree by this or any other University. To the best of my knowledge and belief, the research proposal contains no material previously published or written by another person except where due reference is made in the research proposal itself. 
+Student: 
+
+
+Sign: ________________________ Date: ________________________ 
+
+
+Supervisor: 
+
+
+Sign: ________________________ Date: _______________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Abstract
+Healthcare institutions increasingly utilize artificial intelligence for clinical documentation, but clinicians often include Protected Health Information (PHI) in prompts, violating the Kenya Data Protection Act 2019 and HIPAA. Existing Data Loss Prevention systems lack integrated AI solutions with built-in PHI protection, creating a critical privacy gap. This research develops a web-based AI documentation system with integrated OpenAI API, PHI detection engine, and Retrieval-Augmented Generation for clinical knowledge support. ClinGuard employs a hybrid detection engine combining regex pattern matching, entropy analysis, and transformer-based machine learning to identify and redact PHI before transmission to external AI services. Built on Laravel backend with React frontend and Python detection engine, the system ensures centralized policy management and regulatory compliance. The methodology employs Modified Waterfall with Object-Oriented Analysis and Design for comprehensive security analysis and systematic development. Functional testing will validate detection accuracy (target F1 > 0.92) and compliance with Kenya Data Protection Act requirements. ClinGuard enables healthcare institutions to safely leverage AI-assisted documentation while maintaining patient privacy and regulatory compliance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Table of Contents
+Declaration and Approval        ii
+Abstract        iii
+List of Figures        vi
+List of Abbreviations        vii
+CHAPTER 1: INTRODUCTION        1
+1.1 Background Information        1
+1.2 Problem Statement        2
+1.3 Objectives        3
+1.3.1 General Objective        3
+1.3.2 Specific Objectives        3
+1.4 Research Questions        3
+1.5 Justification        4
+1.6 Scope and Delimitations        5
+1.6.1 Scope        5
+1.6.2 Delimitations        7
+1.6.3 Limitations        8
+CHAPTER 2: LITERATURE REVIEW        11
+2.1 Introduction        11
+2.2 AI-Assisted Clinical Documentation and PHI Transmission        11
+2.2.1 Current State of AI Adoption in Clinical Workflows        11
+2.2.2 Challenges in Protecting PHI in AI Workflows        12
+2.2.3 Retrieval-Augmented Generation in Healthcare        12
+2.3 Related Works        13
+2.3.1 Microsoft Presidio        13
+2.3.2 Google Cloud Data Loss Prevention (DLP) API        14
+2.3.3 AWS Macie        14
+2.3.4 Nightfall AI DLP Platform        14
+2.4 Gaps in Related Works        15
+2.5 Conceptual Framework        16
+CHAPTER 3: METHODOLOGY        18
+3.1 Introduction        18
+3.2 Development Methodology: Modified Waterfall        18
+3.2.1 Overview of Modified Waterfall        18
+3.2.2 Justification of Modified Waterfall Methodology        23
+3.3 System Analysis        23
+3.3.1 Use Case Analysis        23
+3.3.2 Sequence Diagram Analysis        25
+3.4 System Design        27
+3.4.1 Database Schema and Entity-Relationship Diagram        27
+3.4.2 Class Diagram        27
+3.4.3 Wireframes and User Interface Mockups        28
+3.4.4 System Architecture Diagram        28
+3.5 Tools and Techniques        28
+3.5.1 Development Tools        28
+3.5.2 Testing Tools        29
+3.5.3 Deployment Tools        29
+3.5.4 Design and Documentation Tools        30
+3.6 Deliverables and Timeline        30
+3.6.1 Project Deliverables        30
+3.6.2 Project Timeline and Gantt Chart        31
+References        32
+Appendix A        34
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+List of Figures
+Figure 2.1 Conceptual Framework        17
+Figure 3.1 Modified Waterfall        20
+Figure A.1 Gannt Chart        34
+
+
+
+
+
+
+List of Abbreviations
+AI - Artificial Intelligence
+API - Application Programming Interface
+CPT - Current Procedural Terminology
+DLP - Data Loss Prevention
+DOM - Document Object Model
+EHR - Electronic Health Record
+GDPR - General Data Protection Regulation
+HIPAA - Health Insurance Portability and Accountability Act
+IAAP - International Association of Privacy Professionals
+ICD - International Classification of Diseases
+JSON - JavaScript Object Notation
+LLM - Large Language Model
+MRN - Medical Record Number
+NHS - National Health Service
+NLP - Natural Language Processing
+OOAD - Object-Oriented Analysis and Design
+PHI - Protected Health Information
+PII - Personally Identifiable Information
+RAG - Retrieval-Augmented Generation
+RESTful - Representational State Transfer
+SDLC - Software Development Life Cycle
+SNOMED CT - Systematized Nomenclature of Medicine Clinical Terms
+SQL - Structured Query Language
+SRS - Software Requirements Specification
+UI - User Interface
+URL - Uniform Resource Locator
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER 1: INTRODUCTION
+1.1 Background Information
+Healthcare institutions increasingly rely on digital systems and electronic health records to support clinical care, administration, and billing. In recent years, hospitals and clinics have begun experimenting with Large Language Models (LLMs) such as OpenAI’s ChatGPT to draft clinical notes, patient letters, and discharge summaries in order to reduce documentation time and improve productivity (Li et al., 2023; Topol, 2023). In practice, clinicians often paste or type Protected Health Information (PHI) into these AI prompts - including patient names, medical record numbers, diagnoses, and laboratory results to obtain contextually accurate responses.
+This emerging pattern creates serious privacy and regulatory risks. Cloud-based AI providers typically process prompts on external servers and may retain conversation histories, meaning PHI in prompts can leave the hospital’s technical and legal control boundary (HIPAA Journal, 2023). In Kenya, the Data Protection Act 2019 imposes strict obligations on data controllers and processors handling health data, aligning with international frameworks such as GDPR and HIPAA. However, most healthcare organizations lack specific policies governing what clinicians may include in AI prompts (IAPP, 2024), and traditional Data Loss Prevention (DLP) tools are designed for email, file transfers, or storage scanning rather than real-time inspection of AI prompt text.
+International regulators have already reacted to these risks. The UK’s National Health Service, for example, issued guidance restricting the use of public AI chatbots for clinical documentation because of concerns about uncontrolled PHI transmission to external services (NHS Digital, 2023). Blanket prohibitions, however, force healthcare organizations to choose between losing the efficiency benefits of AI or tolerating uncontrolled PHI leakage in prompts. At the same time, clinicians still need access to up‑to‑date clinical knowledge such as treatment guidelines and drug interactions within their documentation workflows. Retrieval‑Augmented Generation (RAG) combines LLMs with trusted medical knowledge bases to improve factual accuracy and provide evidence‑based answers (Lewis et al., 2020).
+1.2 Problem Statement
+There exists a critical technological gap in the availability of integrated AI documentation systems with built-in Protected Health Information protection for healthcare institutions. Healthcare organizations seeking to deploy AI-powered clinical documentation systems face the challenge of preventing PHI leakage when integrating external AI services such as OpenAI's API. Research shows that 73% of observed AI interactions by healthcare professionals contain at least one HIPAA-defined identifier, yet 89% of healthcare organizations lack policies governing PHI inclusion in AI prompts (Chen et al., 2024; IAPP, 2024). Current Data Loss Prevention systems operate as separate monitoring tools rather than integrated components of AI systems, leaving healthcare institutions without comprehensive solutions that combine AI capabilities with real-time PHI detection and redaction (Li et al., 2023). This deficiency threatens compliance with the Kenya Data Protection Act 2019 and similar international frameworks governing health data privacy.
+The consequences of this gap are substantial. Healthcare organizations face regulatory penalties that can exceed KES 5 million or 1% of annual turnover under the Kenya Data Protection Act for data breaches involving personal health information (Kenya Data Protection Act, 2019). Beyond financial penalties, PHI breaches result in reputational damage, potential civil liability, and disruption to clinical operations. The absence of integrated AI systems with built-in PHI protection creates organizational uncertainty about AI adoption, forcing institutions to choose between blanket prohibitions that eliminate productivity benefits or uncontrolled usage that risks compliance violations (NHS Digital, 2023). Additionally, clinicians lack access to evidence-based clinical knowledge retrieval during AI-assisted documentation workflows, limiting the quality and accuracy of AI-generated responses (Lewis et al., 2020).
+Healthcare institutions require integrated web-based AI systems that detect and redact PHI before transmission to external AI services, operate with minimal latency, provide granular policy controls, integrate trusted AI providers through secure APIs, and offer RAG-powered clinical knowledge retrieval. The absence of such comprehensive solutions constitutes a significant barrier to safe and effective AI adoption in healthcare and motivates the development of ClinGuard.
+1.3 Objectives
+1.3.1 General Objective
+The aim is to develop a web application to prevent Protected Health Information in AI service prompts using RAG and OpenAI.
+1.3.2 Specific Objectives
+1. To analyze the challenges and requirements for preventing PHI leakage in AI-assisted clinical documentation workflows.
+2. To review existing PHI protection systems and identify gaps in current Data Loss Prevention solutions.
+3. To design a web-based AI system architecture integrating OpenAI API, PHI detection engine, and RAG capabilities.
+4. To implement the ClinGuard system using Laravel backend, React frontend, Python detection engine, and OpenAI integration.
+5. To validate the ClinGuard system through functional testing.
+1.4 Research Questions
+The research questions that this study seeks to answer include:
+1. What are the main challenges, risks, and requirements for preventing PHI leakage in AI-assisted clinical documentation workflows?
+2. What are the limitations and gaps in existing PHI protection systems and Data Loss Prevention solutions?
+3. How can a web-based AI system architecture integrate OpenAI API, PHI detection engine, and RAG capabilities to prevent PHI leakage while providing clinical decision support?
+4. What are the technical components and implementation strategies required for building an integrated AI documentation system with built-in PHI protection?
+5. How effective is the ClinGuard system in detecting and preventing?
+1.5 Justification
+The adoption of artificial intelligence in healthcare is accelerating globally, with documented productivity benefits including significant reduction in clinical documentation time (Healthcare IT News, 2024). However, these benefits are accompanied by escalating risks to patient privacy. The ClinGuard system addresses a critical and timely need for real-time, policy-driven PHI protection technology specifically designed for clinical AI workflows.
+The justification for this research spans regulatory, clinical, technological, and societal dimensions. From a regulatory perspective, the Kenya Data Protection Act 2019 imposes strict obligations on healthcare institutions to implement appropriate technical and organizational measures to protect personal data, with substantial penalties for non-compliance (Kenya Data Protection Act, 2019). ClinGuard directly fulfills these obligations by providing a technical control that prevents unauthorized PHI transmission, generates comprehensive audit trails for demonstrating compliance, and enables granular policy enforcement aligned with organizational data governance frameworks. Healthcare institutions implementing ClinGuard will be better positioned to demonstrate due diligence during regulatory audits and avoid costly penalties and remediation requirements.
+From a clinical perspective, the research addresses the tension between AI-driven productivity improvements and patient privacy protection. Clinicians operate in time-constrained environments where documentation efficiency directly impacts patient care capacity. ClinGuard enables safe AI adoption by providing transparent, low-friction controls that protect privacy without imposing workflow burdens.
+From a technological perspective, the research contributes to the emerging field of privacy-preserving AI by integrating multiple innovative technologies within a unified system architecture. The hybrid detection methodology combining traditional pattern matching with machine learning techniques addresses the limitations of existing approaches while maintaining real-time performance. Additionally, the integration of Retrieval-Augmented Generation (RAG) technology provides a significant advancement in clinical decision support by enabling AI responses grounded in evidence-based medical knowledge. RAG retrieves relevant information from curated clinical knowledge bases including treatment guidelines, drug interaction databases, and medical literature, enhancing response accuracy and clinical utility while maintaining contextual relevance (Lewis et al., 2020). This integration demonstrates how privacy protection and clinical knowledge enhancement can coexist within a single system, providing a model for future healthcare AI applications.
+From a societal perspective, patient privacy is a fundamental human right recognized internationally and essential for maintaining trust in healthcare systems. Privacy breaches erode this trust and may cause patients to withhold sensitive information necessary for effective care, ultimately compromising health outcomes. By enabling healthcare institutions to adopt AI technologies safely and responsibly, ClinGuard contributes to the broader goal of ensuring that technological advancement in healthcare enhances rather than undermines patient rights and welfare.
+The research outcomes will provide healthcare institutions with a practical, deployable solution for PHI protection, contribute to academic knowledge in healthcare informatics and data security, establish benchmarks for PHI detection performance in clinical contexts, and set a precedent for responsible AI adoption in regulated industries. The project's outputs including the open-source codebase, evaluation methodologies, and implementation guidelines will enable replication and extension by other researchers and practitioners, multiplying the societal impact of this work.
+1.6 Scope and Delimitations
+1.6.1 Scope
+This study focuses on the design, development, and evaluation of the ClinGuard system for preventing Protected Health Information leakage in AI-assisted clinical workflows. The scope encompasses the following dimensions:
+Technical Scope: The ClinGuard system operates as a web-based application accessible through standard web browsers (Chrome, Firefox, Safari, Edge), built on Laravel backend framework (Laravel 10.x), React frontend framework (React 18.x), and Python-based detection engine (Python 3.10). The system integrates OpenAI API (GPT-4) for AI-powered clinical documentation assistance and implements Retrieval-Augmented Generation using vector databases (ChromaDB or Pinecone) with embeddings from sentence transformers. The hybrid PHI detection pipeline combines regex pattern matching for structured identifiers (medical record numbers, phone numbers, email addresses, national ID numbers), entropy analysis for high-randomness strings, and a lightweight transformer model (DistilBERT) fine-tuned on clinical text for contextual PHI detection including patient names, diagnoses, medications, and dates. The RAG system retrieves information from clinical knowledge bases including treatment guidelines, drug databases (RxNorm), diagnostic codes (ICD-10), and procedure codes (CPT).
+Functional Scope: The system provides comprehensive AI-powered clinical documentation capabilities including real-time PHI detection with sub-200-millisecond latency for prompts up to 300 tokens, inline visualization of detected PHI with color-coded severity indicators, automated redaction with placeholder replacement, safe rewrite suggestions that preserve clinical meaning without identifiers, emergency bypass functionality for urgent clinical scenarios with mandatory audit logging, OpenAI API integration for natural language generation and clinical text completion, RAG-powered clinical knowledge retrieval from treatment guidelines and medical databases, contextual medical information display alongside AI responses, conversation history management with PHI-redacted storage, organizational policy management through web-based administrative interface, role-based access control for clinicians and administrators, and encrypted audit trail generation for compliance reporting.
+Evaluation Scope: System evaluation focuses on four primary dimensions measured through controlled experiments and pilot deployments. Detection accuracy is evaluated using held-out test datasets from MIMIC-IV and i2b2/n2c2 clinical text corpora, targeting F1 scores ≥ 0.92 for direct identifiers and ≥ 0.85 for contextual PHI. Performance is measured through instrumented latency tracking across the complete detection pipeline. PHI leakage reduction is quantified by comparing token-level PHI counts in original versus redacted prompts in pilot deployments. User experience is assessed through satisfaction surveys, task completion timing, and think-aloud protocols with clinician participants (n=20-30).
+Deployment Scope: The research includes pilot deployment in simulated and, subject to institutional approval, real clinical environments for validation under realistic operational conditions. Deployment focuses on outpatient and administrative departments where documentation workflows allow controlled testing without compromising urgent patient care.
+1.6.2 Delimitations
+This study explicitly excludes the following elements from its scope, defining clear boundaries for the research:
+Platform Delimitations: The web application is optimized for modern desktop web browsers (Chrome, Firefox, Safari, Edge) with responsive design for tablets. Mobile smartphone applications for iOS and Android are excluded from this phase as clinical documentation workflows predominantly occur on desktop workstations and tablets in institutional settings. The system requires stable internet connectivity for OpenAI API communication and does not support offline operation.
+AI Service Coverage: The system integrates exclusively with OpenAI API (GPT-4 and future OpenAI models) and does not support alternative LLM providers such as Anthropic Claude, Google Gemini, or custom institutional LLM deployments. Integration with specific Electronic Health Record systems for data import/export is excluded; users manually enter clinical information into ClinGuard. Deep EHR integration requiring vendor-specific APIs and HL7/FHIR protocol implementation is outside the scope of this research.
+Detection Scope: While the hybrid detection pipeline addresses major PHI categories defined by HIPAA and the Kenya Data Protection Act, some contextual or implicit PHI may evade detection due to the inherent complexity of natural language understanding. The system focuses on English-language text and does not address multilingual detection or specialized medical terminologies in languages other than English.
+Organizational Scope: The research targets hospital and clinical environments rather than pharmaceutical research, public health surveillance, or health insurance organizations, which have different PHI exposure patterns and regulatory requirements. Small clinics with fewer than 10 staff members are excluded as the centralized policy management overhead may not be justified for very small organizations.
+Implementation Delimitations: The detection engine implements a lightweight transformer model (DistilBERT) optimized for server-side deployment with sub-200ms response times rather than large-scale models that would introduce unacceptable latency. Advanced natural language processing techniques such as coreference resolution across multiple conversation turns and complex discourse analysis are not implemented in this phase due to computational complexity. The RAG system uses pre-indexed clinical knowledge bases and does not support real-time indexing of new medical literature or dynamic knowledge base updates during operation.
+Regulatory Scope: While the system is designed for compliance with the Kenya Data Protection Act 2019 and informed by HIPAA requirements, formal regulatory certification or approval is outside the scope of this research project. Institutions deploying ClinGuard remain responsible for their own compliance validation and regulatory submissions.
+1.6.3 Limitations
+The study acknowledges the following limitations, which represent factors outside the researcher's control that may influence findings:
+Dataset Limitations and Mitigation Strategies
+Challenge: The training and evaluation datasets (MIMIC-IV, i2b2/n2c2) primarily consist of de-identified clinical notes from United States healthcare systems, which may not fully represent Kenyan healthcare documentation patterns.
+Mitigation Strategies
+1. Transfer Learning: Implement transfer learning techniques to adapt the pre-trained models to Kenyan-specific PHI patterns using limited local data.
+2. Rule-Based Enhancement: Develop supplementary rule-based detectors for Kenyan-specific identifiers (e.g., NHIF numbers, local ID formats) to complement the machine learning model.
+3. Continuous Learning: Implement a feedback mechanism where false negatives/positives can be reported and used to continuously improve the model post-deployment.
+4. Hybrid Approach: Combine statistical models with context-aware rules to handle variations in documentation styles and local medical terminologies.
+These strategies will help bridge the gap between the US-based training data and the Kenyan healthcare context, ensuring more accurate PHI detection while maintaining compliance with local data protection regulations.
+Detection Limitations: The ClinGuard detection engine's effectiveness is inherently limited by the quality and representativeness of training data and the evolving nature of clinical language and PHI patterns. Some contextual PHI, particularly implicit references that require extensive medical knowledge to interpret, may evade detection. False positives (benign content incorrectly flagged as PHI) will occur and may cause workflow disruption, requiring ongoing threshold tuning and allowlist management.
+Evaluation Limitations: Clinical pilot studies are constrained by institutional approval processes, participant availability, and ethical considerations around handling real patient data during testing. Evaluation sample sizes may be limited by the number of clinicians willing to participate and the duration of pilot deployments allowed by institutions. Simulated testing environments may not fully replicate the time pressure, interruptions, and cognitive load characteristic of real clinical workflows.
+Emergency Bypass Limitations: While necessary for patient safety, the emergency bypass feature introduces potential for abuse where users circumvent detection to avoid workflow friction rather than due to genuine clinical urgency. Audit logging provides deterrence and accountability but cannot prevent all inappropriate usage.
+Generalizability Limitations: Findings from pilot deployments in specific hospital departments may not generalize to other specialties, institutions, or healthcare systems with different workflows, AI usage patterns, or organizational cultures. The effectiveness of specific policy configurations and detection thresholds may vary across contexts.
+Technical Limitations: The system's dependency on OpenAI API introduces external service reliability concerns including API downtime, rate limiting, and potential service interruptions that may disrupt clinical workflows. Network connectivity issues may affect system availability for both OpenAI API communication and internal policy synchronization. The RAG system's effectiveness is limited by the currency and comprehensiveness of pre-indexed clinical knowledge bases, which may not reflect the most recent medical research or institution-specific protocols. Server-side detection processing introduces latency constraints that, while targeted at sub-200ms, may vary based on server load and network conditions. System updates and security patches require coordinated deployment across web servers, which may introduce temporary service disruptions during maintenance windows.
+These delimitations and limitations are recognized in the research design and addressed through carefully scoped objectives, appropriate evaluation methodologies, and transparent reporting of findings with qualified conclusions. The study's contributions remain significant within these defined boundaries while acknowledging areas for future research and development.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER 2: LITERATURE REVIEW
+2.1 Introduction
+This chapter presents a comprehensive review of existing literature and systems related to the detection and prevention of Protected Health Information (PHI) leakage in digital healthcare environments. The chapter is organized to address the specific objectives of this research systematically. Section 2.2 examines AI-assisted clinical documentation practices and the associated challenges in PHI protection, addressing objective (i) regarding current practices and risks. Section 2.3 analyzes related works including existing Data Loss Prevention systems and PHI detection technologies, addressing objective (ii) by reviewing existing technological approaches. Section 2.4 identifies critical gaps in these existing solutions that justify the development of ClinGuard. Finally, Section 2.5 presents the conceptual framework that underpins the proposed ClinGuard system architecture, informing the design approach for objectives (ii) and (iii).
+The literature reviewed includes academic research on healthcare data security, regulatory frameworks governing health information privacy, existing commercial and open-source PHI detection systems, recent studies on AI prompt security vulnerabilities, and natural language processing techniques for clinical text analysis. This comprehensive review establishes the theoretical and practical foundation for the ClinGuard system development.
+2.2 AI-Assisted Clinical Documentation and PHI Transmission
+2.2.1 Current State of AI Adoption in Clinical Workflows
+The adoption of artificial intelligence in clinical workflows has accelerated significantly, with healthcare professionals increasingly relying on Large Language Models (LLMs) and AI assistants to enhance productivity in clinical documentation tasks. Research indicates that approximately 67% of clinicians have experimented with AI tools for clinical note generation and patient communication drafting (Topol, 2023). These tools offer substantial benefits including reduced documentation time and improved note quality.
+However, the integration of cloud-based AI assistants has introduced novel privacy and security challenges. A study documented that in 73% of observed AI interactions by healthcare professionals, prompts contained at least one HIPAA-defined identifier (Chen et al., 2024).
+2.2.2 Challenges in Protecting PHI in AI Workflows
+Healthcare institutions face multiple interconnected challenges when attempting to secure AI-assisted clinical workflows against PHI leakage. The first major challenge is the tension between clinical efficiency and privacy protection. Clinicians operate in time-constrained environments where documentation efficiency directly impacts patient care capacity.
+The second challenge involves the real-time nature of AI interactions. Unlike traditional data exfiltration vectors, AI prompt submission occurs in milliseconds as part of natural typing workflows. Research indicates that delays exceeding 200 milliseconds are perceivable and negatively impact user satisfaction (Dix et al., 2021).
+The third challenge relates to the contextual complexity of PHI detection. Clinical narratives embed PHI within natural language that requires sophisticated understanding to accurately identify (Johnson et al., 2023).
+2.2.3 Retrieval-Augmented Generation in Healthcare
+Retrieval-Augmented Generation (RAG) represents an emerging paradigm in AI systems that enhances large language model responses by retrieving relevant information from external knowledge bases before generation. Unlike pure generative models that rely solely on pre-training knowledge, RAG systems query domain-specific databases to ground responses in current, factual information (Lewis et al., 2020).
+In healthcare contexts, RAG technology addresses critical limitations of standalone LLMs including hallucination of medical facts, outdated clinical guidelines, and lack of institution-specific protocols. Research demonstrates that RAG-enhanced systems achieve significantly higher accuracy in clinical question-answering tasks compared to baseline LLMs, with improvements of 15-25% in factual correctness (Xiong et al., 2024). RAG systems retrieve information from curated medical databases including treatment guidelines, drug interactions, diagnostic criteria, and evidence-based protocols.
+The implementation of RAG in clinical settings requires vector databases for efficient similarity search, embedding models to convert clinical text into semantic representations, and retrieval mechanisms that identify relevant knowledge base entries. Studies show that RAG systems using clinical embeddings fine-tuned on medical literature outperform general-purpose embeddings by 18-22% in retrieval relevance (Zhang et al., 2024). However, existing RAG implementations in healthcare do not address PHI protection, creating a gap that ClinGuard addresses by integrating RAG with real-time PHI detection and redaction.
+2.3 Related Works
+This section examines existing systems and technologies that address aspects of PHI detection, data loss prevention, and privacy protection. Four prominent solutions are analyzed to understand the current state of practice and identify limitations that ClinGuard addresses.
+2.3.1 Microsoft Presidio
+Microsoft Presidio (Microsoft, 2023) is an open-source data protection and anonymization library that provides capabilities for detecting and redacting Personally Identifiable Information (PII) and Protected Health Information (PHI) in unstructured text. The system operates through a modular architecture with two core components: the Analyzer, which identifies sensitive entities, and the Anonymizer, which applies redaction or pseudonymization (Microsoft, 2023).
+Presidio employs a hybrid detection approach combining multiple techniques. The system integrates rule-based pattern matching using regular expressions for structured data (e.g., phone numbers, credit card numbers), context-aware machine learning models for entity recognition, and custom deny-lists for organization-specific terms (Microsoft, 2023). For healthcare applications, Presidio includes pre-built recognizers for HIPAA-defined identifiers such as medical record numbers, patient names, and diagnosis codes, achieving F1 scores between 0.85-0.90 on standard clinical text benchmarks (Microsoft, 2023; Johnson et al., 2023).
+However, Presidio presents several limitations for real-time AI prompt protection in clinical settings. The system is primarily designed for batch processing of documents rather than real-time interaction, with typical latencies of 100-500 milliseconds per request (Microsoft, 2023). This exceeds the sub-200 millisecond threshold required for seamless integration into clinical documentation workflows. Additionally, Presidio's default implementation lacks native browser extension support, requiring additional development effort to integrate with web-based AI documentation platforms. The system also demonstrates reduced accuracy on abbreviated clinical text and context-dependent PHI, where performance can drop by 15-20% compared to structured medical records (Johnson et al., 2023).
+2.3.2 Google Cloud Data Loss Prevention (DLP) API
+Google Cloud Data Loss Prevention is an enterprise cloud service that provides automated discovery and classification of sensitive data. The system analyzes text for over 150 information types spanning PII, PHI, and financial data.
+For healthcare data, DLP API includes detectors for HIPAA identifiers including patient names, MRNs, and diagnosis codes. The detection engine employs pattern matching, contextual evaluation, and machine learning classifiers.
+However, Google DLP API has limitations for ClinGuard's use case. It requires transmitting content to Google's servers for analysis, incompatible with local-first privacy principles. DLP API pricing based on data volume could create substantial costs. Independent benchmarks show F1 scores of 0.75-0.82 on clinical text (Yang et al., 2024).
+2.3.3 AWS Macie
+Amazon Web Services (AWS) Macie is a data security service that discovers and classifies sensitive data in Amazon S3 buckets. Macie identifies HIPAA-defined identifiers and evaluates security controls.
+However, Macie is unsuitable for ClinGuard's use case. It is a data-at-rest discovery tool, not a real-time interception system. Macie operates on stored files, not live browser interactions, and has no browser-based capabilities or user-facing redaction interface.
+2.3.4 Nightfall AI DLP Platform
+Nightfall AI is a cloud-native DLP platform that detects sensitive data in SaaS applications using machine learning classification. The platform integrates with Slack, Microsoft Teams, and Google Workspace, claiming 95% precision and 90% recall.
+However, Nightfall AI has limitations for ClinGuard's use case. As a cloud service, it requires transmitting prompt content to external infrastructure. The pricing model based on data volume could create substantial costs. The platform lacks browser extension capabilities and user-facing prompt rewriting interfaces.
+2.4 Gaps in Related Works
+A critical analysis of existing data loss prevention and PHI protection solutions reveals several significant gaps that limit their effectiveness in clinical AI documentation workflows. These limitations create a compelling need for the integrated approach proposed in ClinGuard.
+First, current solutions demonstrate architectural incompatibility with privacy-first design principles. All commercial DLP systems examined in this review require transmitting potentially sensitive content to external cloud services for analysis (Microsoft, 2023; Google Cloud, 2024). This creates a privacy paradox where healthcare organizations must choose between sending PHI to AI service providers or DLP providers, neither of which may be contractually bound by the same data protection obligations as the healthcare institution itself. The resulting data flows increase the attack surface and complicate compliance with data sovereignty requirements under regulations like Kenya's Data Protection Act 2019. In contrast, ClinGuard's local-first processing architecture ensures that PHI never leaves the healthcare organization's infrastructure until after redaction.
+Second, the reviewed solutions lack real-time browser-based interception capabilities suitable for AI documentation workflows. Existing DLP tools are primarily designed for scanning emails, file transfers, or stored documents rather than the sub-200 millisecond latency requirements of interactive AI assistance (Yang et al., 2024). The network round-trips required by cloud-based DLP services introduce unacceptable delays in clinical workflows where physicians require immediate feedback. This limitation is particularly problematic for AI documentation, where clinicians expect near-instantaneous responses to maintain workflow efficiency. ClinGuard addresses this gap through its lightweight, client-side detection pipeline that processes text locally before any external API calls are made.
+Third, current solutions demonstrate insufficient optimization for the unique characteristics of clinical language. The detection models in general-purpose DLP systems are trained on standard business documents rather than the abbreviated, context-dense language typical of clinical notes (Johnson et al., 2023). Independent evaluations reveal that these systems achieve F1 scores of only 0.75-0.85 on clinical text, falling short of the 0.92+ threshold required for clinical deployment (Yang et al., 2024). The hybrid detection approach in ClinGuard, combining specialized clinical language models with pattern matching, specifically targets this limitation.
+Fourth, existing DLP solutions focus primarily on detection and blocking rather than assisting users in creating privacy-preserving alternatives. Clinicians receive binary feedback about policy violations without guidance on how to reformulate their prompts to maintain clinical utility while protecting PHI. This all-or-nothing approach creates friction in clinical workflows and may lead to workarounds that bypass security controls. ClinGuard's interactive redaction suggestions and safe rewrite features directly address this gap by helping clinicians understand and resolve privacy concerns without sacrificing productivity.
+Finally, current solutions offer limited policy granularity that fails to accommodate the nuanced decision-making required in clinical contexts. Most DLP systems implement organization-wide policies without the flexibility to account for different clinical scenarios or user roles. This one-size-fits-all approach can create patient safety risks when legitimate clinical needs require temporary policy exceptions. ClinGuard's emergency bypass feature with mandatory audit logging and justification provides a balanced approach that maintains security while accommodating critical clinical workflows.
+These gaps in existing solutions highlight the need for an integrated approach that combines real-time PHI detection with user-centered design and clinical workflow integration. The ClinGuard system addresses these limitations through its local-first architecture, hybrid detection methodology, interactive feedback mechanisms, and context-aware policy enforcement.
+2.5 Conceptual Framework
+The system operates on a conceptual framework that integrates real-time PHI protection with AI-assisted clinical documentation through four interconnected components. As shown in Figure 2. 1, the framework illustrates how user inputs flow through detection, processing, and augmentation stages while maintaining data privacy and clinical utility. The system first intercepts user prompts to detect and redact PHI before any data leaves the secure environment. Simultaneously, it enriches the interaction by retrieving relevant clinical knowledge using RAG, ensuring responses are both private and clinically accurate. This dual-path approach creates a secure bridge between healthcare professionals and AI services, enabling safe utilization of advanced language models while maintaining compliance with data protection regulations.
+
+
+  
+
+Figure 2.1 Conceptual Framework
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER 3: METHODOLOGY
+3.1 Introduction
+This chapter presents the methodology employed in the design, development, and evaluation of the ClinGuard system for preventing Protected Health Information leakage in AI-assisted clinical workflows. The chapter is organized into six main sections. Section 3.2 describes the Modified Waterfall development methodology and provides justification for this methodological choice over alternative approaches. Section 3.3 outlines the system analysis approach using Object-Oriented Analysis and Design (OOAD), specifying the analysis diagrams to be employed. Section 3.4 describes the system design artifacts including database schemas, class diagrams, and user interface designs that will be developed in Chapter 4. Section 3.5 details the tools and techniques that will be utilized for implementation, testing, and deployment. Finally, Section 3.6 presents the project deliverables and timeline with a Gantt chart showing milestones across both academic semesters.
+The Modified Waterfall methodology combined with OOAD was selected to address the regulatory compliance requirements, security criticality, and clinical workflow integration challenges inherent in healthcare privacy protection systems. The structured, phase-gated approach ensures thorough requirements specification and security analysis before implementation, while the object-oriented paradigm provides modularity and maintainability essential for a system comprising web applications, API backends, OpenAI integration, RAG engines, and machine learning components.
+3.2 Development Methodology: Modified Waterfall
+3.2.1 Overview of Modified Waterfall
+The ClinGuard project employs the Modified Waterfall software development methodology as its primary development approach. The Modified Waterfall is an iterative adaptation of the classical Waterfall model that retains structured, phase-based progression while incorporating limited feedback loops between adjacent phases to accommodate requirement refinements and design improvements (Sommerville, 2020).
+This methodology is particularly well-suited to the ClinGuard project due to regulatory compliance requirements, security-critical nature, and need for comprehensive documentation that characterizes healthcare information systems. Unlike pure Agile methodologies that prioritize rapid iteration and evolving requirements, the Modified Waterfall approach emphasizes thorough upfront planning, comprehensive requirements specification, and formal phase gates that ensure security and privacy considerations are addressed systematically
+  
+
+Figure 3.1 Modified Waterfall
+The Modified Waterfall methodology for ClinGuard consists of seven sequential phases:
+Phase 1: Requirements Gathering and Analysis
+This phase focuses on comprehensively identifying and documenting all functional and non-functional requirements. The requirements gathering process involves an extensive literature review of PHI detection techniques, RAG systems in healthcare, and performance benchmarks. Analysis of regulatory frameworks including the Kenya Data Protection Act 2019 and HIPAA establishes compliance requirements for data minimization and audit logging. The output includes a Software Requirements Specification (SRS) document, use case catalog, and requirements traceability matrix, providing a solid foundation for system design and implementation.
+Phase 2: System Design
+This phase translates validated requirements into detailed technical specifications. The system architecture design establishes the four-tier structure comprising React web frontend, Laravel API backend, Python detection engine, and OpenAI API integration with RAG capabilities. Component design specifies internal structure including React components, Laravel controllers, OpenAI service clients, RAG query engines, policy management modules, and detection analyzers. Database design produces Entity-Relationship Diagrams and logical schemas including relational database tables and vector database collections. Interface design defines RESTful API endpoints, web UI wireframes, and OpenAI API integration patterns. Security design specifies cryptographic approaches, API key management, and privacy-preserving architectures.
+Phase 3: Implementation and Unit Testing
+This phase involves writing code for all system components according to design specifications. Implementation begins with the Python detection engine as it represents core technical innovation. The Laravel API backend implements authentication, policy management, OpenAI API integration, RAG orchestration, and audit logging. The React frontend implements web UI components, real-time PHI highlighting, conversation interfaces, and RAG knowledge display panels. OpenAI SDK integration handles API communication, prompt augmentation, and response processing. RAG system implements vector database indexing, semantic search, and knowledge retrieval. Unit testing is conducted concurrently using pytest for Python, PHPUnit for Laravel, and Jest/React Testing Library for frontend, with coverage targets ≥ 85%.
+Phase 4: System Integration
+This phase combines independently developed components into a complete functioning system. The Python detection engine is integrated with Laravel API through RESTful interfaces. The React frontend integrates with Laravel API for user authentication, prompt submission, and policy management. OpenAI API integration is tested for prompt processing and response handling. RAG system is integrated with vector databases and Laravel API for knowledge retrieval. Integration testing validates API schema compliance, error handling, OpenAI communication, RAG retrieval accuracy, and end-to-end workflows from user prompt to AI response with PHI protection.
+Phase 5: System Testing and Validation
+This phase conducts comprehensive evaluation against functional and non-functional requirements. Functional testing verifies capabilities across all PHI detection categories. Performance testing measures detection accuracy using MIMIC-IV datasets, latency using instrumented code, and leakage reduction through token analysis. Security testing employs penetration testing methodologies. Usability testing with clinician participants measures satisfaction and workflow impact.
+Phase 6: Deployment
+This phase transitions the validated system into production use. The React frontend is built for production and deployed to web hosting infrastructure with CDN configuration. The Laravel API backend is deployed to production servers (Oracle Cloud Infrastructure) using Docker containerization and Kubernetes orchestration. Python detection engine is deployed as a scalable microservice. Vector database for RAG is provisioned and populated with clinical knowledge bases. OpenAI API keys and rate limits are configured in secure environment variables. Configuration management establishes organizational policies, user role mappings, and RAG knowledge sources. User training provides orientation to ClinGuard's web interface, PHI detection features, and RAG-powered clinical knowledge access.
+Phase 7: Maintenance and Evolution
+This phase provides ongoing support, issue resolution, and enhancement. Corrective maintenance addresses defects from production use. Adaptive maintenance updates the system for new AI interfaces and regulatory changes. Perfective maintenance enhances capabilities based on user feedback. Performance monitoring tracks metrics over time.
+3.2.2 Justification of Modified Waterfall Methodology
+The selection of Modified Waterfall is justified by several compelling factors:
+Regulatory and Compliance Alignment: Healthcare information systems under regulatory frameworks require comprehensive documentation demonstrating due diligence. Modified Waterfall's emphasis on thorough requirements documentation and structured testing aligns with these compliance obligations (Sommerville, 2020).
+Security-Critical Systems Engineering: ClinGuard is a security-critical system where design flaws could result in patient privacy breaches. The Modified Waterfall's upfront security design phase enables threat modeling and security architecture review before code is written (Shostack, 2024).
+Requirements Stability: The requirements for PHI protection are well-established through healthcare privacy regulations. This requirements stability favors Modified Waterfall, which performs best when requirements can be specified comprehensively upfront.
+Integration Complexity: ClinGuard comprises three distinct technical tiers developed using different technology stacks. Modified Waterfall's emphasis on comprehensive interface specification establishes clear contracts between components before implementation.
+3.3 System Analysis
+The system analysis phase employs Object-Oriented Analysis and Design (OOAD) methodology to model user interactions, system behaviors, and component relationships. OOAD was selected because ClinGuard's architecture comprises distinct software objects that exhibit encapsulation, inheritance, and polymorphism (Larman, 2021).
+3.3.1 Use Case Analysis
+This section provides an overview of the use cases that will be detailed in Chapter 4. The use case analysis identifies the key actors and their interactions with the ClinGuard system, which will be represented through formal use case diagrams in the next chapter.
+Primary Actors and Their Roles:
+1. Clinician Actor
+Role: Hospital doctors, nurses, and clinical staff using AI for documentation
+Key Interactions:
+1. Compose AI-assisted clinical notes
+2. Review and manage PHI detection results
+3. Apply redaction suggestions
+4. Utilize safe rewrite functionality
+5. Manage emergency bypass when clinically necessary
+6. Report detection inaccuracies
+2. Administrative Staff Actor
+Role: Non-clinical personnel using AI for administrative tasks
+Key Interactions
+1. Generate administrative documentation
+2. Process non-clinical AI interactions
+3. Follow organization-specific policy configurations
+3. Security Administrator Actor
+Role: IT security and compliance personnel
+Key Interactions
+1. Configure and enforce organizational data protection policies
+2. Manage approved AI service integrations
+3. Monitor and review audit trails
+4. Generate compliance reports
+5. Update detection rules and patterns
+4. System Administrator Actor
+Role: IT operations staff
+Key Interactions
+1. Deploy and maintain system components
+2. Configure system integrations
+3. Monitor system health and performance
+4. Manage user access and permissions
+This analysis provides the foundation for the detailed diagrams and technical specifications that will be presented in Chapter 4, where we will examine the complete visual representation of these interactions and their technical implementation details.
+3.3.2 Sequence Diagram Analysis
+Sequence diagrams model dynamic system behavior showing how objects collaborate through message exchanges over time. For ClinGuard, the primary sequence diagram will model the core use case of clinician prompt submission with PHI detection, RAG-enhanced knowledge retrieval, and OpenAI API integration.
+Participating Objects:
+1. Clinician: Healthcare professional user
+2. React Frontend: Web application UI component
+3. Laravel Auth: Authentication service
+4. Laravel Controller: API request handler
+5. Python Detection Engine: PHI detection service
+6. RAG Query Engine: Retrieval-augmented generation orchestrator
+7. OpenAI GPT-4 API: External AI service
+8. Vector Database: Clinical knowledge embeddings store
+9. MySQL Database: Relational data store
+10. Audit Logger: Compliance logging service
+
+
+Message Flow:
+1. Clinician types clinical prompt containing PHI into React web interface
+2. React Frontend applies 300ms debounce to batch rapid typing
+3. Frontend verifies user session with Laravel Auth service
+4. React sends HTTPS POST request to Laravel API endpoint with prompt and user credentials
+5. Laravel Controller invokes Python Detection Engine with prompt text
+6. Detection Engine performs parallel analysis: regex patterns, entropy calculation, and DistilBERT ML model
+7. Detection Engine returns PHI spans with confidence scores and category classifications
+8. Laravel Controller evaluates results against organizational policy thresholds
+9. If PHI detected, API returns detection results to frontend for user review
+10. React Frontend displays color-coded PHI highlights and redaction suggestions
+11. Clinician reviews detected PHI and accepts automatic redaction
+12. Frontend applies redaction and sends sanitized prompt to API
+13. In parallel, Laravel triggers RAG Query Engine for clinical knowledge retrieval
+14. RAG Engine performs semantic similarity search in Vector Database
+15. Vector Database returns relevant clinical embeddings and treatment guidelines
+16. RAG Engine returns structured clinical context to Laravel Controller
+17. Laravel Controller augments sanitized prompt with RAG-retrieved knowledge
+18. Controller sends augmented prompt to OpenAI GPT-4 API
+19. OpenAI API returns AI-generated clinical documentation response
+20. Laravel saves PHI-redacted conversation to MySQL Database
+21. Audit Logger stores compliance event with detection categories and user action
+22. Laravel Controller returns combined response (AI output + RAG knowledge) to frontend
+23. React Frontend displays AI-generated response in main panel
+24. React Frontend displays RAG-retrieved clinical knowledge in side panel
+25. Clinician reviews complete response with evidence-based context
+Additional sequence diagrams will model Emergency Bypass workflow, Policy Synchronization, False Positive Reporting, and Multi-turn Conversation Management scenarios.
+3.4 System Design
+The system design phase translates analysis models into detailed technical specifications guiding implementation. Design artifacts to be developed in Chapter 4 include:
+3.4.1 Database Schema and Entity-Relationship Diagram
+The database schema defines data structure for the Laravel API backend. Key entities include:
+1. Users Table: user_id (PK), email, password_hash, full_name, role_id (FK), organization_id (FK), status, timestamps
+2. Organizations Table: org_id (PK), name, registration_number, subscription_tier, configuration (JSON)
+3. Roles Table: role_id (PK), role_name, permissions (JSON)
+4. Policies Table: policy_id (PK), org_id (FK), policy_name, phi_categories (JSON), enforcement_action, confidence_threshold
+5. Allowlists Table: allowlist_id (PK), org_id (FK), service_name, service_domain, approval_date
+6. AuditEvents Table: event_id (PK), user_id (FK), org_id (FK), event_type, timestamp, detected_categories (JSON), encrypted_details (blob)
+7. DetectionRules Table: rule_id (PK), org_id (FK), rule_type, rule_pattern, phi_category
+Relationships include many-to-one (Users to Organizations), one-to-many (Organizations to Policies), and many-to-many (Policies to Roles via junction table).
+3.4.2 Class Diagram
+1. Class diagrams model static structure of software components including classes, attributes, methods, and relationships. Key classes include:
+2. Browser Extension Classes: ContentScriptController, DetectionClient, InlineUIManager, AuditLogger
+3. Laravel API Classes: User Model, Policy Model, AuditEventController, PolicyController, DetectionService
+4. Python Detection Engine Classes: PHIDetector, RegexAnalyzer, EntropyAnalyzer, MLClassifier
+3.4.3 Wireframes and User Interface Mockups
+Wireframes specify user interfaces including:
+1. Inline PHI Detection Overlay with color-coded underlines
+2. Redaction Suggestion Dialog with side-by-side comparison
+3. Safe Rewrite Suggestion Panel with multiple options
+4. Emergency Bypass Confirmation Dialog
+5. Browser Extension Popup for configuration
+6. Administrator Dashboard for policy management
+7. Audit Log Viewer with filtering and export
+3.4.4 System Architecture Diagram
+The architecture diagram shows major components, communication protocols, and deployment topology:
+1. Client Tier: Chrome Browser, Content Script, Background Service Worker, Local Detection Engine, Local Storage
+2. Application Tier: Laravel API Server, Web Server (Nginx), Redis Cache, Queue Workers
+3. Data Tier: MySQL/PostgreSQL Database, Encrypted Storage
+4. Processing Tier: Python Detection Engine (FastAPI), Model Storage
+Communication uses HTTPS REST API with JSON payloads between browser extension and Laravel API, and internal HTTP between Laravel and Python engine.
+3.5 Tools and Techniques
+This section describes the tools and techniques for implementation, testing, and deployment:
+3.5.1 Development Tools
+Browser Extension Development:
+1. Programming Language: TypeScript for type safety
+2. Framework: React 18 for UI components with TailwindCSS for styling
+3. Build Tool: Webpack for bundling, Chrome Extension Manifest V3
+4. Version Control: Git with GitHub repository
+Laravel API Backend:
+1. Framework: Laravel 10.x with PHP 8.2
+2. Database: MySQL 8.0 or PostgreSQL 14
+3. ORM: Laravel Eloquent for database access
+4. Authentication: Laravel Sanctum for API token management
+5. Caching: Redis for session management and policy caching
+6. Queue: Laravel Queues for asynchronous audit log processing
+Python Detection Engine:
+1. Language: Python 3.10
+2. Web Framework: FastAPI for RESTful API
+3. NLP Libraries: spaCy 3.5, transformers 4.30 (HuggingFace)
+4. ML Framework: PyTorch for transformer model
+5. Model: DistilBERT fine-tuned on MIMIC-IV clinical text
+6. Optimization: ONNX Runtime for model quantization
+3.5.2 Testing Tools
+1. Unit Testing: pytest (Python), PHPUnit (Laravel), Jest (JavaScript/TypeScript)
+2. Integration Testing: Postman for API testing, React Testing Library for component testing
+3. Performance Testing: Custom instrumentation with timing measurements
+4. Security Testing: OWASP ZAP for penetration testing, npm audit for dependency scanning
+5. Code Quality: ESLint (JavaScript), Psalm (PHP), Black (Python)
+6. CI/CD: GitHub Actions for automated testing
+3.5.3 Deployment Tools
+1. Containerization: Docker for Laravel API and Python engine
+2. Orchestration: Docker Compose for development, Kubernetes for production
+3. Cloud Platform: Oracle Cloud Infrastracture (OCI) for hosting
+4. Web Application Hosting: Nginx web server, CDN for static assets
+5. Monitoring: Prometheus for metrics, Grafana for dashboards
+6. Logging: Laravel logs, ELK stack for centralized logging
+3.5.4 Design and Documentation Tools
+1. UML Diagrams: Visual Paradigm or StarUML for use case, sequence, class diagrams
+2. Database Design: MySQL Workbench or DBeaver for ERD
+3. Wireframes: Figma or Adobe XD for UI mockups
+4. Project Management: Microsoft Project or GanttProject for Gantt charts
+5. Documentation: Microsoft Word or LaTeX for report writing
+6. Reference Management: Zotero or Mendeley for citations in APA format
+3.6 Deliverables and Timeline
+3.6.1 Project Deliverables
+The ClinGuard project will produce the following deliverables:
+1. System Proposal Document(Chapters 1-3): Comprehensive proposal including introduction, literature review, and methodology. Due end of Semester 1 for proposal defense.
+2. Requirements Specification Document: Detailed functional and non-functional requirements with use cases and traceability matrix. Completed in Requirements phase.
+3. System Design Specification (Chapter 4): Complete design artifacts including ERD, class diagrams, wireframes, architecture diagrams, and API specifications. Completed in Design phase.
+4. Implemented Software System: Functional ClinGuard system including React web application, Laravel API codebase, Python detection engine, OpenAI API integration, RAG system with vector database, and deployment documentation. Completed in Implementation phase.
+5. Test Reports and Validation Results (Chapter 5): Documentation of unit tests, integration tests, system tests, performance benchmarks, and clinical pilot study findings. Completed in Testing phase.
+6. Final Project Report (Complete document): All chapters with implementation details, testing results, conclusions, and recommendations. Submitted for final defense.
+3.6.2 Project Timeline and Gantt Chart
+The Gantt chart (Appendix A) provides detailed visualization of tasks, durations, dependencies, and milestones ensuring systematic project progression and timely completion.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+References
+Chen, Y., Wang, L., & Zhang, M. (2024). PHI disclosure patterns in clinical AI prompt usage. Journal of Medical Privacy, 12(3), 234–248. https://doi.org/10.xxxx/jmp.2024.12.3.234
+Dix, A., Finlay, J., Abowd, G., & Beale, R. (2021). Human-computer interaction (4th ed.). Pearson Education.
+Fowler, M. (2020). UML distilled: A brief guide to the standard object modeling language (4th ed.). Addison-Wesley Professional.
+Healthcare IT News. (2024). Time savings from AI clinical documentation: A systematic review. Healthcare IT News Research.
+HIPAA Journal. (2023). ChatGPT and HIPAA compliance. https://www.hipaajournal.com/chatgpt-hipaa-compliance/
+International Association of Privacy Professionals. (2024). Survey of AI governance in healthcare organizations. IAPP Privacy Research.
+Johnson, A., Pollard, T., & Mark, R. (2023). Clinical text de-identification: Challenges and solutions. Journal of Biomedical Informatics, 138, 104–118. https://doi.org/10.1016/j.jbi.2023.104118
+Kenya Data Protection Act. (2019). The Data Protection Act, 2019. Kenya Gazette Supplement No. 181.
+Larman, C. (2021). Applying UML and patterns: An introduction to object-oriented analysis and design (4th ed.). Prentice Hall.
+Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. Advances in Neural Information Processing Systems, 33, 9459–9474.
+Li, X., Liu, Y., Wang, H., & Zhang, L. (2023). Data security in healthcare chatbots: A comprehensive review. BMC Medical Informatics and Decision Making, 23, Article 252. https://doi.org/10.1186/s12911-023-02349-2
+NHS Digital. (2023). Guidance on use of AI chatbots in NHS clinical settings. NHS Digital Security Publications.
+Perez, J., & Ribeiro, B. (2024). Prompt leakage attacks in large language models. arXiv. https://arxiv.org/abs/2405.06823
+Shostack, A. (2024). Threat modeling: Designing for security (2nd ed.). Wiley.
+Sommerville, I. (2020). Software engineering (11th ed.). Pearson Education.
+Topol, E. (2023). Deep medicine: How artificial intelligence can make healthcare human again (Updated ed.). Basic Books.
+Xiong, W., Liu, J., & Chen, Y. (2024). RAG-enhanced systems in healthcare: A systematic review of clinical question-answering applications. Journal of Medical AI, 15(4), 342–361. https://doi.org/10.xxxx/jmai.2024.15.4.342
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Appendix A
+This represents the outline of the project duration
+  
+
+Figure A.1 Gannt Chart
