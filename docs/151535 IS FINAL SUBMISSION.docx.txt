@@ -1,7 +1,9 @@
 ﻿A Web Application to Prevent Protected Health Information in AI Service Prompts Using RAG and OpenAI
 
 
-
+John Ekiru Ewoi
+BBIT 151535
+IS PROJECT 2
 
 
 
