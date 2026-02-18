@@ -1,16 +1,15 @@
 import React from "react";
-
-const API_URL = "http://127.0.0.1:8000";
+import { apiUrl } from "@/lib/api";
 
 const LogoutButton: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("auth_token");
-      await fetch(`${API_URL}/logout`, {
+      await fetch(`${apiUrl}/api/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
       });

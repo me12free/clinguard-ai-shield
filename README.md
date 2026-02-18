@@ -29,61 +29,77 @@ This repository contains both the React frontend and Laravel backend:
 
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS
 - **Backend**: Laravel 12.x, PHP 8.2+
-- **Database**: MySQL 8.x (default), SQLite (optional)
-- **AI + RAG Services**: Python 3.10+, spaCy, Transformers
-- **Vector Database**: ChromaDB
-- **AI Integration**: OpenAI API (GPT-4)
-- **CI/CD**: GitHub Actions
+- **Database**: MySQL 8.x (default)
+- **Detection + RAG**: Python 3.10+, venv (no Composer); FastAPI, regex + entropy + optional NER, ChromaDB, sentence-transformers
+- **AI**: OpenAI API (GPT-4 / gpt-4o-mini)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm 9+
-- Python 3.10+
-- PHP 8.2+
-- Composer
+- Node.js 18+, npm 9+
+- Python 3.10+ (for detection engine; use venv)
+- PHP 8.2+, Composer (for Laravel only)
+- MySQL 8.x
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone and create DB**
    ```bash
-   git clone https://github.com/yourusername/clinguard.git
-   cd clinguard
+   git clone https://github.com/yourusername/clinguard-ai-shield.git
+   cd clinguard-ai-shield
+   # Create database: CREATE DATABASE clinguard;
    ```
 
-
-2. Set up the Laravel backend (MySQL):
+2. **Laravel backend (MySQL)**
    ```bash
    cd laravel-backend
    cp .env.example .env
-   # Edit .env to set DB_CONNECTION, DB_DATABASE, DB_USERNAME, DB_PASSWORD for MySQL
+   # Set DB_DATABASE=clinguard, DB_USERNAME, DB_PASSWORD. Optionally DETECTION_ENGINE_URL, OPENAI_API_KEY.
    composer install
    php artisan key:generate
    php artisan migrate
    php artisan serve --host=127.0.0.1 --port=8000
    ```
 
-3. In a new terminal, set up the React frontend:
+3. **Python detection engine (separate terminal, use venv)**
    ```bash
-   cd .. # if inside laravel-backend
+   cd detection_engine
+   python -m venv venv
+   venv\Scripts\activate   # Windows
+   pip install -r requirements.txt
+   uvicorn main:app --host 127.0.0.1 --port 8001
+   ```
+   Or run `scripts\run_detection.bat` (Windows).
+
+4. **Frontend**
+   ```bash
+   cd ..   # project root
+   cp .env.example .env   # optional: set VITE_API_URL=http://127.0.0.1:8000
    npm install
    npm run dev
    ```
+   Open http://localhost:5173. Sign in or register, then use **Dashboard** to send prompts (PHI detected, redacted, RAG + OpenAI).
 
-4. Visit the React app (usually at http://localhost:5173) and test the backend API connection (see "Backend API Test" section on the homepage).
+### API security
 
-## Backend API Test
+- Auth: Laravel Sanctum (Bearer token for `/api/*`). Login/register at `/login`, `/register` (web).
+- Protected endpoints: `/api/detect`, `/api/chat`, `/api/user`, `/api/logout` require `Authorization: Bearer <token>`.
+- Rate limit: 60 requests/minute on API routes. Input validation via FormRequests.
 
-The homepage includes a "Backend API Test" section that fetches a message from the Laravel backend at `/api/hello`. If the backend is running and accessible, you should see a success message. If not, check your backend server and CORS settings.
+## Diagrams (Chapter 4)
+
+See `docs/diagrams/`: Use Case, Sequence, ERD, Class, Context, DFD Level 1, Activity (Mermaid sources for StarUML/Visual Paradigm).
 
 ## Project Structure
 
 ```
 ├── src/                  # React frontend
-├── laravel-backend/      # Laravel backend API
-├── docs/                 # Documentation (research, architecture, deployment)
-└── ...                   # Other project files
+├── laravel-backend/      # Laravel API (MySQL)
+├── detection_engine/     # Python PHI detection + RAG (venv)
+├── docs/                 # Documentation + diagrams
+├── scripts/              # run_detection.bat, run_all.ps1
+└── .env.example          # VITE_API_URL for frontend
 ```
 
 ## Development

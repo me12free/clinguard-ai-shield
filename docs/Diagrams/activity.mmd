@@ -1,0 +1,50 @@
+%% UML Activity Diagram – ClinGuard: Submit prompt with PHI detection and AI response
+%% Notations: Initial state, Activity states (rounded rect), Decision node with guards,
+%% Control flow, Merge (multiple flows into one activity), Swimlanes, Final state.
+
+flowchart TD
+  Start((Start))
+  End1((End))
+
+  subgraph Swimlane_User["Swimlane: User / Frontend"]
+    A1[User enters clinical prompt]
+    A2[Send prompt to API with auth token]
+    A14[Receive response and spans]
+    A15[Display response and PHI highlights to user]
+  end
+
+  subgraph Swimlane_Backend["Swimlane: Laravel API"]
+    A3[Receive request and validate token]
+    A4[Invoke Python Detection Engine]
+    A5[Receive PHI spans]
+    Decision{PHI detected?}
+    A6[Redact detected spans in prompt]
+    A7[Use original prompt as-is]
+    A8[Query RAG with prompt]
+    A9[Receive RAG context]
+    A10[Augment prompt with context]
+    A11[Call OpenAI API]
+    A12[Receive AI response]
+    A13[Save conversation and audit event]
+    A13b[Return response to frontend]
+  end
+
+  Start --> A1
+  A1 --> A2
+  A2 --> A3
+  A3 --> A4
+  A4 --> A5
+  A5 --> Decision
+  Decision -->|Yes| A6
+  Decision -->|No| A7
+  A6 --> A8
+  A7 --> A8
+  A8 --> A9
+  A9 --> A10
+  A10 --> A11
+  A11 --> A12
+  A12 --> A13
+  A13 --> A13b
+  A13b --> A14
+  A14 --> A15
+  A15 --> End1

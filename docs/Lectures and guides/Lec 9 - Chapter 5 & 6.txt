@@ -1,0 +1,93 @@
+CHAPTER 5: SYSTEM IMPLEMENTATION AND TESTING [normal web/mobile apps, IoT Projects, ML]
+
+5.1 Introduction 
+- Describe and state the sections covered in the chapter
+
+5.2 Description of the Implementation Environment
+
+(Hardware)
+5.2.1 Hardware Specifications
+- Specs used in various Hardware [computers and servers]---> always discuss
+	- Mobile phone, tell us the specs of the phone 
+- Describe and discuss each and every sensor used, boards used and their functionalities [include if you're using IoT]
+	- Like, Humidity, Oxygen, BME280 sensor [5.2.1.1-->]
+	- You can provide images here as well, just one image
+
+5.2.2 Software Specifications
+- Define and describe the software required to run your project e.g Android 7+, or Windows server 2020, Windows OS, Linux Box
+- In Case of additional software, you may include it here [IoT]
+	- Applications used in running the projects [sms server, email server, firebase]
+(ML)
+5.3 Description of the Dataset
+- Discuss the dataset, how it was retrieved, analysis of the data in it. 
+- Discuss, Training data, testing data and Validation data--> Give more information about this data
+- Discuss the features and labels as extracted and used. 
+	- Discuss how the features were retrieved, one hot encoding. 
+
+5.4 Description of Testing
+- Discuss how testing was done.
+
+5.4.1 [ML]
+- Discuss how training was done, mention how you prepared your data and files imported
+	- you may support this with some screenshots of the code and some of the graphs
+- Discuss how models were analysed and saved [how it was prepared] and graphs analysed 
+- Did you use 10 fold testing??
+
+5.4.1 [IoT]
+- How the setup was done
+- How testing was done to confirm the full functionality of the circuits
+- Any other modules [WiFi, Sms and etc]
+	- You can add some of the screenshots here - IDE, etc
+
+5.4.2 Testing Paradigm
+- Discuss the testing paradigm used in details [provide a diagram if possible]
+	- White box testing
+	- Black box testing
+	- Unit Testing
+		- You can support this with a screenshot of the unit test done
+	- A combination of any two?
+- You need to modify this section based on your project [ML, IoT]
+
+5.5 Testing Results
+- Draw a table of modules done and their testing results
+	- Test Case
+	- Description 
+	- Test Data [what data was used in the testing]
+	- Experimental Outcome
+		- Result
+		- Test Verdict [pass:fail?]
+
+
+CHAPTER 6: CONCLUSIONS, RECOMMENTATIONS AND FUTURE WORKS [1 Page MAX]
+
+6.1 Conclusions
+- What can you conclude from the project?
+- Have you solved the problem in a better way? Will your solution be benefitial to the society and IT Commnity in General?
+
+6.2 Recommendations
+- What recommendations can you draw from the project?
+- It is recommended that....
+	- E.g For better Results, the Ram should be added from 3 Gb to 6 Gb
+
+6.3 Future Works
+- Tell future reseachers what you would like to see in the project in case they choose to do a similar thing
+- e.g In case CNN was used, you can tell them to use RNN for better results or a different opinions
+	- What you'd like to be added to the project in case a similar work is done in the future
+
+References [APA Style]
+
+Appendix
+
+- Display or show any other addtional codes of interest that you'd like people to see [Screeshots] 
+
+Gantt Chart
+- Full Gantt Chart showing a year's work timelines. [Since the start of the project to the end]
+
+Append Plagiarism Percentage
+
+
+AOB
+- Proposals [do corrections]
+	- Based on the suggestions
+	- Work on the tense [Past tense or past participle]
+- General Grammar should be worked on

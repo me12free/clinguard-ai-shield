@@ -1,0 +1,51 @@
+Topic: Usalama App: A security App for sending distress calls to emergency contacts and services
+
+Chapter 3: Methodology
+
+3.1 Introduction 
+ - Introduce what Chapter 3 is about, 
+ - Methodology to be applied (e.g SSAD(Structured Systems Analysis and Design), SSADM(Structured Systems Analysis and Design), OOAD(Object Oriented Analysis and Design)) and reasons of application. 
+
+3.2 Applied Development approach to be used
+ - The dev approach and why you have chosen that
+ - Agile is not a methodology (iterative methodologies)
+ ~ Incremental Methodology, Modified Watefall, Extreme Programming
+	- Tell us what this is 
+ ~ Diagram (show all the steps that are involved)
+ ~ Explanation of the steps
+EG. 3.2.1 Requirement Gathering 
+    3.2.2 Requirement Analysis
+
+ - Discuss the phases but focus on how they affect your project.
+
+3.3 Justification of Modified Waterfall Methodology
+
+3.4 System Analysis
+ - What analysis tools to be used and diagrams
+ - This focuses on analysis diagrams (OOAD/SSAD/SSADM)
+3.4.1 Use Case Diagram 
+ - what it is
+ - How it will be implemented in your project 
+3.4.2 Sequence Diagram
+
+
+3.5 System Design
+ - State and discuss the diagrams descriptions to be drawn (chapter 4) and the roles they will play
+3.5.1 Database Schema
+3.5.2 Wire Frames / Mockups
+3.5.3 System Architecture
+
+3.6 System Deliverables/ Milestones
+ - List and discuss them 
+3.6.1 System proposal
+ - What it is
+ - Discuss
+
+
+References (APA)
+
+Gantt Chart
+ - On the whole project
+ - SEM 1 - upto chapter 4 (MAy - AUG)
+ - SEM 2 - chapter 4 review - Defense. (NOV)
+

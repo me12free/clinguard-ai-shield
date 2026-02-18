@@ -1,0 +1,19 @@
+%% ClinGuard Sequence – Prompt with PHI detection, RAG, OpenAI (OOAD - Analysis)
+sequenceDiagram
+  participant C as Clinician
+  participant F as React Frontend
+  participant L as Laravel API
+  participant D as Python Detection
+  participant R as RAG/Vector DB
+  participant O as OpenAI
+  C->>F: Enter prompt (with PHI)
+  F->>L: POST /api/chat + Bearer
+  L->>D: POST /detect text
+  D-->>L: spans
+  L->>R: RAG query (redacted)
+  R-->>L: context chunks
+  L->>O: Chat completion (redacted + context)
+  O-->>L: response
+  L->>L: Save conversation, audit
+  L-->>F: response, spans, rag_context
+  F-->>C: Show response + PHI highlights + RAG

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api";
 
 const BackendHello: React.FC = () => {
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/hello")
+    fetch(`${apiUrl}/api/hello`)
       .then((res) => {
         if (!res.ok) throw new Error("Network response was not ok");
         return res.json();

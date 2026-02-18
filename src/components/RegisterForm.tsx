@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-
-const API_URL = "http://127.0.0.1:8000";
+import { apiUrl } from "@/lib/api";
 
 const RegisterForm: React.FC = () => {
   const [name, setName] = useState("");
@@ -14,7 +13,7 @@ const RegisterForm: React.FC = () => {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${API_URL}/register`, {
+      const res = await fetch(`${apiUrl}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),

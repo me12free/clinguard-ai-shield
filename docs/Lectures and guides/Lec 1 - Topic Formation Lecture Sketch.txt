@@ -1,0 +1,35 @@
+Topic Formation
+1. Descriptive - Poultry Management System, Carwash Mgt System, Hostel management system (what is it?)
+(avoid "...management system")(15 words)
+2. e.g Web-Based Application Used to find and Contact Computer Technicians for Computer Repair and Maintenance
+
+Examples:
+Sound Analysis Prototype to Enhance Physical Security in Academic Institutions:  A case of Strathmore University
+
+Case of:
+1. Smart IoT Based Parking System: A case of an organised mall in Nairobi
+2. Vision-Based Data Fruit Maturity-Level Prediction Model: Case of Pawpaw in Makueni County
+
+Name and Description:
+1. Uber App: A mobile based application for hailing Cabs
+2. Instagram: A mobile based application for sharing pictures and videos
+
+-------------------------------------------------------------------------------------
+Concept:
+1. Problem Description - 
+2. Solution - Usalama App: Sending distress calls in case of danger
+-------------------------------------------------------------------------------------
+Abstract:
+ - 200 words (atleast 180 words, 210)
+- 1 paragraph or 2 to 3 paragraphs
+- 4 things
+	- Introduction(Background information on what is leading to the problem)
+	- Problem statement
+	- Proposed solution
+	- Methodologies used and or outcome(75% TO 90%)
+
+Prototyping, waterfall, v-shape
+Agile is a NOT  a methodology(is group of ALL iterative methodologies - Prototyping, XP programming, incremental )
+
+Fields(AI, mobile dev, Web Dev, Games dev, IoT, API) - CRUD ANALYSIS - DO NOT
+

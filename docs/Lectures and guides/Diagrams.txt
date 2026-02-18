@@ -1,0 +1,14 @@
+OOAD Diagrams
+- Use Case Diagrams - analysis
+- Sequence Diagrams - analysis
+- System Sequence Diagrams - analysis - optional
+- ERD Diagrams - Design
+- Logical Database Schema - Design
+- Class Diagrams- Design
+
+SSAD/SSADM Diagrams
+- Context Diagrams(Level 0) - Analysis
+- Dataflow Diagram (Level 1) - Analysis
+- Activity Diagrams - Analysis
+- ERD Diagram - Design
+- Logical Database Schema - Design

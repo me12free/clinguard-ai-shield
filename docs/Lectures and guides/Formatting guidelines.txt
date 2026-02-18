@@ -1,0 +1,14 @@
+1. Font face - Times New Roman (The whole document including page numbers)
+2. Font Size - 12 (The whole document including headings)
+3. Line spacing - 1.5 (The whole document including table of contents)
+4. Page Margins - Normal
+5. Page Numbering - bottom, centered
+6. Referencing - APA
+7. Chapters - Centered, bold, labelled i.e Chapter 1:, Chapter 2: etc
+8. Sub - Chapters - Justify, Bold 1.1, 2.1 etc
+9. Paragraphs - Normal, Justify
+10. Captions - (Above in tables and below in figures, Tables and figures must take chapter numbering. 
+11. Coverpage - No page number
+12. Declaration Page --- Page numbering - roman number (ii) in lowercase
+13. Chapter 1 page - Page numbering --- starts at 1. 
+

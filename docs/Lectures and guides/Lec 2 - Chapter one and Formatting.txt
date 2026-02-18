@@ -1,0 +1,67 @@
+
+Topic: Usalama App: A security App for sending distress calls to emergency contacts and services
+
+*Proposal should be in 3rd person/reported speech -  Talk about the proposed solution
+
+Chapter 1: Introduction
+
+1.1 Background
+ - conceptualization (concepts)
+ - relate the story to some context
+
+	What is Usalama App and why we need to do it
+	(happenings/events - muggings/carjackings (references))
+	Kidnappings (references), child trafficking (provide real life scenarios)
+	look at how distress calling has been done before 
+pages - at least 1 to 1 1/4 pages MUST be supported by Refereces (APA)
+
+1.2 Problem Statement
+ - Situational Analysis - (quote a bit about the background)
+ - What is known as the current soln and what it's weaknesses are
+ - Comment a bit about your proposed soln
+
+ - (Straight to the point)
+
+1.3 Objectives
+1.3.1 General Objective (AIM)
+ - To develop a reliable baby tracking application that would help parents find their babies in a reliable and an easy way.
+1.3.2 Specific Objectives - (SMART) - Specific, Measurable, Attainable, Realistic & Time Bound
+ (i) To investigate and analyse what causes insecurity in the country 
+ (ii) To study and analyse the challenges faced when trying to make a distress call
+ (iii) To analyze and find out ways in which existing solutions have been implemented in making distress calls
+ (iv) To study the challenges and the short comings of the existing systems
+ (v)  To develop a reliable system that will address these challeges in a reliable way
+ (vi) To test and validate the proposed solution
+
+1.4 Research Questions
+ (i) What causes insecurity?
+ (vi) What testing and validation mechanisms will the system go through?
+
+1.5 Justification
+ - Tell us why we need your system and why you think its implementation will be important
+ - (references)
+ - Prose
+
+1.6 Scope and Limitaions
+ - Scope (paragraph - what your system is going to cover & a little bit of what will not be covered)
+ - Limitations (NOT your limitations) - System's limitaions
+
+*Proposal should be in 3rd person/reported speech -  Talk about the proposed solution
+_________________________________________________________________________________________________
+
+DEVELOPMENT OF TEMPLATE
+ - times new roman 12, 1.5 justified 
+ - Page nos - middle simple
+- Formatting
+
+
+
+CHAPTER 2 : LITERATURE REVIEW
+
+
+
+
+
+
+
+	

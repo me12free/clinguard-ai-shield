@@ -1,0 +1,51 @@
+%% ClinGuard Use Case Diagram – UML | flowchart TB to reduce line congestion
+%% Actors (top) → System boundary (center) → Associations, Include, Extend
+
+flowchart TB
+  subgraph Actors[" "]
+    direction LR
+    Clinician[/Clinician/]
+    SecurityAdmin[/Security Admin/]
+    SystemAdmin[/System Admin/]
+    DetectionSystem[/Detection System/]
+    OpenAI[/OpenAI API/]
+  end
+
+  subgraph ClinGuard["ClinGuard System"]
+    direction TB
+    Login(("Login"))
+    Register(("Register"))
+    Compose(("Compose Clinical Notes"))
+    ReviewPHI(("Review PHI Detection"))
+    Redact(("Apply Redaction"))
+    SubmitAI(("Submit Prompt to AI"))
+    ViewRAG(("View RAG Context"))
+    Emergency(("Emergency Bypass"))
+    ConfigurePolicies(("Configure Policies"))
+    ViewAudit(("View Audit Logs"))
+    ManageUsers(("Manage Users"))
+  end
+
+  Clinician --- Login
+  Clinician --- Register
+  Clinician --- Compose
+  Clinician --- SubmitAI
+
+  SecurityAdmin --- Login
+  SecurityAdmin --- ConfigurePolicies
+  SecurityAdmin --- ViewAudit
+
+  SystemAdmin --- Login
+  SystemAdmin --- ManageUsers
+  SystemAdmin --- ViewAudit
+
+  DetectionSystem --- ReviewPHI
+  DetectionSystem --- SubmitAI
+
+  OpenAI --- SubmitAI
+
+  Compose -.->|"<<include>>"| ReviewPHI
+  Compose -.->|"<<include>>"| Redact
+  SubmitAI -.->|"<<include>>"| ViewRAG
+
+  Emergency -.->|"<<extend>>"| SubmitAI

@@ -1,0 +1,61 @@
+Chapter 4: System Analysis and Design.
+
+Tense past or past participle
+
+4.1 Introduction
+- Talk about what the chapter is about, what is covered and what analysis and design diagrams you have drawn. 
+
+4.2 System Requirements/Requirements Gathering
+- Some of the system requirements reviewed in the project include;
+4.2.1 Functional Requirements
+- Use Listing format. 
+e.g. (i) Authentication Modules - Describe what it is and how it was done, that is what type of data you are collecting (Login and Registrations)
+     (ii) File transfer Module - 
+     (iii) ETC---
+4.2.2 Non - Functional Requirements
+- Use Listing format
+e.g. (i) System Security  - Describe what it is and how this was achieved. 
+     (ii) Data Security -  Describe what it is and how this was achieved.
+
+4.3 System Analysis Diagrams
+
+4.4 System Design Diagrams 
+
+OOAD Diagrams
+- Use Case Diagrams - analysis
+- Sequence Diagrams - analysis
+- System Sequence Diagrams - analysis
+- ERD Diagrams - Design
+- Logical Database Schema - Design
+- Class Diagrams- Design
+
+SSAD/ SSADM Diagrams
+- Context Diagrams - Analysis
+- Dataflow Diagram (Level 0, Level 1) - Analysis
+- Activity Diagrams - Analysis
+- ERD Diagram - Design
+- Logical Database Schema - Design
+
+What type of Database Schema Do we need?
+- Logical Database schema - This shows how the real database will be formed by logically setting out how the tables and relationships will be formed.  
+
+- Users   Users tbl 	Country Tbl    County Tbl 		Sub-county   		UserRole Tbl
+	FName		Country ID PK	County ID PK		Subcounty IDPK		UserRole ID PK
+	Lname		County ID FK	Subcounty IDFK
+	email
+	Country ID FK
+Country
+County
+Subcounty
+UserRole
+
+For Consistency, Use these tools
+- Star UML (database schema, class diagrams)
+- Visual Paradigm (Other diagrams)
+- You can use any other tool of your choice
+
+
+
+
+
+

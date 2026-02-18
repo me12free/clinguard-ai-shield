@@ -1,0 +1,13 @@
+# ClinGuard PHI detection + RAG (use venv; avoid Composer)
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+# PHI: regex + entropy + optional NER
+regex>=2024.0
+numpy>=1.26.0
+# ML: lightweight NER for names/entities (optional; set USE_ML=0 to disable)
+transformers>=4.45.0
+torch>=2.0.0
+# RAG
+chromadb>=0.5.0
+sentence-transformers>=3.3.0

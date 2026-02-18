@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-
-const API_URL = "http://127.0.0.1:8000";
+import { useNavigate } from "react-router-dom";
+import { apiUrl } from "@/lib/api";
 
 const LoginForm: React.FC<{ onLogin: (token: string) => void }> = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,7 +14,7 @@ const LoginForm: React.FC<{ onLogin: (token: string) => void }> = ({ onLogin }) 
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${API_URL}/login`, {
+      const res = await fetch(`${apiUrl}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -25,11 +26,12 @@ const LoginForm: React.FC<{ onLogin: (token: string) => void }> = ({ onLogin }) 
         localStorage.setItem("auth_token", data.token);
         setSuccess("Login successful!");
         onLogin(data.token);
+        navigate("/dashboard", { replace: true });
       } else {
         throw new Error("No token received");
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Login failed");
     }
   };
 

@@ -1,0 +1,29 @@
+Slides: ~ 10 Mins
+Usalama App: 
+slide 1: Introduction
+- Title
+- Name
+- Supervisor Name
+
+Slide 2: Abstract
+- Background, problem, Proposed soln - points
+- Methodology to be used
+
+Slide 3: Chapter 1: Introduction (2 Slides at most)
+- Background (Points - 2 or 3)
+- Problem Statement
+- Objectives
+- Justification 
+- Scope and Limitations
+
+Slide 4 : Literature Review (2 Slides)
+- Related works (List them) Uber: Discuss, Taxy: Discuss
+- Conceptual Framework (Diagram only)
+
+Slide 5: Methodology
+- System development methodology (Diagram only)
+- Justification of the methodology
+- system Analysis - (list analysis diagrams you will need and how they will be used in your system) (OOAD / SSAD)
+- System Design - (List and explain the diagrams you will need)
+- Tools and Techniques (List and explain verbally)
+- Deliverables and Milestones

@@ -1,0 +1,58 @@
+Topic: Usalama App: A security App for sending distress calls to emergency contacts and services
+
+1.3.2 Specific Objectives - (SMART) - Specific, Measurable, Attainable, Realistic & Time Bound
+ (i) To investigate and analyse the process of requesting for emergency services
+ (ii) To study and analyse the challenges faced when trying to request for emergency services
+ (iii) To investigate and find out ways in which existing solutions have been implemented in requesting for emergency services
+ (iv) To study the challenges and the short comings of the existing systems
+ (v)  To develop a reliable system that will address these challeges in a reliable way
+ (vi) To test and validate the proposed solution
+
+Chapter 2: Literature Review
+
+2.1 Introduction
+- Briefly tell us what the chapter covers, sections and what is in those sections. List the literature reviewed
+
+2.2 Process of getting emergency services
+-
+-
+-Provide references in APA format
+-Comparison to other countries
+
+2.2.1 Challenges faced when trying to request for emergency services
+- 
+-
+-(paragraphs- References in APA)
+
+2.3 Related Works (Min 3, Max 4)
+- Some of the related works include:
+
+2.3.1 911
+- Tell us what it is, who they are
+- How it works
+- Techniques they use to solve some of the problems faced by emergency services as seen in 2.3
+- challenges of this related work/Shortcoming - in brief
+- Provide some screenshots of the related work at hand
+
+2.3.2 Related work 2
+2.3.3 Related work 3
+2.3.4 Related work 4
+
+2.4 Gaps in Related works
+- Echo all the challenges in detail in the above related works(paragrpahs)
+
+2.5 Conceptual Framework
+- Diagram that uses symbols(servers, phone/tablet, desktop/laptop)
+- Input ----(Short notes)---------> Processing ----(Short notes)--------> Output
+
+------------------------------------------------------------------------------------------------------------------
+Chapter 2: Literature Review
+
+2.1 Introduction
+- Briefly tell us what the chapter covers, sections and what is in those sections. List the literature reviewed
+
+2.2 Discussing objective no 1 - Theoritically
+2.3 Methodology - e.g technology used, technical tools
+2.4 Related Works
+2.5 Gaps in the Related works
+2.6 Conceptual framework

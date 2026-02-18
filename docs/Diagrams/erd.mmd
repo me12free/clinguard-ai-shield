@@ -1,0 +1,94 @@
+%% ClinGuard Entity Relationship Diagram (Design)
+%% Standard ERD: entities = rectangles; attributes with PK/FK; relationships = verb phrases; cardinality = crow's foot.
+%% Notation: ||--o{ one-to-many, }o--|| many-to-one. PK = primary key, FK = foreign key.
+
+erDiagram
+  ORGANIZATION ||--o{ USER : "employs"
+  ORGANIZATION ||--o{ POLICY : "defines"
+  ORGANIZATION ||--o{ ALLOWLIST : "maintains"
+  ORGANIZATION ||--o{ DETECTION_RULE : "owns"
+  ORGANIZATION ||--o{ AUDIT_EVENT : "scoped to"
+  ROLE ||--o{ USER : "assigned to"
+  USER ||--o{ CONVERSATION : "creates"
+  USER ||--o{ AUDIT_EVENT : "generates"
+
+  USER {
+    int user_id PK
+    int role_id FK
+    int organization_id FK
+    string name
+    string email UK
+    string password_hash
+    timestamp email_verified_at
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  ORGANIZATION {
+    int organization_id PK
+    string name
+    string registration_number
+    string subscription_tier
+    string configuration
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  ROLE {
+    int role_id PK
+    string role_name
+    string permissions
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  POLICY {
+    int policy_id PK
+    int organization_id FK
+    string policy_name
+    string phi_categories
+    string enforcement_action
+    float confidence_threshold
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  ALLOWLIST {
+    int allowlist_id PK
+    int organization_id FK
+    string service_name
+    string service_domain
+    timestamp approval_date
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  DETECTION_RULE {
+    int rule_id PK
+    int organization_id FK
+    string rule_type
+    string rule_pattern
+    string phi_category
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  AUDIT_EVENT {
+    int event_id PK
+    int user_id FK
+    int organization_id FK
+    string event_type
+    string detected_categories
+    string encrypted_details
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  CONVERSATION {
+    int conversation_id PK
+    int user_id FK
+    string prompt_redacted
+    string response_summary
+    timestamp created_at
+    timestamp updated_at
+  }
