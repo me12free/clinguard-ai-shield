@@ -17,14 +17,14 @@ Logical schema for the ClinGuard database. Matches **`laravel-backend/database/m
 | audit_events      | Audit log (chat, login, etc.)        | audit_event_id | user_id, organization_id |
 | conversations     | Stored chat (redacted prompt, summary)| conversation_id | user_id           |
 
-**Legend:** PK = Primary key, FK = Foreign key, UK = Unique key, AI = Auto-increment. In the database the PK column is `id`; the names above (user_id, organization_id, …) identify which table's id. Column names match `laravel-backend/database/migrations/`.
+**Legend:** PK = Primary key, FK = Foreign key, UK = Unique key, AI = Auto-increment. In the database the PK column is `id`; the names above (user_id, organization_id, …) identify which table’s id. Column names match `laravel-backend/database/migrations/`.
 
 ---
 
 ## 1. Core: users
 
-| Column             | Data Type        | Size/Precision | Nullable | Key | Default | Description        |
-|--------------------|------------------|----------------|----------|-----|---------|--------------------|
+| Column             | Data Type        | Size/Precision | Nullable | Key | Default | Description                    |
+|--------------------|------------------|----------------|----------|-----|---------|--------------------------------|
 | id                 | BIGINT UNSIGNED  | 20             | No       | PK  | AI      | Primary key (user_id) |
 | role_id            | BIGINT UNSIGNED  | 20             | Yes      | FK  | NULL    | → roles.id         |
 | organization_id    | BIGINT UNSIGNED  | 20             | Yes      | FK  | NULL    | → organizations.id |
@@ -40,8 +40,8 @@ Logical schema for the ClinGuard database. Matches **`laravel-backend/database/m
 
 ## 2. Core: organizations
 
-| Column               | Data Type       | Size/Precision | Nullable | Key | Default   | Description |
-|----------------------|-----------------|----------------|----------|-----|-----------|-------------|
+| Column               | Data Type       | Size/Precision | Nullable | Key | Default   | Description                          |
+|----------------------|-----------------|----------------|----------|-----|-----------|--------------------------------------|
 | id                   | BIGINT UNSIGNED | 20             | No       | PK  | AI        | Primary key (organization_id) |
 | name                 | VARCHAR         | 255            | No       |     | —         | Org name    |
 | registration_number  | VARCHAR         | 255            | Yes      |     | NULL      |             |
@@ -66,8 +66,8 @@ Logical schema for the ClinGuard database. Matches **`laravel-backend/database/m
 
 ## 4. Policy & config: policies
 
-| Column               | Data Type       | Size/Precision | Nullable | Key | Default | Description          |
-|----------------------|-----------------|----------------|----------|-----|---------|----------------------|
+| Column               | Data Type       | Size/Precision | Nullable | Key | Default | Description                          |
+|----------------------|-----------------|----------------|----------|-----|---------|--------------------------------------|
 | id                   | BIGINT UNSIGNED | 20             | No       | PK  | AI      | Primary key (policy_id) |
 | organization_id      | BIGINT UNSIGNED | 20             | No       | FK  | —       | → organizations.id   |
 | policy_name          | VARCHAR         | 255            | No       |     | —       |                      |
@@ -81,8 +81,8 @@ Logical schema for the ClinGuard database. Matches **`laravel-backend/database/m
 
 ## 5. Policy & config: allowlists
 
-| Column          | Data Type       | Size/Precision | Nullable | Key | Default | Description        |
-|-----------------|-----------------|----------------|----------|-----|---------|--------------------|
+| Column          | Data Type       | Size/Precision | Nullable | Key | Default | Description                             |
+|-----------------|-----------------|----------------|----------|-----|---------|-----------------------------------------|
 | id              | BIGINT UNSIGNED | 20             | No       | PK  | AI      | Primary key (allowlist_id) |
 | organization_id | BIGINT UNSIGNED | 20             | No       | FK  | —       | → organizations.id |
 | service_name    | VARCHAR         | 255            | No       |     | —       |                    |
@@ -95,8 +95,8 @@ Logical schema for the ClinGuard database. Matches **`laravel-backend/database/m
 
 ## 6. Policy & config: detection_rules
 
-| Column          | Data Type       | Size/Precision | Nullable | Key | Default | Description         |
-|-----------------|-----------------|----------------|----------|-----|---------|---------------------|
+| Column          | Data Type       | Size/Precision | Nullable | Key | Default | Description                                |
+|-----------------|-----------------|----------------|----------|-----|---------|--------------------------------------------|
 | id              | BIGINT UNSIGNED | 20             | No       | PK  | AI      | Primary key (detection_rule_id) |
 | organization_id | BIGINT UNSIGNED | 20             | Yes      | FK  | NULL    | → organizations.id  |
 | rule_type       | VARCHAR         | 255            | No       |     | —       | regex, entropy, ml  |
@@ -109,8 +109,8 @@ Logical schema for the ClinGuard database. Matches **`laravel-backend/database/m
 
 ## 7. Audit & usage: audit_events
 
-| Column               | Data Type       | Size/Precision | Nullable | Key | Default | Description        |
-|----------------------|-----------------|----------------|----------|-----|---------|--------------------|
+| Column               | Data Type       | Size/Precision | Nullable | Key | Default | Description                             |
+|----------------------|-----------------|----------------|----------|-----|---------|-----------------------------------------|
 | id                   | BIGINT UNSIGNED | 20             | No       | PK  | AI      | Primary key (audit_event_id) |
 | user_id              | BIGINT UNSIGNED | 20             | Yes      | FK  | NULL    | → users.id         |
 | organization_id      | BIGINT UNSIGNED | 20             | Yes      | FK  | NULL    | → organizations.id |
@@ -124,8 +124,8 @@ Logical schema for the ClinGuard database. Matches **`laravel-backend/database/m
 
 ## 8. Audit & usage: conversations
 
-| Column           | Data Type       | Size/Precision | Nullable | Key | Default | Description        |
-|------------------|-----------------|----------------|----------|-----|---------|--------------------|
+| Column           | Data Type       | Size/Precision | Nullable | Key | Default | Description                             |
+|------------------|-----------------|----------------|----------|-----|---------|-----------------------------------------|
 | id               | BIGINT UNSIGNED | 20             | No       | PK  | AI      | Primary key (conversation_id) |
 | user_id          | BIGINT UNSIGNED | 20             | No       | FK  | —       | → users.id         |
 | prompt_redacted  | TEXT            | 65535         | Yes      |     | NULL    | Redacted prompt    |
@@ -142,7 +142,7 @@ Logical schema for the ClinGuard database. Matches **`laravel-backend/database/m
 | BIGINT UNSIGNED  | 20             | Auto-increment IDs                |
 | VARCHAR          | 255, 100       | Variable-length string (max chars)|
 | TIMESTAMP        | —              | Date and time                     |
-| DECIMAL          | 5,4            | 5 total digits, 4 after decimal   |
+| DECIMAL          | 5,4            | 5 total digits, 4 after decimal    |
 | TEXT             | 65535          | Max length in bytes (MySQL)       |
 | JSON             | —              | JSON column                       |
 | BLOB             | —              | Binary payload                    |
