@@ -2,369 +2,161 @@
 
 ## 4.1 Introduction
 
-This chapter presented the comprehensive system analysis and design for the ClinGuard web application, which focused on preventing Protected Health Information (PHI) leakage in AI service prompts using RAG and OpenAI integration. The chapter covered the detailed requirements gathering process, system analysis diagrams, and system design specifications that guided the development of the ClinGuard system. Object-Oriented Analysis and Design (OOAD) methodology was employed throughout the analysis and design phases, as it was best suited for modeling ClinGuard's architecture comprising distinct software objects that exhibit encapsulation, inheritance, and polymorphism. The analysis phase examined the existing healthcare AI documentation workflows and identified critical PHI protection requirements through use case analysis and sequence diagram modeling. The design phase translated these requirements into detailed technical specifications including class diagrams, database schemas, and system architecture using object-oriented principles.
+This chapter presents the system analysis and design for the ClinGuard system. The design paradigm used is **Object-Oriented Analysis and Design (OOAD)** as defined in Chapter 3. Section 4.2 sets out the system requirements (functional and non-functional) reviewed in the project. Section 4.3 presents the system analysis diagrams: use case diagram, activity diagram, sequence diagram, entity-relationship diagram, logical database schema, and system sequence diagram. Section 4.4 presents the system design diagrams (ERD and logical schema) with design commentary. Section 4.5 states the design tools used for consistency.
 
-## 4.2 System Requirements/Requirements Gathering
+---
 
-The system requirements were gathered through comprehensive analysis of healthcare documentation workflows, regulatory compliance requirements, and stakeholder interviews. The requirements collection process involved reviewing existing Data Loss Prevention systems, analyzing Kenya Data Protection Act 2019 compliance needs, and studying clinical AI usage patterns in healthcare settings.
+## 4.2 System Requirements
+
+System requirements are the configuration that a system must have in order for a hardware or software application to run smoothly and efficiently. Failure to meet these requirements can result in installation problems or performance problems. The former may prevent a device or application from getting installed, whereas the latter may cause a product to malfunction or perform below expectation or even to hang or crash.
+
+Some of the system requirements reviewed in the project include:
 
 ### 4.2.1 Functional Requirements
 
-The following functional requirements were identified and implemented in the ClinGuard system:
+Functional requirements are product features or functions that the system implements to enable users to accomplish their tasks; they describe system behaviour under specific conditions. The following functional requirements were identified and implemented, listed with roman numerals:
 
-**(i) Authentication and Authorization Module**
-This module was designed to manage user access control and role-based permissions within the ClinGuard system. The system collected user credentials including email addresses, passwords, names, and role assignments during registration. The authentication process implemented secure login mechanisms with password hashing, session management, and multi-factor authentication capabilities. User roles including Clinician, Administrator, and Security Officer were defined with specific permission levels for different system functionalities.
+**(i) Authentication and Authorization Module**  
+This module manages user access control and role-based permissions. The system collects user credentials (email, password, name, role) during registration. Authentication uses secure login with password hashing (bcrypt) to keep credentials secure, together with session management and multi-factor authentication. Roles include Clinician, Administrator, and Security Officer with defined permission levels.
 
-**(ii) PHI Detection and Redaction Module**
-This core module was developed to identify and redact Protected Health Information from AI prompts in real-time. The system collected prompt text data from user inputs and processed it through a hybrid detection engine combining regex patterns, entropy analysis, and machine learning classifiers. The module supported detection of various PHI types including patient names, medical record numbers, phone numbers, email addresses, diagnoses, medications, and dates. Redaction functionality replaced detected PHI with standardized placeholders while preserving clinical context.
+**(ii) PHI Detection and Redaction Module**  
+This module identifies and redacts Protected Health Information from AI prompts in real time. It collects prompt text from user inputs and processes it through a hybrid detection engine (regex, entropy analysis, and machine learning). It detects PHI types such as patient names, medical record numbers, phone numbers, email addresses, diagnoses, medications, and dates, and replaces them with standardised placeholders while preserving clinical context.
 
-**(iii) OpenAI Integration Module**
-This module was implemented to facilitate secure communication with OpenAI's API for AI-powered clinical documentation assistance. The system collected processed prompt data after PHI redaction and transmitted it to OpenAI's GPT-4 model. The module handled API key management, request formatting, response processing, and error handling. Integration included rate limiting, retry mechanisms, and fallback procedures for service interruptions.
+**(iii) OpenAI Integration Module**  
+This module enables secure communication with OpenAI’s API for clinical documentation assistance. It handles API key management, request formatting, response processing, and error handling, with rate limiting, retries, and fallback procedures.
 
-**(iv) RAG Knowledge Retrieval Module**
-The Retrieval-Augmented Generation module was designed to enhance AI responses with evidence-based clinical knowledge. The system collected clinical queries and retrieved relevant information from curated medical knowledge bases including treatment guidelines, drug databases (RxNorm), diagnostic codes (ICD-10), and procedure codes (CPT). The module utilized vector similarity search with ChromaDB to identify and rank relevant clinical information.
+**(iv) RAG Knowledge Retrieval Module**  
+The Retrieval-Augmented Generation module enhances AI responses with evidence-based clinical knowledge. It retrieves information from medical knowledge bases (treatment guidelines, drug databases, diagnostic and procedure codes) using vector similarity search to rank relevant clinical information.
 
-**(v) Policy Management Module**
-This administrative module was developed to enable organizations to configure PHI detection policies and compliance settings. The system collected policy parameters including detection thresholds, redaction rules, bypass permissions, and audit requirements. The module supported multiple policy templates for different departments and user roles, with version control and change tracking capabilities.
+**(v) Policy Management Module**  
+This administrative module allows organisations to configure PHI detection policies and compliance settings (detection thresholds, redaction rules, bypass permissions, audit requirements). It supports policy templates per department and role, with version control.
 
-**(vi) Audit and Compliance Module**
-This module was implemented to maintain comprehensive audit trails for regulatory compliance and security monitoring. The system collected activity logs including user actions, PHI detection events, policy violations, and system access attempts. The module generated compliance reports for Kenya Data Protection Act 2019 requirements and provided searchable audit interfaces for administrators.
+**(vi) Audit and Compliance Module**  
+This module maintains audit trails for regulatory compliance and security monitoring. It logs user actions, PHI detection events, policy violations, and system access, and generates compliance reports for Kenya Data Protection Act 2019 and searchable audit interfaces for administrators.
 
-**(vii) User Interface Module**
-The frontend module was developed to provide an intuitive web interface for clinicians and administrators. The system collected user interactions through form inputs, button clicks, and navigation events. The interface implemented real-time PHI highlighting, safe rewrite suggestions, and contextual clinical information display alongside AI responses.
+**(vii) User Interface Module**  
+The frontend provides a web interface for clinicians and administrators. It collects user interactions (forms, navigation) and implements real-time PHI highlighting, safe rewrite suggestions, and display of AI responses with contextual clinical information.
 
 ### 4.2.2 Non-Functional Requirements
 
-The following non-functional requirements were addressed in the ClinGuard system implementation:
+Non-functional requirements define how the system should perform rather than what it does. The following were addressed, listed with roman numerals:
 
-**(i) System Security**
-System security was achieved through multiple layers of protection including encrypted data transmission using HTTPS/TLS 1.3, secure password storage using bcrypt hashing, and implementation of Cross-Site Request Forgery (CSRF) protection. The system employed input validation and sanitization to prevent injection attacks, implemented rate limiting to prevent brute force attacks, and utilized secure session management with configurable timeout periods. Regular security updates and vulnerability scanning were integrated into the development lifecycle.
+**(i) System Security**  
+System security describes the protection of the system and data from unauthorised access and harm. It was achieved through encrypted data transmission (HTTPS/TLS 1.3), secure password storage (bcrypt hashing), CSRF protection, input validation and sanitisation, rate limiting, and secure session management. Security updates and vulnerability scanning are part of the development lifecycle.
 
-**(ii) Data Security**
-Data security was implemented through comprehensive encryption measures both in transit and at rest. All sensitive data including PHI, user credentials, and audit logs were encrypted using AES-256 encryption standards. The system implemented database-level encryption, file system encryption, and secure key management practices. Data retention policies were enforced with automatic deletion of expired data, and secure backup procedures were established with encrypted storage and access controls.
+**(ii) Data Security**  
+Data security was achieved through encryption in transit and at rest. Sensitive data (PHI, credentials, audit logs) is encrypted to AES-256 standards. Database and file-system encryption, secure key management, data retention policies, and encrypted backups are in place.
 
-**(iii) Performance Requirements**
-Performance optimization was achieved through implementation of efficient PHI detection algorithms with sub-200 millisecond processing latency for prompts up to 300 tokens. The system utilized caching mechanisms for frequently accessed data, implemented database query optimization, and employed asynchronous processing for non-critical operations. Load balancing capabilities were integrated to handle concurrent user requests, and performance monitoring tools were implemented to track response times and system resource utilization.
+**(iii) Performance, Privacy and Benchmarks**  
+Performance was addressed through efficient PHI detection with sub-200 ms latency for prompts up to 300 tokens; caching, query optimisation, and asynchronous processing; and load balancing with performance monitoring. Privacy is maintained by design (e.g. PHI redaction before external API calls). The detection model performance is evaluated against benchmarks (e.g. F1 targets for PHI categories).
 
-**(iv) Scalability Requirements**
-Scalability was addressed through modular architecture design supporting horizontal scaling of web servers and database servers. The system implemented containerized deployment using Docker, utilized database connection pooling, and employed stateless application design for easy scaling. Auto-scaling capabilities were configured for cloud deployment, and performance testing was conducted to validate system behavior under increased load conditions.
+**(iv) Scalability**  
+Modular design for horizontal scaling of web and database servers; containerised deployment (Docker), connection pooling, stateless design; auto-scaling and performance testing.
 
-**(v) Usability Requirements**
-Usability was achieved through intuitive user interface design following healthcare industry best practices. The system implemented responsive web design compatible with desktop and tablet devices, provided clear visual indicators for PHI detection results, and offered contextual help and guidance features. User experience testing was conducted with healthcare professionals to ensure workflow compatibility and minimize learning curves.
+**(v) Usability**  
+Intuitive interface following healthcare best practices; responsive design for desktop and tablet; clear PHI indicators and contextual help; user experience testing with healthcare professionals.
 
-**(vi) Reliability Requirements**
-System reliability was implemented through redundant server configurations, automated failover mechanisms, and comprehensive error handling procedures. The system achieved 99.9% uptime availability through load balancing, health monitoring, and rapid disaster recovery procedures. Regular system backups and recovery testing were conducted to ensure data integrity and service continuity.
+**(vi) Reliability**  
+Redundant configurations, failover, error handling; target 99.9% uptime; backups and recovery testing.
 
-**(vii) Compliance Requirements**
-Regulatory compliance was achieved through implementation of Kenya Data Protection Act 2019 requirements and HIPAA standards. The system provided comprehensive audit logging, data subject rights management, and breach notification procedures. Privacy by design principles were incorporated throughout system development, and regular compliance audits were conducted to ensure adherence to regulatory requirements.
+**(vii) Compliance**  
+Kenya Data Protection Act 2019 and HIPAA-aligned controls; audit logging, data subject rights, breach notification; privacy by design and compliance audits.
 
-## 4.3 System Analysis Diagrams (OOAD Approach)
+**Brief comparison:** Functional requirements define *what* the system does (features and behaviour); non-functional requirements define *how well* the system performs (security, performance, scalability, usability, reliability, compliance).
 
-The system analysis phase employed Object-Oriented Analysis and Design (OOAD) methodology to model user interactions, system behaviors, and component relationships. The following OOAD diagrams were developed to capture the static and dynamic aspects of the ClinGuard system:
+---
+
+## 4.3 System Analysis Diagrams
+
+The following system analysis diagrams were produced using the OOAD approach defined in Chapter 3.
 
 ### 4.3.1 Use Case Diagram
 
-The use case diagram was developed to illustrate the functional requirements and actor interactions within the ClinGuard system. The diagram identified primary actors including Clinician, Administrator, and Security Officer, along with their respective interactions with the system. Key use cases identified included:
+The use case diagram shows functional requirements and actor interactions within the ClinGuard system. Primary actors are Clinician, Security Admin, and System Admin; external service actors are Detection System and OpenAI API. Administrative staff (Chapter 3) use the same web interface as clinicians under the Clinician actor with role-based policies. Use cases include Login, Register, Compose Clinical Notes, Review PHI Detection, Apply Redaction, Submit Prompt to AI, View RAG Context, Emergency Bypass, Configure Policies, View Audit Logs, and Manage Users. Include and extend relationships show dependencies (e.g. Compose includes Review PHI and Redact; Emergency Bypass extends Submit Prompt to AI).
 
-**Primary Actors and Their Roles:**
-- **Clinician Actor**: Hospital doctors, nurses, and clinical staff using AI for documentation
-- **Administrator Actor**: IT staff managing system configuration and user accounts  
-- **Security Officer Actor**: Compliance personnel monitoring PHI protection and audit trails
+*[Diagram to be inserted here.]*
 
-**Major Use Cases Identified:**
-1. **Authenticate User** - Login/logout functionality with role-based access
-2. **Submit AI Prompt** - Clinician enters clinical documentation prompts
-3. **Detect PHI in Prompt** - Real-time analysis for Protected Health Information
-4. **Redact PHI Content** - Automatic replacement of detected PHI with placeholders
-5. **Generate AI Response** - OpenAI API integration for clinical assistance
-6. **Retrieve Clinical Knowledge** - RAG system for evidence-based information
-7. **Manage Detection Policies** - Administrative configuration of PHI rules
-8. **Generate Compliance Reports** - Audit trail and regulatory reporting
-9. **Emergency Bypass** - Override functionality for urgent clinical scenarios
+**Figure 4.1** Use Case Diagram.
 
-The use case diagram established relationships between actors and use cases using include and extend relationships to show system dependencies and optional functionality. This analysis provided the foundation for understanding system boundaries and user interactions.
+---
 
-### 4.3.2 Sequence Diagram
+### 4.3.2 Activity Diagram
 
-The sequence diagram was created to model the dynamic behavior of the core ClinGuard use case: clinician prompt submission with PHI detection, RAG-enhanced knowledge retrieval, and OpenAI API integration. The diagram illustrated message exchanges between system objects over time.
+The activity diagram models the main flow from user prompt entry through PHI detection, redaction, RAG retrieval, OpenAI call, and audit. It uses UML activity notation: initial and final states, activity states, a decision (PHI detected?), and swimlanes for User/Frontend and Laravel API.
 
-**Participating Objects Identified:**
-1. **Clinician**: Healthcare professional user
-2. **React Frontend**: Web application UI component  
-3. **Authentication Controller**: Laravel backend authentication
-4. **PHI Detection Service**: Python-based detection engine
-5. **Policy Manager**: Rule evaluation and enforcement
-6. **RAG Service**: Clinical knowledge retrieval
-7. **OpenAI Gateway**: External AI service integration
-8. **Audit Logger**: Compliance and security logging
-9. **Database**: Data persistence layer
+*[Diagram to be inserted here.]*
 
-**Key Sequences Modeled:**
-1. **Authentication Flow**: User login → credential validation → session establishment
-2. **Prompt Submission Flow**: Text input → validation → PHI detection pipeline
-3. **PHI Detection Flow**: Regex analysis → entropy analysis → ML classification → result aggregation
-4. **Redaction Flow**: PHI identification → placeholder replacement → safe rewrite suggestions
-5. **AI Integration Flow**: Redacted prompt → OpenAI API call → response processing
-6. **Knowledge Enhancement Flow**: Clinical query → vector search → knowledge retrieval → response augmentation
-7. **Audit Flow**: Activity logging → compliance reporting → security monitoring
+**Figure 4.2** Activity Diagram.
 
-The sequence diagram highlighted the temporal relationships and synchronous/asynchronous communication patterns between system objects, providing detailed insight into system behavior and message passing.
+---
 
-### 4.3.3 System Sequence Diagram
+### 4.3.3 Sequence Diagram
 
-The system sequence diagram was developed to show high-level system interactions for major use cases, focusing on system boundary events and external actor interactions without detailed internal object communications. The diagram provided a clear view of system responsibilities and input/output relationships.
+The sequence diagram shows the full chat flow: validation, authentication, PHI detection, redaction, RAG query, OpenAI completion, persistence (conversations and audit events), and response. Participants include Clinician, React Frontend, Laravel API, Python Detection Engine, RAG/Vector DB, OpenAI API, and Database. Alternative flows cover unavailability of detection, RAG, or OpenAI. An optional standalone PHI detection flow is included.
 
-**Major System Events Modeled:**
-1. **Submit Prompt Event**: External input → system processing → output response
-2. **Detect PHI Event**: Text analysis → classification results → confidence scores
-3. **Redact Content Event**: PHI identification → replacement → sanitized output  
-4. **Generate Response Event**: Processed prompt → AI service → enhanced response
-5. **Log Activity Event**: System action → audit record → compliance data
+*[Diagram to be inserted here.]*
 
-The system sequence diagram established clear contracts between external actors and the system, defining input parameters, processing operations, and expected outputs for each major system event.
+**Figure 4.3** Sequence Diagram.
 
-## 4.4 System Design Diagrams (OOAD Approach)
+---
 
-The system design phase employed Object-Oriented Design principles to translate the analysis models into detailed technical specifications. The following OOAD design diagrams were developed to guide the implementation of the ClinGuard system:
+### 4.3.4 Entity-Relationship Diagram (ERD)
+
+The ERD represents the logical data model. Entities are USER, ORGANIZATION, ROLE, POLICY, ALLOWLIST, DETECTION_RULE, AUDIT_EVENT, and CONVERSATION. Primary and foreign keys use entity-specific names. Relationships use verb phrases (e.g. employs, defines, creates) and one-to-many cardinality. The diagram aligns with the logical schema.
+
+*[Diagram to be inserted here.]*
+
+**Figure 4.4** Entity-Relationship Diagram.
+
+---
+
+### 4.3.5 Logical Database Schema
+
+The logical database schema shows how the real database will be formed by logically setting out how the tables and relationships will be formed. It defines all tables with data types, sizes/precision, nullability, keys, and defaults, and is suitable for MySQL. Keys are identified by entity-specific names (e.g. user_id, organization_id) for clarity.
+
+| Table | Purpose | Primary key | Foreign keys |
+|-------|---------|-------------|--------------|
+| users | System users (clinicians, admins) | user_id | role_id, organization_id |
+| organizations | Tenants / healthcare organisations | organization_id | — |
+| roles | Role definitions | role_id | — |
+| policies | PHI policy per organisation | policy_id | organization_id |
+| allowlists | Allowed external services | allowlist_id | organization_id |
+| detection_rules | PHI detection rules per org | detection_rule_id | organization_id |
+| audit_events | Audit log (chat, login, etc.) | audit_event_id | user_id, organization_id |
+| conversations | Stored chat (redacted prompt, summary) | conversation_id | user_id |
+
+*[Diagram or further table detail to be inserted here if required.]*
+
+**Figure 4.5** Logical Database Schema.
+
+---
+
+### 4.3.6 System Sequence Diagram
+
+The system sequence diagram shows high-level interactions between the User and the ClinGuard system as a black box: Login → token; Submit prompt → PHI spans; Confirm/redact; Send for AI → AI response and RAG context.
+
+*[Diagram to be inserted here.]*
+
+**Figure 4.6** System Sequence Diagram.
+
+---
+
+## 4.4 System Design Diagrams
+
+The ERD and logical schema are presented in Sections 4.3.4 and 4.3.5. The design commentary below refers to those sections.
 
 ### 4.4.1 Entity-Relationship Diagram
 
-The ER diagram was designed using Star UML to represent the logical data model for the ClinGuard system. The diagram identified core entities and their relationships, establishing the foundation for database implementation.
-
-**Core Entities Identified:**
-- **Users**: System users with authentication and authorization data
-- **Roles**: User roles defining permissions and access levels
-- **Organizations**: Healthcare institutions using the system
-- **Policies**: PHI detection and redaction rules
-- **Prompts**: User-submitted AI prompts with processing status
-- **PHIDetections**: Detected PHI instances with classification details
-- **AuditLogs**: System activity logs for compliance monitoring
-- **KnowledgeBase**: Clinical knowledge for RAG functionality
-
-**Key Relationships Defined:**
-- **Users-Organizations**: Many-to-one relationship (multiple users per organization)
-- **Users-Roles**: Many-to-many relationship (users can have multiple roles)
-- **Organizations-Policies**: One-to-many relationship (organization has multiple policies)
-- **Prompts-PHIDetections**: One-to-many relationship (prompt can have multiple PHI detections)
-- **Users-AuditLogs**: One-to-many relationship (user generates multiple audit events)
-
-The ER diagram established cardinality constraints, participation constraints, and data integrity rules for the database implementation.
+The ER diagram is presented in **Section 4.3.4** above; no duplicate figure is shown here. From a design perspective, the model was normalised to third normal form; foreign key placement (e.g. user_id, organization_id) supports multi-tenancy and audit scoping. Relationships and cardinalities align with the logical schema and the implemented database.
 
 ### 4.4.2 Logical Database Schema
 
-The logical database schema was designed to translate the ER diagram into implementable database structures using MySQL. The schema defined normalized table structures following Third Normal Form (3NF) to eliminate data redundancy and ensure data integrity.
+The full logical schema is summarised in **Section 4.3.5** above. The logical database schema shows how the real database will be formed by logically setting out how the tables and relationships will be formed. Design choices include data types (BIGINT UNSIGNED, VARCHAR, TIMESTAMP, DECIMAL, JSON, BLOB, TEXT), size/precision, nullability, and keys. The schema is normalised and matches the implemented MySQL database.
 
-**Primary Tables Defined:**
-
-**Users Table**:
-- UserID (PK, INT, AUTO_INCREMENT)
-- FirstName (VARCHAR, NOT NULL)
-- LastName (VARCHAR, NOT NULL)  
-- Email (VARCHAR, UNIQUE, NOT NULL)
-- PasswordHash (VARCHAR, NOT NULL)
-- OrganizationID (FK, INT)
-- RoleID (FK, INT)
-- CreatedAt (TIMESTAMP)
-- UpdatedAt (TIMESTAMP)
-
-**Organizations Table**:
-- OrganizationID (PK, INT, AUTO_INCREMENT)
-- OrganizationName (VARCHAR, NOT NULL)
-- ContactEmail (VARCHAR, NOT NULL)
-- PhoneNumber (VARCHAR)
-- Address (TEXT)
-- CreatedAt (TIMESTAMP)
-
-**Roles Table**:
-- RoleID (PK, INT, AUTO_INCREMENT)
-- RoleName (VARCHAR, UNIQUE, NOT NULL)
-- Description (TEXT)
-- Permissions (JSON)
-- CreatedAt (TIMESTAMP)
-
-**Policies Table**:
-- PolicyID (PK, INT, AUTO_INCREMENT)
-- OrganizationID (FK, INT)
-- PolicyName (VARCHAR, NOT NULL)
-- DetectionThresholds (JSON)
-- RedactionRules (JSON)
-- IsActive (BOOLEAN)
-- CreatedAt (TIMESTAMP)
-
-**Prompts Table**:
-- PromptID (PK, INT, AUTO_INCREMENT)
-- UserID (FK, INT)
-- OriginalText (TEXT, NOT NULL)
-- ProcessedText (TEXT)
-- RedactionCount (INT)
-- Timestamp (TIMESTAMP)
-- Status (ENUM: 'submitted', 'processing', 'completed', 'error')
-
-**PHIDetections Table**:
-- DetectionID (PK, INT, AUTO_INCREMENT)
-- PromptID (FK, INT)
-- PHIType (VARCHAR, NOT NULL)
-- ConfidenceScore (DECIMAL)
-- StartPosition (INT)
-- EndPosition (INT)
-- RedactionMethod (VARCHAR)
-- Timestamp (TIMESTAMP)
-
-**AuditLogs Table**:
-- LogID (PK, INT, AUTO_INCREMENT)
-- UserID (FK, INT)
-- Action (VARCHAR, NOT NULL)
-- IPAddress (VARCHAR)
-- UserAgent (TEXT)
-- Timestamp (TIMESTAMP)
-- Details (JSON)
-
-**KnowledgeBase Table**:
-- KnowledgeID (PK, INT, AUTO_INCREMENT)
-- Title (VARCHAR, NOT NULL)
-- Content (TEXT, NOT NULL)
-- Category (VARCHAR)
-- VectorEmbedding (JSON)
-- LastUpdated (TIMESTAMP)
-
-The schema included proper indexing strategies for frequently queried columns and foreign key constraints to maintain referential integrity.
-
-### 4.4.3 Class Diagram
-
-The class diagram was designed using Star UML to represent the static structure of the ClinGuard system's object-oriented components. The diagram illustrated classes, attributes, methods, and relationships following object-oriented design principles.
-
-**Frontend Classes (React/TypeScript):**
-
-**UserInterface Component**:
-- Attributes: currentUser: User, isAuthenticated: boolean
-- Methods: login(), logout(), submitPrompt(), viewHistory()
-
-**PHIDetection Component**:
-- Attributes: detectionResults: PHIDetection[], isProcessing: boolean
-- Methods: detectPHI(text: string), highlightPHI(), redactContent()
-
-**PromptEditor Component**:
-- Attributes: content: string, suggestions: RewriteSuggestion[]
-- Methods: handleTextChange(), applySuggestion(), submitPrompt()
-
-**Backend Classes (Laravel/PHP):**
-
-**UserController**:
-- Attributes: validationRules: array
-- Methods: authenticate(), register(), updateProfile(), logout()
-
-**PHIDetectionService**:
-- Attributes: regexAnalyzer, entropyAnalyzer, mlClassifier
-- Methods: detectPHI(text: string), classifyPHI(), aggregateResults()
-
-**PolicyManager**:
-- Attributes: activePolicies: Policy[], ruleEngine
-- Methods: evaluatePolicy(), updateRules(), getThresholds()
-
-**OpenAIService**:
-- Attributes: apiKey: string, client: OpenAIClient
-- Methods: generateResponse(), processPrompt(), handleError()
-
-**AuditService**:
-- Attributes: logger: Logger, encryptionService
-- Methods: logActivity(), generateReport(), exportData()
-
-**Python Detection Engine Classes:**
-
-**PHIDetector**:
-- Attributes: patterns: Pattern[], model: MLModel
-- Methods: analyze(text: string), detectPatterns(), classifyText()
-
-**RegexAnalyzer**:
-- Attributes: patterns: RegexPattern[]
-- Methods: matchPatterns(), extractPHI(), calculateConfidence()
-
-**EntropyAnalyzer**:
-- Attributes: threshold: float, windowSize: int
-- Methods: calculateEntropy(), detectHighEntropy(), flagSuspicious()
-
-**MLClassifier**:
-- Attributes: model: TransformerModel, tokenizer: Tokenizer
-- Methods: predict(), preprocessText(), postprocessResults()
-
-**Class Relationships Defined:**
-- **Inheritance**: BaseController → UserController, PolicyController
-- **Composition**: PHIDetectionService → RegexAnalyzer, EntropyAnalyzer, MLClassifier
-- **Association**: UserController → PHIDetectionService (uses)
-- **Aggregation**: PolicyManager → Policy (contains)
-
-The class diagram implemented design patterns including Singleton for configuration management, Strategy for different PHI detection methods, and Observer for audit logging.
-
-### 4.4.4 Component Diagram
-
-The component diagram was created to show the high-level organization of system components and their dependencies. The diagram identified major components and their interfaces.
-
-**Major Components Identified:**
-
-**Authentication Component**:
-- Interface: IAuthService
-- Operations: login(), logout(), validateToken()
-- Dependencies: Database Component, Encryption Component
-
-**PHI Detection Component**:
-- Interface: IPHIDetectionService  
-- Operations: detectPHI(), redactContent(), analyzeResults()
-- Dependencies: Policy Component, ML Component
-
-**AI Integration Component**:
-- Interface: IAIService
-- Operations: generateResponse(), processPrompt(), validateResponse()
-- Dependencies: OpenAI API, RAG Component
-
-**Policy Management Component**:
-- Interface: IPolicyService
-- Operations: getPolicy(), updatePolicy(), validateRules()
-- Dependencies: Database Component
-
-**Audit Component**:
-- Interface: IAuditService
-- Operations: logEvent(), generateReport(), exportData()
-- Dependencies: Database Component, Encryption Component
-
-The component diagram facilitated understanding of system modularity and integration points, supporting maintainability and scalability objectives.
-
-### 4.4.5 Deployment Diagram
-
-The deployment diagram was designed to illustrate the physical architecture of the ClinGuard system in production environment. The diagram showed server nodes, network configurations, and communication protocols.
-
-**Deployment Architecture:**
-
-**Web Server Layer**:
-- **Load Balancer**: Nginx for HTTP/HTTPS traffic distribution
-- **Web Servers**: Multiple Apache/Nginx servers with PHP-FPM
-- **SSL/TLS**: HTTPS encryption with certificate management
-
-**Application Server Layer**:
-- **Laravel Application Servers**: PHP application servers
-- **Python Detection Servers**: Flask/FastAPI servers for PHI detection
-- **Job Queue Servers**: Redis/Beanstalkd for background processing
-
-**Database Layer**:
-- **Primary Database**: MySQL 8.x master server
-- **Replica Databases**: Multiple read replicas for scaling
-- **Cache Layer**: Redis for session management and caching
-
-**External Services**:
-- **OpenAI API**: External AI service integration
-- **Vector Database**: ChromaDB for RAG functionality
-- **Monitoring**: Prometheus/Grafana for system monitoring
-
-**Network Configuration**:
-- **Internal Network**: Private network for component communication
-- **DMZ**: Demilitarized zone for web-facing components
-- **VPN**: Secure access for administrative functions
-
-The deployment diagram addressed scalability requirements with load balancers, redundant configurations, and auto-scaling capabilities for cloud deployment.
+---
 
 ## 4.5 Design Tools and Implementation Strategy
 
-The OOAD design process utilized industry-standard tools to ensure comprehensive documentation and implementation guidance. Star UML was employed for class diagrams and database schema design, providing detailed object-oriented modeling capabilities. Visual Paradigm was utilized for use case diagrams and sequence diagrams, offering comprehensive UML modeling features.
+For consistency, the following tools were used: **Visual Paradigm** for use case, sequence, and other analysis diagrams, and **Mermaid** for diagram specification and rendering. Drawings were captured as screenshots for inclusion in the document to avoid watermarks.
 
-The implementation strategy followed object-oriented principles with modular design, encapsulation, and clear separation of concerns. The design supported the Modified Waterfall development methodology by providing detailed specifications for each development phase. Component-based architecture facilitated parallel development and testing, while well-defined interfaces enabled integration between different technology stacks.
-
-The comprehensive OOAD analysis and design provided the foundation for successful system implementation, ensuring that the ClinGuard system met all functional and non-functional requirements while maintaining scalability, security, and regulatory compliance objectives.
+The implementation strategy followed object-oriented principles (modular design, encapsulation, separation of concerns) and supported the Modified Waterfall methodology described in Chapter 3. The OOAD analysis and design provide the foundation for implementation, ensuring the system meets functional and non-functional requirements while maintaining scalability, security, and regulatory compliance.

@@ -1,0 +1,16 @@
+%% ClinGuard System Sequence Diagram (OOAD – Analysis)
+%% Single actor (User) and system as black box. High-level system events and responses.
+
+sequenceDiagram
+  actor User
+  participant ClinGuard as ClinGuard System
+
+  User->>ClinGuard: Login(email, password)
+  ClinGuard-->>User: token
+
+  User->>ClinGuard: Submit prompt (with PHI)
+  ClinGuard-->>User: PHI spans (for review)
+
+  User->>ClinGuard: Confirm / redact
+  User->>ClinGuard: Send (redacted) for AI
+  ClinGuard-->>User: AI response + RAG context

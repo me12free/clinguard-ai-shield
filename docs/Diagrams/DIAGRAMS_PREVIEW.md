@@ -8,82 +8,127 @@ Open this file and use **Markdown: Open Preview** (Ctrl+Shift+V) to render. Use 
 
 ## 1. Use Case Diagram (OOAD – Analysis)
 
-**UML notations:** Actors (top, parallelogram) | Use cases = ovals inside **system boundary** (rectangle) | **Association** = line actor–use case | **<<include>>** / **<<extend>>** = dashed arrows. Layout: **flowchart TB** to reduce line congestion.
+**Academic UML:** Stick-figure **actors**, oval **use cases**, **system boundary** rectangle, **include** / **extend** with dashed arrows. Use **PlantUML** for the correct look.
 
-```mermaid
-flowchart TB
-  subgraph Actors[" "]
-    direction LR
-    Clinician[/Clinician/]
-    SecurityAdmin[/Security Admin/]
-    SystemAdmin[/System Admin/]
-    DetectionSystem[/Detection System/]
-    OpenAI[/OpenAI API/]
-  end
+**To generate the diagram:** Open **`Use Case Diagram.puml`** (or `use-case.puml`) in this folder and render with PlantUML (CLI: `plantuml "Use Case Diagram.puml"`, or VS Code PlantUML extension, or paste at [plantuml.com/plantuml/uml](https://www.plantuml.com/plantuml/uml)). Export to PNG/SVG for submission.
 
-  subgraph ClinGuard["ClinGuard System"]
-    direction TB
-    Login(("Login"))
-    Register(("Register"))
-    Compose(("Compose Clinical Notes"))
-    ReviewPHI(("Review PHI Detection"))
-    Redact(("Apply Redaction"))
-    SubmitAI(("Submit Prompt to AI"))
-    ViewRAG(("View RAG Context"))
-    Emergency(("Emergency Bypass"))
-    ConfigurePolicies(("Configure Policies"))
-    ViewAudit(("View Audit Logs"))
-    ManageUsers(("Manage Users"))
-  end
+```plantuml
+@startuml ClinGuard Use Case Diagram
+left to right direction
+skinparam packageStyle rectangle
 
-  Clinician --- Login
-  Clinician --- Register
-  Clinician --- Compose
-  Clinician --- SubmitAI
+actor "Clinician" as Clinician
+actor "Security Admin" as SecurityAdmin
+actor "System Admin" as SystemAdmin
+actor "Detection System" as DetectionSystem
+actor "OpenAI API" as OpenAI
 
-  SecurityAdmin --- Login
-  SecurityAdmin --- ConfigurePolicies
-  SecurityAdmin --- ViewAudit
+rectangle "ClinGuard System" {
+  (Login) as UC_Login
+  (Register) as UC_Register
+  (Compose Clinical Notes) as UC_Compose
+  (Review PHI Detection) as UC_ReviewPHI
+  (Apply Redaction) as UC_Redact
+  (Submit Prompt to AI) as UC_SubmitAI
+  (View RAG Context) as UC_ViewRAG
+  (Emergency Bypass) as UC_Emergency
+  (Configure Policies) as UC_ConfigurePolicies
+  (View Audit Logs) as UC_ViewAudit
+  (Manage Users) as UC_ManageUsers
+}
 
-  SystemAdmin --- Login
-  SystemAdmin --- ManageUsers
-  SystemAdmin --- ViewAudit
-
-  DetectionSystem --- ReviewPHI
-  DetectionSystem --- SubmitAI
-
-  OpenAI --- SubmitAI
-
-  Compose -.->|"<<include>>"| ReviewPHI
-  Compose -.->|"<<include>>"| Redact
-  SubmitAI -.->|"<<include>>"| ViewRAG
-
-  Emergency -.->|"<<extend>>"| SubmitAI
+Clinician --> UC_Login
+Clinician --> UC_Register
+Clinician --> UC_Compose
+Clinician --> UC_SubmitAI
+SecurityAdmin --> UC_Login
+SecurityAdmin --> UC_ConfigurePolicies
+SecurityAdmin --> UC_ViewAudit
+SystemAdmin --> UC_Login
+SystemAdmin --> UC_ManageUsers
+SystemAdmin --> UC_ViewAudit
+DetectionSystem --> UC_ReviewPHI
+DetectionSystem --> UC_SubmitAI
+OpenAI --> UC_SubmitAI
+UC_Compose ..> UC_ReviewPHI : <<include>>
+UC_Compose ..> UC_Redact : <<include>>
+UC_SubmitAI ..> UC_ViewRAG : <<include>>
+UC_Emergency ..> UC_SubmitAI : <<extend>>
+@enduml
 ```
+
+*Source files: `Use Case Diagram.puml`, `use-case.puml`*
 
 ---
 
 ## 2. Sequence Diagram (OOAD – Analysis)
+
+**Full flow:** Validation, auth, PHI detection, redaction, RAG, OpenAI, conversation and audit persistence, response. Includes alt blocks for detection/RAG/OpenAI errors and optional standalone detect flow.
 
 ```mermaid
 sequenceDiagram
   participant C as Clinician
   participant F as React Frontend
   participant L as Laravel API
-  participant D as Python Detection
-  participant R as RAG/Vector DB
-  participant O as OpenAI
-  C->>F: Enter prompt (with PHI)
-  F->>L: POST /api/chat + Bearer
-  L->>D: POST /detect text
+  participant D as Python Detection Engine
+  participant R as RAG / Vector DB
+  participant O as OpenAI API
+  participant DB as Database
+
+  Note over C, DB: Full flow. Clinician submits prompt. System detects PHI, redacts, enriches via RAG, calls OpenAI, persists and audits.
+
+  C->>F: Enter prompt (may contain PHI)
+  F->>L: POST /api/chat with Bearer token and body prompt
+
+  L->>L: Validate ChatRequest (prompt required)
+  L->>L: Auth.user()
+
+  L->>D: POST /detect with text prompt
+
+  alt Detection engine available
+    D-->>L: 200 with spans array
+  else Detection engine unavailable / error
+    D-->>L: error or timeout
+    L->>L: spans = []
+  end
+
+  L->>L: redact(prompt, spans) to get redactedPrompt
+
+  L->>R: POST /rag with query and top_k 5
+
+  alt RAG available
+    R-->>L: 200 with results array
+  else RAG unavailable
+    R-->>L: error or timeout
+    L->>L: ragResults = []
+  end
+
+  L->>O: Chat completion with redactedPrompt and RAG context
+
+  alt OpenAI success
+    O-->>L: response text
+  else OpenAI error
+    O-->>L: error
+    L->>L: response = error message / fallback
+  end
+
+  L->>DB: INSERT conversations user_id prompt_redacted response_summary
+  DB-->>L: ok
+
+  L->>DB: INSERT audit_events user_id organization_id event_type chat
+  DB-->>L: ok
+
+  L-->>F: 200 response spans rag_context redacted_prompt
+  F->>F: Store spans for PHI highlighting
+  F-->>C: Display AI response, PHI highlights, RAG context
+
+  Note over C, DB: Optional standalone PHI detection without chat
+  C->>F: Request PHI check only
+  F->>L: POST /api/detect with text
+  L->>D: POST /detect with text
   D-->>L: spans
-  L->>R: RAG query (redacted)
-  R-->>L: context chunks
-  L->>O: Chat completion (redacted + context)
-  O-->>L: response
-  L->>L: Save conversation, audit
-  L-->>F: response, spans, rag_context
-  F-->>C: Show response + PHI highlights + RAG
+  L-->>F: spans
+  F-->>C: Show PHI spans / redaction preview
 ```
 
 ---
@@ -107,7 +152,7 @@ sequenceDiagram
 
 ## 4. ERD (Design)
 
-**Standard elements:** *Entities* (rectangles) with *attributes*; *primary key* (PK) and *foreign key* (FK) marked; *relationships* as verb phrases; *cardinality*: one-to-many (||--o{), many-to-one (}o--||). Represents the logical structure of the ClinGuard database.
+**Standard elements:** *Entities* (rectangles) with *attributes*; PK uses exact entity name (user_id, organization_id, role_id, policy_id, allowlist_id, detection_rule_id, audit_event_id, conversation_id) to distinguish; DB column is `id`. FKs = role_id, organization_id, user_id. Aligned with [LOGICAL_SCHEMA.md](LOGICAL_SCHEMA.md).
 
 ```mermaid
 erDiagram
@@ -126,7 +171,7 @@ erDiagram
     int organization_id FK
     string name
     string email UK
-    string password_hash
+    string password
     timestamp email_verified_at
     timestamp created_at
     timestamp updated_at
@@ -172,7 +217,7 @@ erDiagram
   }
 
   DETECTION_RULE {
-    int rule_id PK
+    int detection_rule_id PK
     int organization_id FK
     string rule_type
     string rule_pattern
@@ -182,7 +227,7 @@ erDiagram
   }
 
   AUDIT_EVENT {
-    int event_id PK
+    int audit_event_id PK
     int user_id FK
     int organization_id FK
     string event_type
@@ -205,6 +250,8 @@ erDiagram
 ---
 
 ## 5. Class Diagram (Design)
+
+*Attributes match Laravel/Eloquent and database column names (id, role_id, organization_id, user_id, etc.).*
 
 ```mermaid
 classDiagram

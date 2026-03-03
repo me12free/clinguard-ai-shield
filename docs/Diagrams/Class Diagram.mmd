@@ -1,0 +1,106 @@
+%% ClinGuard Class Diagram – aligned with Class Design Diagram
+%% Frontend, backend, base, and Python components with attributes, methods, and relationships.
+
+classDiagram
+  class PHIDetection {
+    <<frontend>>
+    -detectionResults array
+    -isProcessing boolean
+    +detectPHI(text string)
+    +highlightPHI()
+    +redactContent()
+  }
+  class PromptEditor {
+    <<frontend>>
+    -content string
+    -suggestions array
+    +handleTextChange()
+    +applySuggestion(index)
+    +submitPrompt()
+  }
+  class UserInterface {
+    <<frontend>>
+    -currentUser User
+    -isAuthenticated boolean
+    +login()
+    +logout()
+    +submitPrompt()
+    +viewHistory()
+  }
+  class BaseController {
+    <<base>>
+  }
+  class UserController {
+    <<backend>>
+    -validationRules array
+    +authenticate(credentials)
+    +register(userData)
+    +updateProfile(data)
+    +logout()
+  }
+  class PolicyManager {
+    <<backend>>
+    -activePolicies Policy[]
+    -ruleEngine
+    +evaluatePolicy(context)
+    +updateRules(rules)
+    +getThresholds()
+  }
+  class OpenAIService {
+    <<backend>>
+    -apiKey string
+    -client OpenAIClient
+    +generateResponse(prompt)
+    +processPrompt(text)
+    +handleError(error)
+  }
+  class PHIDetectionService {
+    <<backend>>
+    -regexAnalyzer
+    -entropyAnalyzer
+    -mlClassifier
+    +detectPHI(text string)
+    +classifyPHI(data)
+    +aggregateResults()
+  }
+  class Policy {
+  }
+  class RegexAnalyzer {
+    <<python>>
+    -patterns RegexPattern[]
+    +matchPatterns(text)
+    +extractPHI(matches)
+    +calculateConfidence()
+  }
+  class EntropyAnalyzer {
+  }
+  class MLClassifier {
+    <<python>>
+    -model TransformerModel
+    -tokenizer Tokenizer
+    +predict(text)
+    +preprocessText(input)
+    +postprocessResults(output)
+  }
+  class PHIDetector {
+    <<python>>
+    -patterns Pattern[]
+    -model MLModel
+    +analyze(text string)
+    +detectPatterns()
+    +classifyText()
+  }
+
+  UserController --|> BaseController
+  PolicyManager --|> BaseController
+  PolicyManager o-- Policy
+  PHIDetection --> PHIDetectionService
+  PromptEditor --> PHIDetectionService
+  PromptEditor --> OpenAIService
+  UserInterface --> PHIDetection
+  UserInterface --> PromptEditor
+  PHIDetectionService --> RegexAnalyzer
+  PHIDetectionService --> EntropyAnalyzer
+  PHIDetectionService --> MLClassifier
+  PHIDetectionService --> PHIDetector
+  UserController --> PolicyManager

@@ -1,6 +1,5 @@
-%% ClinGuard Entity Relationship Diagram (Design)
-%% Standard ERD: entities = rectangles; attributes with PK/FK; relationships = verb phrases; cardinality = crow's foot.
-%% Notation: ||--o{ one-to-many, }o--|| many-to-one. PK = primary key, FK = foreign key.
+%% ClinGuard Entity Relationship Diagram (OOAD – Design)
+%% PK uses exact entity name (user_id, organization_id, …) to distinguish; DB column is id. FKs = role_id, organization_id, user_id.
 
 erDiagram
   ORGANIZATION ||--o{ USER : "employs"
@@ -18,7 +17,7 @@ erDiagram
     int organization_id FK
     string name
     string email UK
-    string password_hash
+    string password
     timestamp email_verified_at
     timestamp created_at
     timestamp updated_at
@@ -64,7 +63,7 @@ erDiagram
   }
 
   DETECTION_RULE {
-    int rule_id PK
+    int detection_rule_id PK
     int organization_id FK
     string rule_type
     string rule_pattern
@@ -74,7 +73,7 @@ erDiagram
   }
 
   AUDIT_EVENT {
-    int event_id PK
+    int audit_event_id PK
     int user_id FK
     int organization_id FK
     string event_type

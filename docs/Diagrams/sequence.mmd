@@ -1,19 +1,67 @@
-%% ClinGuard Sequence – Prompt with PHI detection, RAG, OpenAI (OOAD - Analysis)
+%% ClinGuard Sequence Diagram (OOAD – Analysis)
+%% Full chat flow: validation, auth, PHI detection, redaction, RAG, OpenAI, persistence, audit, response.
+%% UML: participants, lifelines, synchronous messages (->>), replies (-->>), self-calls, alt for errors.
+
 sequenceDiagram
   participant C as Clinician
   participant F as React Frontend
   participant L as Laravel API
-  participant D as Python Detection
-  participant R as RAG/Vector DB
-  participant O as OpenAI
-  C->>F: Enter prompt (with PHI)
-  F->>L: POST /api/chat + Bearer
-  L->>D: POST /detect text
+  participant D as Python Detection Engine
+  participant R as RAG / Vector DB
+  participant O as OpenAI API
+  participant DB as Database
+
+  Note over C, DB: Full flow. Clinician submits prompt. System detects PHI, redacts, enriches via RAG, calls OpenAI, persists and audits.
+
+  C->>F: Enter prompt (may contain PHI)
+  F->>L: POST /api/chat with Bearer token and body prompt
+
+  L->>L: Validate ChatRequest (prompt required)
+  L->>L: Auth.user()
+
+  L->>D: POST /detect with text prompt
+
+  alt Detection engine available
+    D-->>L: 200 with spans array
+  else Detection engine unavailable / error
+    D-->>L: error or timeout
+    L->>L: spans = []
+  end
+
+  L->>L: redact(prompt, spans) to get redactedPrompt
+
+  L->>R: POST /rag with query and top_k 5
+
+  alt RAG available
+    R-->>L: 200 with results array
+  else RAG unavailable
+    R-->>L: error or timeout
+    L->>L: ragResults = []
+  end
+
+  L->>O: Chat completion with redactedPrompt and RAG context
+
+  alt OpenAI success
+    O-->>L: response text
+  else OpenAI error
+    O-->>L: error
+    L->>L: response = error message / fallback
+  end
+
+  L->>DB: INSERT conversations user_id prompt_redacted response_summary
+  DB-->>L: ok
+
+  L->>DB: INSERT audit_events user_id organization_id event_type chat
+  DB-->>L: ok
+
+  L-->>F: 200 response spans rag_context redacted_prompt
+  F->>F: Store spans for PHI highlighting
+  F-->>C: Display AI response, PHI highlights, RAG context
+
+  Note over C, DB: Optional standalone PHI detection without chat
+  C->>F: Request PHI check only
+  F->>L: POST /api/detect with text
+  L->>D: POST /detect with text
   D-->>L: spans
-  L->>R: RAG query (redacted)
-  R-->>L: context chunks
-  L->>O: Chat completion (redacted + context)
-  O-->>L: response
-  L->>L: Save conversation, audit
-  L-->>F: response, spans, rag_context
-  F-->>C: Show response + PHI highlights + RAG
+  L-->>F: spans
+  F-->>C: Show PHI spans / redaction preview

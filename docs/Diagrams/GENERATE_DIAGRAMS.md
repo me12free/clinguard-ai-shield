@@ -115,3 +115,21 @@ Paths work the same on Windows (PowerShell/CMD), macOS, and Linux. Use `-e png` 
 | ERD, Sequence, Activity, Class | [mermaid.live](https://mermaid.live) or `DIAGRAMS_PREVIEW.md` | Mermaid Live or extension export |
 
 All of these work on **Windows, macOS, and Linux**; the only variable is whether you use browser, editor, or CLI.
+
+---
+
+## 6. Chapter 4 Word document
+
+Chapter 4 (System Analysis and Design) includes all OOAD diagrams and is available as:
+
+- **Markdown:** `docs/Chapter 4 System Analysis and Design.md`
+- **Word:** `docs/Chapter_4_System_Analysis_and_Design.docx`
+
+To regenerate the Word document from the Markdown (e.g. after editing Chapter 4):
+
+```bash
+pip install python-docx
+python scripts/generate_chapter4_docx.py
+```
+
+Output: `docs/Chapter_4_System_Analysis_and_Design.docx`.

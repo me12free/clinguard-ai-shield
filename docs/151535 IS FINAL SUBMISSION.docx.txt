@@ -1,4 +1,4 @@
-﻿A Web Application to Prevent Protected Health Information in AI Service Prompts Using RAG and OpenAI
+A Web Application to Prevent Protected Health Information in AI Service Prompts Using RAG and OpenAI
 
 
 John Ekiru Ewoi
@@ -320,7 +320,7 @@ However, Nightfall AI has limitations for ClinGuard's use case. As a cloud servi
 2.4 Gaps in Related Works
 A critical analysis of existing data loss prevention and PHI protection solutions reveals several significant gaps that limit their effectiveness in clinical AI documentation workflows. These limitations create a compelling need for the integrated approach proposed in ClinGuard.
 First, current solutions demonstrate architectural incompatibility with privacy-first design principles. All commercial DLP systems examined in this review require transmitting potentially sensitive content to external cloud services for analysis (Microsoft, 2023; Google Cloud, 2024). This creates a privacy paradox where healthcare organizations must choose between sending PHI to AI service providers or DLP providers, neither of which may be contractually bound by the same data protection obligations as the healthcare institution itself. The resulting data flows increase the attack surface and complicate compliance with data sovereignty requirements under regulations like Kenya's Data Protection Act 2019. In contrast, ClinGuard's local-first processing architecture ensures that PHI never leaves the healthcare organization's infrastructure until after redaction.
-Second, the reviewed solutions lack real-time browser-based interception capabilities suitable for AI documentation workflows. Existing DLP tools are primarily designed for scanning emails, file transfers, or stored documents rather than the sub-200 millisecond latency requirements of interactive AI assistance (Yang et al., 2024). The network round-trips required by cloud-based DLP services introduce unacceptable delays in clinical workflows where physicians require immediate feedback. This limitation is particularly problematic for AI documentation, where clinicians expect near-instantaneous responses to maintain workflow efficiency. ClinGuard addresses this gap through its lightweight, client-side detection pipeline that processes text locally before any external API calls are made.
+Second, the reviewed solutions lack real-time browser-based interception capabilities suitable for AI documentation workflows. Existing DLP tools are primarily designed for scanning emails, file transfers, or stored documents rather than the sub-200 millisecond latency requirements of interactive AI assistance (Yang et al., 2024). The network round-trips required by cloud-based DLP services introduce unacceptable delays in clinical workflows where physicians require immediate feedback. This limitation is particularly problematic for AI documentation, where clinicians expect near-instantaneous responses to maintain workflow efficiency. ClinGuard addresses this gap through server-side detection within the organisation's infrastructure, so that detection and redaction occur before any data leaves the organisation's systems and before any external API calls are made.
 Third, current solutions demonstrate insufficient optimization for the unique characteristics of clinical language. The detection models in general-purpose DLP systems are trained on standard business documents rather than the abbreviated, context-dense language typical of clinical notes (Johnson et al., 2023). Independent evaluations reveal that these systems achieve F1 scores of only 0.75-0.85 on clinical text, falling short of the 0.92+ threshold required for clinical deployment (Yang et al., 2024). The hybrid detection approach in ClinGuard, combining specialized clinical language models with pattern matching, specifically targets this limitation.
 Fourth, existing DLP solutions focus primarily on detection and blocking rather than assisting users in creating privacy-preserving alternatives. Clinicians receive binary feedback about policy violations without guidance on how to reformulate their prompts to maintain clinical utility while protecting PHI. This all-or-nothing approach creates friction in clinical workflows and may lead to workarounds that bypass security controls. ClinGuard's interactive redaction suggestions and safe rewrite features directly address this gap by helping clinicians understand and resolve privacy concerns without sacrificing productivity.
 Finally, current solutions offer limited policy granularity that fails to accommodate the nuanced decision-making required in clinical contexts. Most DLP systems implement organization-wide policies without the flexibility to account for different clinical scenarios or user roles. This one-size-fits-all approach can create patient safety risks when legitimate clinical needs require temporary policy exceptions. ClinGuard's emergency bypass feature with mandatory audit logging and justification provides a balanced approach that maintains security while accommodating critical clinical workflows.
@@ -478,7 +478,7 @@ The database schema defines data structure for the Laravel API backend. Key enti
 Relationships include many-to-one (Users to Organizations), one-to-many (Organizations to Policies), and many-to-many (Policies to Roles via junction table).
 3.4.2 Class Diagram
 1. Class diagrams model static structure of software components including classes, attributes, methods, and relationships. Key classes include:
-2. Browser Extension Classes: ContentScriptController, DetectionClient, InlineUIManager, AuditLogger
+2. Frontend (React) Classes: UserInterface Component, PHIDetection Component, PromptEditor Component (or equivalent from Chapter 4 class diagram)
 3. Laravel API Classes: User Model, Policy Model, AuditEventController, PolicyController, DetectionService
 4. Python Detection Engine Classes: PHIDetector, RegexAnalyzer, EntropyAnalyzer, MLClassifier
 3.4.3 Wireframes and User Interface Mockups
@@ -487,23 +487,23 @@ Wireframes specify user interfaces including:
 2. Redaction Suggestion Dialog with side-by-side comparison
 3. Safe Rewrite Suggestion Panel with multiple options
 4. Emergency Bypass Confirmation Dialog
-5. Browser Extension Popup for configuration
+5. Web application settings/configuration page (Administrator policy configuration interface)
 6. Administrator Dashboard for policy management
 7. Audit Log Viewer with filtering and export
 3.4.4 System Architecture Diagram
 The architecture diagram shows major components, communication protocols, and deployment topology:
-1. Client Tier: Chrome Browser, Content Script, Background Service Worker, Local Detection Engine, Local Storage
+1. Client Tier: Web browser, React frontend; session/local storage as needed
 2. Application Tier: Laravel API Server, Web Server (Nginx), Redis Cache, Queue Workers
 3. Data Tier: MySQL/PostgreSQL Database, Encrypted Storage
 4. Processing Tier: Python Detection Engine (FastAPI), Model Storage
-Communication uses HTTPS REST API with JSON payloads between browser extension and Laravel API, and internal HTTP between Laravel and Python engine.
+Communication uses HTTPS REST API with JSON payloads between React web frontend and Laravel API, and internal HTTP between Laravel and Python engine.
 3.5 Tools and Techniques
 This section describes the tools and techniques for implementation, testing, and deployment:
 3.5.1 Development Tools
-Browser Extension Development:
+Frontend (React) Development:
 1. Programming Language: TypeScript for type safety
 2. Framework: React 18 for UI components with TailwindCSS for styling
-3. Build Tool: Webpack for bundling, Chrome Extension Manifest V3
+3. Build Tool: Vite or Webpack for bundling
 4. Version Control: Git with GitHub repository
 Laravel API Backend:
 1. Framework: Laravel 10.x with PHP 8.2

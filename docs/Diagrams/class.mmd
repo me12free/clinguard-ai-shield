@@ -1,0 +1,45 @@
+%% ClinGuard Class Diagram (OOAD Design)
+%% Controllers, services, and Eloquent models. Attributes match Laravel/Eloquent and DB column names (id, role_id, organization_id, user_id, etc.).
+
+classDiagram
+  class DetectionController {
+    +__invoke(DetectRequest) JsonResponse
+  }
+  class ChatController {
+    -detection DetectionService
+    -openai OpenAIService
+    +__invoke(ChatRequest) JsonResponse
+    -redact(text, spans) string
+  }
+  class DetectionService {
+    +detect(text) array
+    +ragQuery(query, topK) array
+  }
+  class OpenAIService {
+    +chat(prompt, ragContext) string
+  }
+  class User {
+    +id
+    +name
+    +email
+    +role_id
+    +organization_id
+    +createToken()
+  }
+  class Conversation {
+    +user_id
+    +prompt_redacted
+    +response_summary
+  }
+  class AuditEvent {
+    +user_id
+    +event_type
+    +detected_categories
+  }
+  ChatController --> DetectionService
+  ChatController --> OpenAIService
+  ChatController --> Conversation
+  ChatController --> AuditEvent
+  DetectionController --> DetectionService
+  Conversation --> User
+  AuditEvent --> User

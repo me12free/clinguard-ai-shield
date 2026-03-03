@@ -1,0 +1,58 @@
+@startuml ClinGuard Use Case Diagram
+' Neat layout: human actors LEFT, use cases in center, service actors RIGHT (all outside system).
+' Left: Actor -- UseCase. Right: UseCase --- Actor (use case first + longer line = actor on right).
+' Render: PlantUML CLI, VS Code PlantUML, or https://www.plantuml.com/plantuml/uml
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam Padding 12
+skinparam usecasePadding 12
+skinparam ActorPadding 25
+
+' === All actors (left-side defined first; right-side referenced in rectangle links) ===
+actor "Clinician" as Clinician
+actor "Security Admin" as SecurityAdmin
+actor "System Admin" as SystemAdmin
+actor "Detection System" <<Service>> as DetectionSystem
+actor "OpenAI API" <<Service>> as OpenAI
+
+' === System boundary: use cases + all associations ===
+rectangle "<<Subsystem>> ClinGuard System" {
+  left to right direction
+
+  (Login) as UC_Login
+  (Register) as UC_Register
+  (Compose Clinical Notes) as UC_Compose
+  (Review PHI Detection) as UC_ReviewPHI
+  (Apply Redaction) as UC_Redact
+  (Submit Prompt to AI) as UC_SubmitAI
+  (View RAG Context) as UC_ViewRAG
+  (Emergency Bypass) as UC_Emergency
+  (Configure Policies) as UC_ConfigurePolicies
+  (View Audit Logs) as UC_ViewAudit
+  (Manage Users) as UC_ManageUsers
+
+  ' Left: actor first → actor on left
+  Clinician -- UC_Login
+  Clinician -- UC_Register
+  Clinician -- UC_Compose
+  Clinician -- UC_SubmitAI
+  SecurityAdmin -- UC_Login
+  SecurityAdmin -- UC_ConfigurePolicies
+  SecurityAdmin -- UC_ViewAudit
+  SystemAdmin -- UC_Login
+  SystemAdmin -- UC_ManageUsers
+  SystemAdmin -- UC_ViewAudit
+
+  ' Right: use case first + --- → actor on right (outside boundary)
+  UC_ReviewPHI --- DetectionSystem
+  UC_SubmitAI --- DetectionSystem
+  UC_SubmitAI --- OpenAI
+
+  UC_Compose ..> UC_ReviewPHI : <<include>>
+  UC_Compose ..> UC_Redact : <<include>>
+  UC_SubmitAI ..> UC_ViewRAG : <<include>>
+  UC_Emergency ..> UC_SubmitAI : <<extend>>
+}
+
+@enduml
