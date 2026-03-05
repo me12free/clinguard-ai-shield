@@ -29,7 +29,7 @@ This repository contains both the React frontend and Laravel backend:
 
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS
 - **Backend**: Laravel 12.x, PHP 8.2+
-- **Database**: MySQL 8.x (default)
+- **Database**: MySQL 8.x only (no Supabase); all data and auth via Laravel API.
 - **Detection + RAG**: Python 3.10+, venv (no Composer); FastAPI, regex + entropy + optional NER, ChromaDB, sentence-transformers
 - **AI**: OpenAI API (GPT-4 / gpt-4o-mini)
 

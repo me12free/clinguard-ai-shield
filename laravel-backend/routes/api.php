@@ -3,13 +3,14 @@
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\DetectionController;
 use App\Http\Controllers\Api\HelloController;
+use App\Http\Controllers\Api\PolicyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public
 Route::get('/hello', HelloController::class)->middleware('throttle:60,1');
 
-// Protected: require Sanctum token, rate limit
+// Protected: require Sanctum token, rate limit (MySQL-backed; no Supabase)
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('/user', fn (Request $request) => response()->json($request->user()));
     Route::post('/logout', function (Request $request) {
@@ -18,4 +19,6 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     });
     Route::post('/detect', DetectionController::class);
     Route::post('/chat', ChatController::class);
+    Route::get('/policies', [PolicyController::class, 'index']);
+    Route::put('/policies/{id}', [PolicyController::class, 'update']);
 });

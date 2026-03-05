@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +20,7 @@ interface RagChunk {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("auth_token");
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("auth_token"));
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState("");
@@ -28,6 +28,15 @@ export default function Dashboard() {
   const [ragContext, setRagContext] = useState<RagChunk[]>([]);
   const [redactedPrompt, setRedactedPrompt] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const onLogout = () => {
+      setToken(null);
+      navigate("/login", { replace: true });
+    };
+    window.addEventListener("auth:logout", onLogout);
+    return () => window.removeEventListener("auth:logout", onLogout);
+  }, [navigate]);
 
   if (!token) {
     navigate("/login", { replace: true });
@@ -39,22 +48,13 @@ export default function Dashboard() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${apiUrl}/api/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ prompt: prompt.trim() }),
-      });
-      if (!res.ok) throw new Error("Request failed");
-      const data = await res.json();
+      const data = await api.chat(prompt);
       setResponse(data.response ?? "");
       setSpans(data.spans ?? []);
       setRagContext(data.rag_context ?? []);
       setRedactedPrompt(data.redacted_prompt ?? "");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error");
+      setError(e instanceof Error ? e.message : "Request failed");
     } finally {
       setLoading(false);
     }
@@ -114,7 +114,26 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="text-sm">Detected PHI ({spans.length} spans)</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
+              <p className="text-sm font-medium">Highlighted in prompt:</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {(() => {
+                  const sorted = [...spans].sort((a, b) => a.start - b.start);
+                  const parts: React.ReactNode[] = [];
+                  let last = 0;
+                  sorted.forEach((s, i) => {
+                    if (s.start > last) parts.push(prompt.slice(last, s.start));
+                    parts.push(
+                      <mark key={i} className="bg-amber-200 dark:bg-amber-900/50 rounded px-0.5" title={s.category}>
+                        {prompt.slice(s.start, s.end)}
+                      </mark>
+                    );
+                    last = s.end;
+                  });
+                  if (last < prompt.length) parts.push(prompt.slice(last));
+                  return parts;
+                })()}
+              </p>
               <ul className="text-sm text-muted-foreground list-disc pl-4">
                 {spans.map((s, i) => (
                   <li key={i}>{s.category}: {s.text ?? prompt.slice(s.start, s.end)}</li>

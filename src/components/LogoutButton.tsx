@@ -1,23 +1,11 @@
 import React from "react";
-import { apiUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 
 const LogoutButton: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const handleLogout = async () => {
-    try {
-      const token = localStorage.getItem("auth_token");
-      await fetch(`${apiUrl}/api/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-      });
-      localStorage.removeItem("auth_token");
-      onLogout();
-    } catch (err) {
-      // Optionally handle error
-    }
+    await api.logout();
+    localStorage.removeItem("auth_token");
+    onLogout();
   };
 
   return (

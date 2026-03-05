@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 
 const LoginForm: React.FC<{ onLogin: (token: string) => void }> = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -14,14 +14,7 @@ const LoginForm: React.FC<{ onLogin: (token: string) => void }> = ({ onLogin }) 
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${apiUrl}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Login failed");
-      const data = await res.json();
+      const data = await api.login(email, password);
       if (data.token) {
         localStorage.setItem("auth_token", data.token);
         setSuccess("Login successful!");

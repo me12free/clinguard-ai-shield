@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { apiUrl } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
 
 const RegisterForm: React.FC = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -13,17 +16,18 @@ const RegisterForm: React.FC = () => {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${apiUrl}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Registration failed");
-      setSuccess("Registration successful! You can now log in.");
-      setName(""); setEmail(""); setPassword("");
-    } catch (err: any) {
-      setError(err.message);
+      const data = await api.register(name, email, password, passwordConfirmation || password);
+      if (data.token) {
+        localStorage.setItem("auth_token", data.token);
+        setSuccess("Registration successful!");
+        setName(""); setEmail(""); setPassword(""); setPasswordConfirmation("");
+        navigate("/dashboard", { replace: true });
+      } else {
+        setSuccess("Registration successful! You can now log in.");
+        setName(""); setEmail(""); setPassword(""); setPasswordConfirmation("");
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Registration failed");
     }
   };
 
@@ -33,6 +37,7 @@ const RegisterForm: React.FC = () => {
       <input type="text" placeholder="Name" value={name} onChange={e => setName(e.target.value)} required className="w-full p-2 border rounded" />
       <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full p-2 border rounded" />
       <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full p-2 border rounded" />
+      <input type="password" placeholder="Confirm password" value={passwordConfirmation} onChange={e => setPasswordConfirmation(e.target.value)} required className="w-full p-2 border rounded" />
       <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Register</button>
       {error && <p className="text-red-600">{error}</p>}
       {success && <p className="text-green-600">{success}</p>}

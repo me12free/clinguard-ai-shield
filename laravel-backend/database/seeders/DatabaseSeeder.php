@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             OrganizationSeeder::class,
+            PolicySeeder::class,
         ]);
 
         $roleId = DB::table('roles')->where('role_name', 'clinician')->value('id');

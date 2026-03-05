@@ -22,3 +22,33 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+*.egg
+
+# Virtual environments
+detection_engine/venv/
+venv/
+.venv/
+env/
+
+# ClinGuard detection_engine: data and model (regenerate via scripts)
+detection_engine/data/raw/
+detection_engine/data/cleaned/
+detection_engine/phi_model/
+
+# Laravel / env
+.env
+.env.backup
+.env.production
+
+# Doc temp files
+docs/~*
+*.tmp

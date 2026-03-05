@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\AuditEvent;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -22,6 +23,13 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
         $token = $user->createToken('spa')->plainTextToken;
+
+        AuditEvent::create([
+            'user_id' => $user->id,
+            'organization_id' => $user->organization_id,
+            'event_type' => 'login',
+            'detected_categories' => null,
+        ]);
 
         return response()->json(['token' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email]]);
     }

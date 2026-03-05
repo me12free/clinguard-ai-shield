@@ -2,7 +2,7 @@
 
 ## 4.1 Introduction
 
-This chapter presents the system analysis and design for the ClinGuard system. The design paradigm used is **Object-Oriented Analysis and Design (OOAD)** as defined in Chapter 3. Section 4.2 sets out the system requirements (functional and non-functional) reviewed in the project. Section 4.3 presents the system analysis diagrams: use case diagram, activity diagram, sequence diagram, entity-relationship diagram, logical database schema, and system sequence diagram. Section 4.4 presents the system design diagrams (ERD and logical schema) with design commentary. Section 4.5 states the design tools used for consistency.
+This chapter presents the system analysis and design for the ClinGuard system. The design paradigm used is **Object-Oriented Analysis and Design (OOAD)** as defined in Chapter 3. Section 4.2 sets out the system requirements (functional and non-functional) reviewed in the project. Section 4.3 presents the **system analysis diagrams** (use case, sequence, and class diagrams). Section 4.4 presents the **system design diagrams** (entity-relationship diagram and logical database schema) with design commentary. Section 4.5 states the design tools used for consistency.
 
 ---
 
@@ -68,7 +68,7 @@ Kenya Data Protection Act 2019 and HIPAA-aligned controls; audit logging, data s
 
 ## 4.3 System Analysis Diagrams
 
-The following system analysis diagrams were produced using the OOAD approach defined in Chapter 3.
+The following diagrams describe the system from an **analysis** perspective: they capture functional requirements, interactions, and static structure without implementation detail. They were produced using the OOAD approach defined in Chapter 3.
 
 ### 4.3.1 Use Case Diagram
 
@@ -80,29 +80,35 @@ The use case diagram shows functional requirements and actor interactions within
 
 ---
 
-### 4.3.2 Activity Diagram
-
-The activity diagram models the main flow from user prompt entry through PHI detection, redaction, RAG retrieval, OpenAI call, and audit. It uses UML activity notation: initial and final states, activity states, a decision (PHI detected?), and swimlanes for User/Frontend and Laravel API.
-
-*[Diagram to be inserted here.]*
-
-**Figure 4.2** Activity Diagram.
-
----
-
-### 4.3.3 Sequence Diagram
+### 4.3.2 Sequence Diagram
 
 The sequence diagram shows the full chat flow: validation, authentication, PHI detection, redaction, RAG query, OpenAI completion, persistence (conversations and audit events), and response. Participants include Clinician, React Frontend, Laravel API, Python Detection Engine, RAG/Vector DB, OpenAI API, and Database. Alternative flows cover unavailability of detection, RAG, or OpenAI. An optional standalone PHI detection flow is included.
 
 *[Diagram to be inserted here.]*
 
-**Figure 4.3** Sequence Diagram.
+**Figure 4.2** Sequence Diagram.
 
 ---
 
-### 4.3.4 Entity-Relationship Diagram (ERD)
+### 4.3.3 Class Diagram
 
-The ERD represents the logical data model. Entities are USER, ORGANIZATION, ROLE, POLICY, ALLOWLIST, DETECTION_RULE, AUDIT_EVENT, and CONVERSATION. Primary and foreign keys use entity-specific names. Relationships use verb phrases (e.g. employs, defines, creates) and one-to-many cardinality. The diagram aligns with the logical schema.
+The class diagram shows the static structure of the ClinGuard system using OOAD. It includes frontend components (PHIDetection, PromptEditor, UserInterface), backend components (UserController, PolicyManager, OpenAIService, PHIDetectionService), the base controller, and Python analysis components (RegexAnalyzer, EntropyAnalyzer, MLClassifier, PHIDetector). Stereotypes distinguish <<frontend>>, <<backend>>, <<base>>, and <<python>>. Relationships show inheritance (e.g. UserController and PolicyManager extend BaseController), aggregation (PolicyManager–Policy), and usage/dependency (e.g. PHIDetectionService uses the analyzers and PHIDetector; UserInterface uses PHIDetection and PromptEditor).
+
+*[Diagram to be inserted here.]*
+
+**Figure 4.3** Class Diagram.
+
+---
+
+## 4.4 System Design Diagrams
+
+The following diagrams describe the **design** of the system: the data model and database schema that will be implemented. They are separate from the analysis diagrams in Section 4.3.
+
+### 4.4.1 Entity-Relationship Diagram (ERD)
+
+The ERD represents the logical data model for the ClinGuard system. Entities are USER, ORGANIZATION, ROLE, POLICY, ALLOWLIST, DETECTION_RULE, AUDIT_EVENT, and CONVERSATION. Primary and foreign keys use entity-specific names. Relationships use verb phrases (e.g. employs, defines, creates) and one-to-many cardinality.
+
+From a design perspective, the model was normalised to third normal form. Foreign key placement (e.g. user_id, organization_id) supports multi-tenancy and audit scoping. Relationships and cardinalities align with the logical schema and the implemented database.
 
 *[Diagram to be inserted here.]*
 
@@ -110,9 +116,11 @@ The ERD represents the logical data model. Entities are USER, ORGANIZATION, ROLE
 
 ---
 
-### 4.3.5 Logical Database Schema
+### 4.4.2 Logical Database Schema
 
-The logical database schema shows how the real database will be formed by logically setting out how the tables and relationships will be formed. It defines all tables with data types, sizes/precision, nullability, keys, and defaults, and is suitable for MySQL. Keys are identified by entity-specific names (e.g. user_id, organization_id) for clarity.
+The logical database schema shows how the real database will be formed by logically setting out tables and relationships. It defines all tables with data types, sizes/precision, nullability, keys, and defaults, and is suitable for MySQL. Keys are identified by entity-specific names (e.g. user_id, organization_id) for clarity.
+
+Design choices include data types (BIGINT UNSIGNED, VARCHAR, TIMESTAMP, DECIMAL, JSON, BLOB, TEXT), size/precision, nullability, and keys. The schema is normalised and matches the implemented MySQL database.
 
 | Table | Purpose | Primary key | Foreign keys |
 |-------|---------|-------------|--------------|
@@ -128,30 +136,6 @@ The logical database schema shows how the real database will be formed by logica
 *[Diagram or further table detail to be inserted here if required.]*
 
 **Figure 4.5** Logical Database Schema.
-
----
-
-### 4.3.6 System Sequence Diagram
-
-The system sequence diagram shows high-level interactions between the User and the ClinGuard system as a black box: Login → token; Submit prompt → PHI spans; Confirm/redact; Send for AI → AI response and RAG context.
-
-*[Diagram to be inserted here.]*
-
-**Figure 4.6** System Sequence Diagram.
-
----
-
-## 4.4 System Design Diagrams
-
-The ERD and logical schema are presented in Sections 4.3.4 and 4.3.5. The design commentary below refers to those sections.
-
-### 4.4.1 Entity-Relationship Diagram
-
-The ER diagram is presented in **Section 4.3.4** above; no duplicate figure is shown here. From a design perspective, the model was normalised to third normal form; foreign key placement (e.g. user_id, organization_id) supports multi-tenancy and audit scoping. Relationships and cardinalities align with the logical schema and the implemented database.
-
-### 4.4.2 Logical Database Schema
-
-The full logical schema is summarised in **Section 4.3.5** above. The logical database schema shows how the real database will be formed by logically setting out how the tables and relationships will be formed. Design choices include data types (BIGINT UNSIGNED, VARCHAR, TIMESTAMP, DECIMAL, JSON, BLOB, TEXT), size/precision, nullability, and keys. The schema is normalised and matches the implemented MySQL database.
 
 ---
 
