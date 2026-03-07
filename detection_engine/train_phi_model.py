@@ -36,8 +36,8 @@ def get_synthetic_data():
     return [{"text": t, "spans": s} for t, s in zip(texts, spans_list)]
 
 
-def load_cleaned_data(data_dir: Path):
-    """Load train/val from data_dir. Expects train.json, val.json (optional)."""
+def load_cleaned_data(data_dir: Path, train_sample: int | None = None, val_sample: int | None = None):
+    """Load train/val from data_dir. Optionally cap sizes with train_sample/val_sample for fast runs."""
     train_path = data_dir / "train.json"
     val_path = data_dir / "val.json"
     if not train_path.exists():
@@ -46,12 +46,20 @@ def load_cleaned_data(data_dir: Path):
         train_data = json.load(f) if train_path.suffix == ".json" else [json.loads(line) for line in f]
     if not isinstance(train_data, list):
         train_data = [train_data]
+    if train_sample is not None and train_sample > 0 and len(train_data) > train_sample:
+        import random
+        random.seed(42)
+        train_data = random.sample(train_data, train_sample)
     val_data = None
     if val_path.exists():
         with open(val_path, "r", encoding="utf-8") as f:
             val_data = json.load(f) if val_path.suffix == ".json" else [json.loads(line) for line in f]
         if not isinstance(val_data, list):
             val_data = [val_data]
+        if val_sample is not None and val_sample > 0 and len(val_data) > val_sample:
+            import random
+            random.seed(43)
+            val_data = random.sample(val_data, val_sample)
     return train_data, val_data
 
 
@@ -89,6 +97,13 @@ def spans_to_token_labels(text: str, spans: list, tokenizer, max_length: int):
 
 
 def main():
+    import logging
+    import warnings
+    # Reduce verbose loading report and accelerator messages (expected when loading BERT for token classification)
+    for _name in ("transformers", "transformers.modeling_utils", "accelerate", "accelerate.utils"):
+        logging.getLogger(_name).setLevel(logging.ERROR)
+    warnings.filterwarnings("ignore", message=".*pin_memory.*")
+    os.environ.setdefault("ACCELERATE_DISABLE_RICH", "1")  # reduce accelerate stderr output
     try:
         from transformers import (
             AutoModelForTokenClassification,
@@ -113,12 +128,26 @@ def main():
         id2label=ID2LABEL,
         label2id=LABEL2ID,
     )
+    try:
+        import torch
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        if device == "cuda":
+            print("Using GPU:", torch.cuda.get_device_name(0))
+        else:
+            print("Using CPU (install PyTorch with CUDA for faster training).")
+    except Exception:
+        pass
 
-    train_data, val_data = load_cleaned_data(data_dir)
+    train_sample = int(os.environ.get("TRAIN_SAMPLE", "0")) or None
+    val_sample = int(os.environ.get("VAL_SAMPLE", "0")) or None
+    train_data, val_data = load_cleaned_data(data_dir, train_sample=train_sample, val_sample=val_sample)
     if train_data is None:
         train_data = get_synthetic_data()
         val_data = []
         print("Using synthetic data (no cleaned data found). See docs/DATASET_CLEANUP.md.")
+    else:
+        if train_sample:
+            print(f"Using subset: train={len(train_data)}, val={len(val_data) or 0} (TRAIN_SAMPLE={train_sample}, VAL_SAMPLE={val_sample})")
 
     def tokenize(examples):
         input_ids, attention_mask, labels = [], [], []
@@ -140,9 +169,15 @@ def main():
         max_length=MAX_LENGTH,
         return_tensors=None,
     )
+    IGNORE_LABEL_ID = -100  # skip padding in loss and metrics
+    # Build labels with padding set to IGNORE_LABEL_ID
     train_labels = []
-    for d in train_data:
+    for i, d in enumerate(train_data):
         lbl, _ = spans_to_token_labels(d["text"], d.get("spans", []), tokenizer, MAX_LENGTH)
+        am = train_enc["attention_mask"][i]
+        for j in range(min(len(am), len(lbl))):
+            if am[j] == 0:
+                lbl[j] = IGNORE_LABEL_ID
         train_labels.append(lbl)
 
     train_dataset = Dataset.from_dict({
@@ -161,8 +196,12 @@ def main():
             return_tensors=None,
         )
         val_labels = []
-        for d in val_data:
+        for i, d in enumerate(val_data):
             lbl, _ = spans_to_token_labels(d["text"], d.get("spans", []), tokenizer, MAX_LENGTH)
+            am = val_enc["attention_mask"][i]
+            for j in range(min(len(am), len(lbl))):
+                if am[j] == 0:
+                    lbl[j] = IGNORE_LABEL_ID
             val_labels.append(lbl)
         eval_dataset = Dataset.from_dict({
             "input_ids": val_enc["input_ids"],
@@ -170,20 +209,44 @@ def main():
             "labels": val_labels,
         })
 
+    def compute_metrics(eval_pred):
+        """Token-level accuracy and PHI (B+I) precision, recall, F1 per docs (Chapter 4, PHI_Model_Training_Guide)."""
+        from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+        preds, labels = eval_pred.predictions, eval_pred.label_ids
+        if preds.ndim == 3:
+            preds = preds.argmax(axis=-1)
+        preds_flat = preds.flatten()
+        labels_flat = labels.flatten()
+        mask = labels_flat != IGNORE_LABEL_ID
+        preds_flat = preds_flat[mask]
+        labels_flat = labels_flat[mask]
+        if len(labels_flat) == 0:
+            return {"accuracy": 0.0, "precision": 0.0, "recall": 0.0, "f1": 0.0}
+        acc = accuracy_score(labels_flat, preds_flat)
+        # Binary: PHI (1,2) vs O (0)
+        y_true_bin = (labels_flat != 0).astype(int)
+        y_pred_bin = (preds_flat != 0).astype(int)
+        p, r, f1, _ = precision_recall_fscore_support(y_true_bin, y_pred_bin, average="binary", zero_division=0)
+        return {"accuracy": float(acc), "precision": float(p), "recall": float(r), "f1": float(f1)}
+
+    batch_size = int(os.environ.get("PHI_BATCH_SIZE", "0")) or 4
     training_args = TrainingArguments(
         output_dir=str(out_dir),
         num_train_epochs=int(os.environ.get("PHI_EPOCHS", "2")),
-        per_device_train_batch_size=4,
+        per_device_train_batch_size=batch_size,
         eval_strategy="epoch" if eval_dataset else "no",
         save_strategy="epoch",
         save_total_limit=1,
-        load_best_model_at_end=bool(eval_dataset),
+        load_best_model_at_end=bool(os.environ.get("LOAD_BEST_AT_END", "0") == "1"),  # False avoids checkpoint key mismatch (gamma/beta vs weight/bias) on save/load
+        dataloader_pin_memory=False,  # avoid warning when no GPU
+        report_to="none",  # avoid extra stderr (PowerShell may treat progress as error)
     )
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
+        compute_metrics=compute_metrics if eval_dataset else None,
     )
     trainer.train()
     if eval_dataset:

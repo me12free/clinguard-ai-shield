@@ -4,6 +4,8 @@ This log records each training run so you can track data, hyperparameters, and m
 
 **Pipeline overview:** [IMPLEMENTATION_RUN_LOG.md](IMPLEMENTATION_RUN_LOG.md) (acquisition → cleanup → training).
 
+**Accuracy testing, algorithm review, small-data training, and commands:** [MODEL_TRAINING_AND_EVAL_LOG.md](MODEL_TRAINING_AND_EVAL_LOG.md).
+
 ---
 
 ## Run 1 (baseline — previous)

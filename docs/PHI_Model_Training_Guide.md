@@ -2,6 +2,8 @@
 
 This guide walks you through the steps to train a Protected Health Information (PHI) detection model for ClinGuard using Google Colab, based on your project documentation. It covers dataset identification, model layers, and practical steps from start to finish.
 
+**For GPU training, larger evaluation, Colab step-by-step (including download and use in your project), and integration:** see [GPU_AND_COLAB_TRAINING.md](GPU_AND_COLAB_TRAINING.md).
+
 ---
 
 ## 1. Datasets Identified
@@ -106,10 +108,10 @@ tokenizer.save_pretrained('clinguard-phi-model')
 ---
 
 ## 4. Integration Steps
-- Download the trained model and tokenizer
-- Integrate with your Python detection engine (as described in your documentation)
-- Use regex and entropy layers as pre/post-processing
-- Connect to your Laravel API for real-time PHI detection
+- **Download** the trained model and tokenizer (from Colab: zip `phi_model` and download; see [GPU_AND_COLAB_TRAINING.md](GPU_AND_COLAB_TRAINING.md)).
+- **Place** the contents in `detection_engine/phi_model/` (or set `PHI_MODEL_PATH`). No code change needed: `phi_detector.py` loads this model when `USE_ML=1` and `config.json` is present.
+- Use regex and entropy layers as pre/post-processing (already in `phi_detector.py`).
+- Connect to your Laravel API for real-time PHI detection (existing integration).
 
 ---
 

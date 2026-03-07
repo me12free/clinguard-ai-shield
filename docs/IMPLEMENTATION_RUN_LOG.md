@@ -4,6 +4,8 @@ This document records the full pipeline I executed for dataset acquisition, clea
 
 **Training and tuning runs (metrics, hyperparameters, per-run notes):** [TRAINING_RUN_LOG.md](TRAINING_RUN_LOG.md).
 
+**Accuracy testing, algorithm review (vs docs/chapters), small-data training, and test commands:** [MODEL_TRAINING_AND_EVAL_LOG.md](MODEL_TRAINING_AND_EVAL_LOG.md).
+
 ---
 
 ## E2E run I did (end-to-end until dataset is clean and ready for training)

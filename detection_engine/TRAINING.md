@@ -6,6 +6,10 @@ Training the PHI detection model for use by `phi_detector.py`. See also [docs/DA
 
 **Per-run training and tuning log (metrics, hyperparameters, data used):** [docs/TRAINING_RUN_LOG.md](../docs/TRAINING_RUN_LOG.md).
 
+**Accuracy testing, algorithm review, small-data training, comparison table, and commands:** [docs/MODEL_TRAINING_AND_EVAL_LOG.md](../docs/MODEL_TRAINING_AND_EVAL_LOG.md).
+
+**GPU training, larger tests, Colab (free GPU), and integration:** [docs/GPU_AND_COLAB_TRAINING.md](../docs/GPU_AND_COLAB_TRAINING.md).
+
 ## Full pipeline (recommended)
 
 From the project root, with a single venv for training and inference:
@@ -69,6 +73,7 @@ Optional env vars:
 - `PHI_MODEL_PATH` — output directory for model and tokenizer (default: `detection_engine/phi_model`)
 - `BASE_MODEL` — Hugging Face model name (default: `bert-base-uncased`)
 - `PHI_EPOCHS` — training epochs (default: 2)
+- `PHI_BATCH_SIZE` — per-device batch size (default: 4; use 16+ on GPU for faster training)
 
 ## After training
 
