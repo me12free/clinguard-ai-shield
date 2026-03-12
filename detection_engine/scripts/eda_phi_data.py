@@ -106,11 +106,17 @@ def extract_text_and_spans(rec: dict) -> tuple[str, list]:
 
 def main():
     data_dir = Path(os.environ.get("PHI_DATA_DIR", str(DEFAULT_DATA_DIR)))
+    # Resolve relative paths against detection_engine root so Colab works regardless of cwd
+    if not data_dir.is_absolute():
+        data_dir = (DETECTION_ENGINE_ROOT / data_dir).resolve()
     write_json = os.environ.get("PHI_EDA_OUT", "").strip().lower() in ("1", "true", "yes")
 
+    print("EDA data dir (resolved):", data_dir)
     records = load_records(data_dir)
     if not records:
-        print("No records found in", data_dir, "- run acquire_datasets.py then clean_phi_data.py, or set PHI_DATA_DIR.")
+        print("No records found in", data_dir)
+        print("  - For raw: run acquire_datasets.py first (from detection_engine/).")
+        print("  - For cleaned: run clean_phi_data.py first. Check that PHI_DATA_DIR points to the right folder.")
         sys.exit(1)
 
     n = len(records)
