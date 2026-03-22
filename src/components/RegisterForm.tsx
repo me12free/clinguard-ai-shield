@@ -1,6 +1,14 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { AlertCircle, Loader2, UserPlus } from "lucide-react";
 import { api } from "@/lib/api";
+import { notifyError, notifySuccess } from "@/lib/feedback";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { PasswordField } from "@/components/auth/PasswordField";
 
 const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
@@ -9,39 +17,132 @@ const RegisterForm: React.FC = () => {
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
+    if (password !== passwordConfirmation) {
+      const msg = "Passwords do not match.";
+      setError(msg);
+      notifyError("Validation", msg);
+      return;
+    }
+    setLoading(true);
     try {
       const data = await api.register(name, email, password, passwordConfirmation || password);
       if (data.token) {
         localStorage.setItem("auth_token", data.token);
-        setSuccess("Registration successful!");
-        setName(""); setEmail(""); setPassword(""); setPasswordConfirmation("");
+        notifySuccess("Account created", "You are signed in.");
+        setName("");
+        setEmail("");
+        setPassword("");
+        setPasswordConfirmation("");
         navigate("/dashboard", { replace: true });
       } else {
-        setSuccess("Registration successful! You can now log in.");
-        setName(""); setEmail(""); setPassword(""); setPasswordConfirmation("");
+        notifySuccess("Registration complete", "You can now sign in.");
+        setName("");
+        setEmail("");
+        setPassword("");
+        setPasswordConfirmation("");
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      const msg = err instanceof Error ? err.message : "Registration failed";
+      setError(msg);
+      notifyError("Registration failed", msg);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleRegister} className="space-y-4 p-6 md:p-8 border rounded-lg bg-white shadow-lg w-full max-w-md">
-      <h2 className="font-bold">Register</h2>
-      <input type="text" placeholder="Name" value={name} onChange={e => setName(e.target.value)} required className="w-full p-2 border rounded" />
-      <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full p-2 border rounded" />
-      <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full p-2 border rounded" />
-      <input type="password" placeholder="Confirm password" value={passwordConfirmation} onChange={e => setPasswordConfirmation(e.target.value)} required className="w-full p-2 border rounded" />
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Register</button>
-      {error && <p className="text-red-600">{error}</p>}
-      {success && <p className="text-green-600">{success}</p>}
-    </form>
+    <Card className="border-border/80 shadow-lg shadow-black/5 dark:shadow-black/20">
+      <CardHeader className="space-y-1 pb-4">
+        <div className="flex items-center gap-2 lg:hidden mb-1">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <UserPlus className="h-5 w-5" />
+          </span>
+        </div>
+        <CardTitle className="text-2xl font-semibold tracking-tight">Create account</CardTitle>
+        <CardDescription className="text-base leading-relaxed">
+          <span className="lg:hidden">
+            Join ClinGuard. Your messages are scanned for PHI before they reach external AI services.
+          </span>
+          <span className="hidden lg:inline">Set up your organization account to get started.</span>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleRegister} className="space-y-4">
+          {error && (
+            <Alert variant="destructive" className="border-destructive/40">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle className="text-sm">Registration issue</AlertTitle>
+              <AlertDescription className="text-xs">{error}</AlertDescription>
+            </Alert>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="register-name">Full name</Label>
+            <Input
+              id="register-name"
+              type="text"
+              placeholder="Your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoComplete="name"
+              className="h-11"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="register-email">Email</Label>
+            <Input
+              id="register-email"
+              type="email"
+              placeholder="you@organization.org"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              className="h-11"
+            />
+          </div>
+          <PasswordField
+            id="register-password"
+            label="Password"
+            value={password}
+            onChange={setPassword}
+            required
+            autoComplete="new-password"
+          />
+          <PasswordField
+            id="register-password-2"
+            label="Confirm password"
+            value={passwordConfirmation}
+            onChange={setPasswordConfirmation}
+            required
+            autoComplete="new-password"
+          />
+          <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating account…
+              </>
+            ) : (
+              "Create account"
+            )}
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter className="flex flex-col gap-3 border-t border-border/60 bg-muted/30 pt-6 pb-6">
+        <p className="text-sm text-muted-foreground text-center">
+          Already have an account?{" "}
+          <Link to="/login" className="font-medium text-primary hover:underline underline-offset-4">
+            Sign in
+          </Link>
+        </p>
+      </CardFooter>
+    </Card>
   );
 };
 

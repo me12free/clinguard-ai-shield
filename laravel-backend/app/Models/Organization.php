@@ -22,4 +22,19 @@ class Organization extends Model
     {
         return $this->hasMany(Policy::class);
     }
+
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function allowlists(): HasMany
+    {
+        return $this->hasMany(Allowlist::class);
+    }
+
+    public function detectionRules(): HasMany
+    {
+        return $this->hasMany(DetectionRule::class);
+    }
 }

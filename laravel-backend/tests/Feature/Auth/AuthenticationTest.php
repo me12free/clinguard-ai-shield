@@ -14,13 +14,14 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->post('/login', [
+        $response = $this->postJson('/login', [
             'email' => $user->email,
             'password' => 'password',
         ]);
 
         $this->assertAuthenticated();
-        $response->assertNoContent();
+        $response->assertOk();
+        $response->assertJsonStructure(['token', 'user']);
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

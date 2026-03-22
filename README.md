@@ -59,8 +59,11 @@ This repository contains both the React frontend and Laravel backend:
    composer install
    php artisan key:generate
    php artisan migrate
+   php artisan db:seed
    php artisan serve --host=127.0.0.1 --port=8000
    ```
+
+   Seeded logins (password `password`): `sarah.chen@clinguard.local` (clinician), `marcus.webb@clinguard.local` (security admin), `priya.nair@clinguard.local` (system admin). See [docs/PROJECT_READINESS.md](docs/PROJECT_READINESS.md).
 
 3. **Python detection engine (separate terminal, use venv)**
    ```bash
@@ -70,20 +73,24 @@ This repository contains both the React frontend and Laravel backend:
    pip install -r requirements.txt
    uvicorn main:app --host 127.0.0.1 --port 8001
    ```
+   Place your trained model under `detection_engine/phi_model/` (see [docs/MODEL_INTEGRATION_AND_TESTING.md](docs/MODEL_INTEGRATION_AND_TESTING.md)). Run tests: `pytest tests/ -v`.
+
    Or run `scripts\run_detection.bat` (Windows).
 
 4. **Frontend**
    ```bash
    cd ..   # project root
-   cp .env.example .env   # optional: set VITE_API_URL=http://127.0.0.1:8000
+   cp .env.example .env
+   # Recommended: leave VITE_API_URL empty — Vite proxies /api and /login to Laravel (VITE_PROXY_TARGET).
+   # Or set VITE_API_URL to the same hostname you use in the browser (e.g. http://127.0.0.1:8000).
    npm install
    npm run dev
    ```
-   Open http://localhost:5173. Sign in or register, then use **Dashboard** to send prompts (PHI detected, redacted, RAG + OpenAI).
+   Open **http://localhost:8080** (see `vite.config.ts`). Sign in, then use **Dashboard**.
 
 ### API security
 
-- Auth: Laravel Sanctum (Bearer token for `/api/*`). Login/register at `/login`, `/register` (web).
+- Auth: Laravel Sanctum (**Bearer token** for `/api/*`). Login/register at `/login`, `/register` (web). SPA does not use Sanctum cookie CSRF on `/api/*`.
 - Protected endpoints: `/api/detect`, `/api/chat`, `/api/user`, `/api/logout` require `Authorization: Bearer <token>`.
 - Rate limit: 60 requests/minute on API routes. Input validation via FormRequests.
 

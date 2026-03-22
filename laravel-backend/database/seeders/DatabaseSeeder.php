@@ -15,19 +15,41 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             OrganizationSeeder::class,
             PolicySeeder::class,
+            AllowlistSeeder::class,
+            DetectionRuleSeeder::class,
         ]);
 
-        $roleId = DB::table('roles')->where('role_name', 'clinician')->value('id');
         $orgId = DB::table('organizations')->value('id');
 
-        User::query()->updateOrCreate(
-            ['email' => 'test@example.com'],
+        $users = [
             [
-                'name' => 'Test User',
-                'password' => Hash::make('password'),
-                'role_id' => $roleId,
-                'organization_id' => $orgId,
-            ]
-        );
+                'email' => 'sarah.chen@clinguard.local',
+                'name' => 'Dr. Sarah Chen',
+                'role_name' => 'clinician',
+            ],
+            [
+                'email' => 'marcus.webb@clinguard.local',
+                'name' => 'Marcus Webb',
+                'role_name' => 'security_admin',
+            ],
+            [
+                'email' => 'priya.nair@clinguard.local',
+                'name' => 'Priya Nair',
+                'role_name' => 'system_admin',
+            ],
+        ];
+
+        foreach ($users as $u) {
+            $roleId = DB::table('roles')->where('role_name', $u['role_name'])->value('id');
+            User::query()->updateOrCreate(
+                ['email' => $u['email']],
+                [
+                    'name' => $u['name'],
+                    'password' => Hash::make('password'),
+                    'role_id' => $roleId,
+                    'organization_id' => $orgId,
+                ]
+            );
+        }
     }
 }
