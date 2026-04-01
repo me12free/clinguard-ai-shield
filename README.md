@@ -33,60 +33,119 @@ This repository contains both the React frontend and Laravel backend:
 - **Detection + RAG**: Python 3.10+, venv (no Composer); FastAPI, regex + entropy + optional NER, ChromaDB, sentence-transformers
 - **AI**: OpenAI API (GPT-4 / gpt-4o-mini)
 
-## Getting Started
+## Quick Setup and Startup Guide
 
 ### Prerequisites
 
 - Node.js 18+, npm 9+
-- Python 3.10+ (for detection engine; use venv)
-- PHP 8.2+, Composer (for Laravel only)
+- Python 3.10+ (detection engine)
+- PHP 8.2+, Composer (Laravel backend)
 - MySQL 8.x
 
-### Installation
+### 1) Clone and create database
 
-1. **Clone and create DB**
-   ```bash
-   git clone https://github.com/yourusername/clinguard-ai-shield.git
-   cd clinguard-ai-shield
-   # Create database: CREATE DATABASE clinguard;
-   ```
+```bash
+git clone https://github.com/yourusername/clinguard-ai-shield.git
+cd clinguard-ai-shield
+# In MySQL:
+# CREATE DATABASE clinguard;
+```
 
-2. **Laravel backend (MySQL)**
-   ```bash
-   cd laravel-backend
-   cp .env.example .env
-   # Set DB_DATABASE=clinguard, DB_USERNAME, DB_PASSWORD. Optionally DETECTION_ENGINE_URL, OPENAI_API_KEY.
-   composer install
-   php artisan key:generate
-   php artisan migrate
-   php artisan db:seed
-   php artisan serve --host=127.0.0.1 --port=8000
-   ```
+### 2) Backend setup (Laravel API)
 
-   Seeded logins (password `password`): `sarah.chen@clinguard.local` (clinician), `marcus.webb@clinguard.local` (security admin), `priya.nair@clinguard.local` (system admin). See [docs/PROJECT_READINESS.md](docs/PROJECT_READINESS.md).
+```bash
+cd laravel-backend
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+```
 
-3. **Python detection engine (separate terminal, use venv)**
-   ```bash
-   cd detection_engine
-   python -m venv venv
-   venv\Scripts\activate   # Windows
-   pip install -r requirements.txt
-   uvicorn main:app --host 127.0.0.1 --port 8001
-   ```
-   Place your trained model under `detection_engine/phi_model/` (see [docs/MODEL_INTEGRATION_AND_TESTING.md](docs/MODEL_INTEGRATION_AND_TESTING.md)). Run tests: `pytest tests/ -v`.
+Update `laravel-backend/.env` at least:
 
-   Or run `scripts\run_detection.bat` (Windows).
+- `DB_DATABASE=clinguard`
+- `DB_USERNAME=...`
+- `DB_PASSWORD=...`
+- `DETECTION_ENGINE_URL=http://127.0.0.1:8001`
+- `OPENAI_API_KEY=...` (optional, but needed for real chat responses)
+- `FRONTEND_URL=http://localhost:8080`
 
-4. **Frontend**
-   ```bash
-   cd ..   # project root
-   cp .env.example .env
-   # Recommended: leave VITE_API_URL empty — Vite proxies /api and /login to Laravel (VITE_PROXY_TARGET).
-   # Or set VITE_API_URL to the same hostname you use in the browser (e.g. http://127.0.0.1:8000).
-   npm install
-   npm run dev
-   ```
-   Open **http://localhost:8080** (see `vite.config.ts`). Sign in, then use **Dashboard**.
+Start backend:
+
+```bash
+php artisan serve --host=127.0.0.1 --port=8000
+```
+
+### 3) Detection engine setup (FastAPI PHI + RAG)
+
+In a new terminal:
+
+```bash
+cd detection_engine
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --host 127.0.0.1 --port 8001
+```
+
+Windows activate command:
+
+```bash
+venv\Scripts\activate
+```
+
+Optional checks:
+
+```bash
+curl http://127.0.0.1:8001/health
+```
+
+### 4) Frontend setup (Vite React)
+
+In a third terminal:
+
+```bash
+cd /path/to/clinguard-ai-shield
+cp .env.example .env
+npm install
+npm run dev
+```
+
+For local dev, keep root `.env` defaults:
+
+- `VITE_API_URL=` (empty, so Vite proxy is used)
+- `VITE_PROXY_TARGET=http://127.0.0.1:8000`
+
+Open:
+
+- Frontend: `http://localhost:8080`
+- Laravel API: `http://127.0.0.1:8000`
+- Detection engine: `http://127.0.0.1:8001`
+
+### Startup order (recommended)
+
+1. Start Laravel backend (`php artisan serve`)
+2. Start detection engine (`uvicorn main:app ...`)
+3. Start frontend (`npm run dev`)
+
+### Seeded test users
+
+Password for all: `password`
+
+- `sarah.chen@clinguard.local` (clinician)
+- `marcus.webb@clinguard.local` (security admin)
+- `priya.nair@clinguard.local` (system admin)
+
+### Quick sanity test
+
+1. Sign in from `http://localhost:8080`
+2. Open Dashboard > Clinical AI
+3. Send a prompt with demo PHI
+4. Verify:
+   - redacted outbound prompt appears
+   - detected spans appear
+   - RAG context appears (if engine dependencies are installed)
 
 ### API security
 

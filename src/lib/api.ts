@@ -152,9 +152,15 @@ async function request<T>(
     const body = await res.text();
     let message = "Request failed";
     try {
-      const j = JSON.parse(body) as { message?: string; errors?: Record<string, string[]> };
+      const j = JSON.parse(body) as {
+        message?: string;
+        detail?: string;
+        errors?: Record<string, string[]>;
+      };
       if (j.message) {
         message = j.message;
+      } else if (typeof j.detail === "string" && j.detail.trim() !== "") {
+        message = j.detail;
       } else if (j.errors && typeof j.errors === "object") {
         message = Object.values(j.errors)
           .flat()
@@ -165,7 +171,10 @@ async function request<T>(
     } catch {
       message = body || message;
     }
-    if (res.status === 419 || /Page Expired|CSRF token/i.test(message)) {
+    if ((path === "/login" || path === "/register") && res.status === 404 && /not found/i.test(message)) {
+      message =
+        "Auth endpoint not found. Check VITE_API_URL or dev proxy settings. You may be pointing the app to the detection engine instead of Laravel.";
+    } else if (res.status === 419 || /Page Expired|CSRF token/i.test(message)) {
       message =
         "Session expired or CSRF mismatch (419). If you set VITE_API_URL, use the same hostname as this page (localhost vs 127.0.0.1), or leave VITE_API_URL empty to use the dev proxy. See .env.example.";
     } else if (body.trimStart().startsWith("<!DOCTYPE") || body.trimStart().startsWith("<html")) {
