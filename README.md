@@ -33,54 +33,120 @@ This repository contains both the React frontend and Laravel backend:
 - **Detection + RAG**: Python 3.10+, venv (no Composer); FastAPI, regex + entropy + optional NER, ChromaDB, sentence-transformers
 - **AI**: OpenAI API (GPT-4 / gpt-4o-mini)
 
-## Getting Started
+## Quick Setup and Startup Guide
 
 ### Prerequisites
 
 - Node.js 18+, npm 9+
-- Python 3.10+ (for detection engine; use venv)
-- PHP 8.2+, Composer (for Laravel only)
+- Python 3.10+ (detection engine)
+- PHP 8.2+, Composer (Laravel backend)
 - MySQL 8.x
 
-### Installation
+### 1) Clone and create database
 
-1. **Clone and create DB**
-   ```bash
-   git clone https://github.com/yourusername/clinguard-ai-shield.git
-   cd clinguard-ai-shield
-   # Create database: CREATE DATABASE clinguard;
-   ```
+```bash
+git clone https://github.com/yourusername/clinguard-ai-shield.git
+cd clinguard-ai-shield
+# In MySQL:
+# CREATE DATABASE clinguard;
+```
 
-2. **Laravel backend (MySQL)**
-   ```bash
-   cd laravel-backend
-   cp .env.example .env
-   # Set DB_DATABASE=clinguard, DB_USERNAME, DB_PASSWORD. Optionally DETECTION_ENGINE_URL, OPENAI_API_KEY.
-   composer install
-   php artisan key:generate
-   php artisan migrate
-   php artisan serve --host=127.0.0.1 --port=8000
-   ```
+### 2) Backend setup (Laravel API)
 
-3. **Python detection engine (separate terminal, use venv)**
-   ```bash
-   cd detection_engine
-   cp .env.example .env   # optional overrides (USE_ML, PHI_MODEL_PATH, RAG_EMBED_MODEL)
-   python -m venv venv
-   venv\Scripts\activate   # Windows
-   pip install -r requirements.txt
-   uvicorn main:app --host 127.0.0.1 --port 8001
-   ```
-   Or run `scripts\run_detection.bat` (Windows). A Colab-trained model in `detection_engine/phi_model/` is used automatically when `USE_ML=1` (see [docs/COLAB_FULL_GUIDE.md](docs/COLAB_FULL_GUIDE.md)). The detector uses `label_map.json` for category names (e.g. B-PHI → PHI). If the model dir is missing or invalid, only regex and entropy run (no crash).
+```bash
+cd laravel-backend
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+```
 
-4. **Frontend**
-   ```bash
-   cd ..   # project root
-   cp .env.example .env   # optional: set VITE_API_URL=http://127.0.0.1:8000
-   npm install
-   npm run dev
-   ```
-   Open http://localhost:5173. Sign in or register, then use **Dashboard** to send prompts (PHI detected, redacted, RAG + OpenAI).
+Update `laravel-backend/.env` at least:
+
+- `DB_DATABASE=clinguard`
+- `DB_USERNAME=...`
+- `DB_PASSWORD=...`
+- `DETECTION_ENGINE_URL=http://127.0.0.1:8001`
+- `OPENAI_API_KEY=...` (optional, but needed for real chat responses)
+- `FRONTEND_URL=http://localhost:8080`
+
+Start backend:
+
+```bash
+php artisan serve --host=127.0.0.1 --port=8000
+```
+
+### 3) Detection engine setup (FastAPI PHI + RAG)
+
+In a new terminal:
+
+```bash
+cd detection_engine
+cp .env.example .env   # optional overrides (USE_ML, PHI_MODEL_PATH, RAG_EMBED_MODEL)
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --host 127.0.0.1 --port 8001
+```
+
+Windows activate command:
+
+```bash
+venv\Scripts\activate
+```
+
+Optional checks:
+
+```bash
+curl http://127.0.0.1:8001/health
+```
+
+### 4) Frontend setup (Vite React)
+
+In a third terminal:
+
+```bash
+cd /path/to/clinguard-ai-shield
+cp .env.example .env
+npm install
+npm run dev
+```
+
+For local dev, keep root `.env` defaults:
+
+- `VITE_API_URL=` (empty, so Vite proxy is used)
+- `VITE_PROXY_TARGET=http://127.0.0.1:8000`
+
+Open:
+
+- Frontend: `http://localhost:8080`
+- Laravel API: `http://127.0.0.1:8000`
+- Detection engine: `http://127.0.0.1:8001`
+
+### Startup order (recommended)
+
+1. Start Laravel backend (`php artisan serve`)
+2. Start detection engine (`uvicorn main:app ...`)
+3. Start frontend (`npm run dev`)
+
+### Seeded test users
+
+Password for all: `password`
+
+- `sarah.chen@clinguard.local` (clinician)
+- `marcus.webb@clinguard.local` (security admin)
+- `priya.nair@clinguard.local` (system admin)
+
+### Quick sanity test
+
+1. Sign in from `http://localhost:8080`
+2. Open Dashboard > Clinical AI
+3. Send a prompt with demo PHI
+4. Verify:
+   - redacted outbound prompt appears
+   - detected spans appear
+   - RAG context appears (if engine dependencies are installed)
 
 ### Environment variables reference
 
@@ -99,7 +165,7 @@ Laravel and detection_engine have full `.env.example` files in their directories
 
 ### API security
 
-- Auth: Laravel Sanctum (Bearer token for `/api/*`). Login/register at `/login`, `/register` (web).
+- Auth: Laravel Sanctum (**Bearer token** for `/api/*`). Login/register at `/login`, `/register` (web). SPA does not use Sanctum cookie CSRF on `/api/*`.
 - Protected endpoints: `/api/detect`, `/api/chat`, `/api/user`, `/api/logout` require `Authorization: Bearer <token>`.
 - Rate limit: 60 requests/minute on API routes. Input validation via FormRequests.
 

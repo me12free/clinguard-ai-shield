@@ -4,24 +4,33 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditEvent;
+use App\Support\RoleAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class AuditEventController extends Controller
 {
-    /** List audit events for the user's organization. */
+    /** Audit log — security admin: own org; system admin: all orgs or filter. */
     public function index(Request $request): JsonResponse
     {
-        $user = Auth::user();
-        $query = AuditEvent::query();
-        if ($user->organization_id) {
+        $user = $request->user()->load('role');
+        if (! RoleAccess::canViewAudit($user)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $query = AuditEvent::query()->orderByDesc('created_at')->limit(200)->with(['user:id,name,email']);
+
+        if (RoleAccess::isSystemAdmin($user)) {
+            if ($request->filled('organization_id')) {
+                $query->where('organization_id', (int) $request->query('organization_id'));
+            }
+        } else {
+            if (! $user->organization_id) {
+                return response()->json(['data' => []]);
+            }
             $query->where('organization_id', $user->organization_id);
         }
-        if ($request->has('event_type')) {
-            $query->where('event_type', $request->query('event_type'));
-        }
-        $events = $query->orderByDesc('created_at')->limit(200)->get(['id', 'user_id', 'organization_id', 'event_type', 'detected_categories', 'created_at']);
-        return response()->json(['data' => $events]);
+
+        return response()->json(['data' => $query->get()]);
     }
 }

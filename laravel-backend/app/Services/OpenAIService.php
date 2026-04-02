@@ -12,6 +12,8 @@ class OpenAIService
     {
         $key = config('clinguard.openai_api_key');
         if (empty($key)) {
+            Log::channel('clinguard')->info('openai.skipped', ['reason' => 'missing_api_key']);
+
             return 'OpenAI API key is not configured. Set OPENAI_API_KEY in .env for AI responses.';
         }
 
@@ -35,7 +37,13 @@ class OpenAIService
 
             if ($response->successful()) {
                 $body = $response->json();
-                return $body['choices'][0]['message']['content'] ?? '';
+                $content = $body['choices'][0]['message']['content'] ?? '';
+                Log::channel('clinguard')->info('openai.chat_success', [
+                    'model' => config('clinguard.openai_model', 'gpt-4o-mini'),
+                    'response_length' => strlen($content),
+                ]);
+
+                return $content;
             }
 
             Log::warning('OpenAI API error', ['status' => $response->status(), 'body' => $response->body()]);

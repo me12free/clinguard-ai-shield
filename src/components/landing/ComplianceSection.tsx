@@ -39,18 +39,17 @@ const ComplianceSection = () => {
               Built for Global Healthcare Compliance
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              ClinGuard is designed from the ground up to meet the stringent requirements 
-              of healthcare data protection regulations worldwide. Our platform ensures 
-              your organization stays compliant while leveraging cutting-edge AI technology.
+              The product pipeline is built around detect-then-redact-before-LLM: identifiers stay off the model path, with
+              optional retrieval and audit logging. Regulatory alignment depends on your deployment and processes.
             </p>
             
             <ul className="space-y-4">
               {[
-                "Automatic PHI identification across 18+ data types",
-                "Encrypted data storage and transmission",
-                "Complete audit trail for all data access",
-                "Role-based access control with MFA support",
-                "Regular security assessments and penetration testing"
+                "PHI detection via rules and optional NER (e.g. names, dates, contacts, IDs)",
+                "Server-side redaction before external AI; optional RAG for grounded answers",
+                "Audit events and conversation records tied to authenticated users",
+                "Role-based permissions for dashboard and admin features",
+                "API authentication and HTTPS between browser and backend",
               ].map((item, index) => (
                 <li key={index} className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">

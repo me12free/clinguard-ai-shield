@@ -19,9 +19,11 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
-        $user = $request->user();
+        $user = $request->user()->load('role');
         $user->load('role', 'organization');
         $token = $user->createToken('spa')->plainTextToken;
 
@@ -32,19 +34,10 @@ class AuthenticatedSessionController extends Controller
             'detected_categories' => null,
         ]);
 
-        $userData = [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role_id' => $user->role_id,
-            'organization_id' => $user->organization_id,
-            'role' => $user->role ? [
-                'id' => $user->role->id,
-                'role_name' => $user->role->role_name,
-                'permissions' => $user->role->permissions ?? [],
-            ] : null,
-        ];
-        return response()->json(['token' => $token, 'user' => $userData]);
+        return response()->json([
+            'token' => $token,
+            'user' => $this->userPayload($user),
+        ]);
     }
 
     /**
@@ -62,5 +55,22 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return response()->noContent();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function userPayload(\App\Models\User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'organization_id' => $user->organization_id,
+            'role' => $user->role ? [
+                'role_name' => $user->role->role_name,
+                'permissions' => $user->role->permissions,
+            ] : null,
+        ];
     }
 }

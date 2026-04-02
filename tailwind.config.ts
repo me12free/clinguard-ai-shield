@@ -80,11 +80,21 @@ export default {
   				to: {
   					height: '0'
   				}
+  			},
+  			'hero-fade-in': {
+  				from: { opacity: '0' },
+  				to: { opacity: '1' }
+  			},
+  			'hero-rise': {
+  				from: { opacity: '0', transform: 'translateY(12px)' },
+  				to: { opacity: '1', transform: 'translateY(0)' }
   			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'hero-fade-in': 'hero-fade-in 0.6s ease-out both',
+  			'hero-rise': 'hero-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) both'
   		},
   		boxShadow: {
   			'2xs': 'var(--shadow-2xs)',

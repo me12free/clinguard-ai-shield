@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Shield, Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const Navbar = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
     { label: "Features", href: "#features" },
@@ -18,10 +20,10 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-foreground">ClinGuard</span>
-          </a>
+          <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <BrandLogo className="h-8 w-8 rounded-lg" />
+            <span className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">ClinGuard</span>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
@@ -54,48 +56,61 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 text-foreground"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          {/* Mobile: open sheet from the right */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="md:hidden shrink-0"
+            aria-label="Open menu"
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen(true)}
           >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
+            <Menu className="h-6 w-6" />
+          </Button>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
-            <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </a>
-              ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border">
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-sm">
+              <SheetHeader className="border-b border-border px-6 py-5 text-left">
+                <SheetTitle className="text-base font-semibold">Menu</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className="rounded-lg px-3 py-3 text-base text-foreground/90 transition-colors hover:bg-muted hover:text-foreground"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
+              <div className="mt-auto flex flex-col gap-2 border-t border-border p-4">
                 {localStorage.getItem("auth_token") ? (
-                  <Link to="/dashboard">
-                    <Button className="w-full">Dashboard</Button>
-                  </Link>
+                  <Button className="w-full" asChild>
+                    <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
+                      Dashboard
+                    </Link>
+                  </Button>
                 ) : (
                   <>
-                    <Link to="/login">
-                      <Button variant="ghost" className="w-full">Sign In</Button>
-                    </Link>
-                    <Link to="/register">
-                      <Button className="w-full">Get Started</Button>
-                    </Link>
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/login" onClick={() => setMobileOpen(false)}>
+                        Sign In
+                      </Link>
+                    </Button>
+                    <Button className="w-full" asChild>
+                      <Link to="/register" onClick={() => setMobileOpen(false)}>
+                        Get Started
+                      </Link>
+                    </Button>
                   </>
                 )}
               </div>
-            </div>
-          </div>
-        )}
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </nav>
   );

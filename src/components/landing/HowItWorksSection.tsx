@@ -5,26 +5,30 @@ const steps = [
     icon: FileText,
     step: "01",
     title: "Input Clinical Data",
-    description: "Healthcare professionals enter clinical notes or queries through our secure interface."
+    description:
+      "Signed-in users enter notes or prompts in the app. Messages are sent to our API over HTTPS with authentication.",
   },
   {
     icon: Shield,
     step: "02",
     title: "PHI Detection",
-    description: "ClinGuard's AI scans for 18+ PHI identifiers using NLP and pattern recognition."
+    description:
+      "A detection service finds likely PHI using rules (e.g. names, dates, phones, IDs, emails) plus optional NER. Results are character spans with categories.",
   },
   {
     icon: Cpu,
     step: "03",
-    title: "Safe AI Processing",
-    description: "Redacted data is safely processed by OpenAI with RAG-enhanced context."
+    title: "Redaction & AI",
+    description:
+      "The server replaces spans with redaction tokens before anything is sent to the LLM. Optional RAG retrieves similar snippets to ground the reply; OpenAI runs on the redacted text.",
   },
   {
     icon: CheckCircle,
     step: "04",
-    title: "Secure Delivery",
-    description: "AI-generated responses are delivered with PHI restored only to authorized viewers."
-  }
+    title: "Response & Audit",
+    description:
+      "You receive the assistant reply and can review what was flagged. Conversations (redacted prompt summary) and audit events are stored. The model never sees the original identifiers.",
+  },
 ];
 
 const HowItWorksSection = () => {
@@ -37,7 +41,7 @@ const HowItWorksSection = () => {
             How ClinGuard Protects Your Data
           </h2>
           <p className="text-lg text-muted-foreground">
-            A seamless four-step process that safeguards PHI without disrupting clinical workflows.
+            Detect PHI, redact on the server, then call the model. Optional retrieval adds context without exposing identifiers to the LLM.
           </p>
         </div>
 

@@ -12,27 +12,32 @@ const features = [
   {
     icon: ShieldCheck,
     title: "Real-Time PHI Detection",
-    description: "Automatically identifies and redacts patient names, medical records, SSNs, and other sensitive data before processing."
+    description:
+      "A Python detection service finds likely PHI spans; the API replaces them with redaction tokens before any call to the language model.",
   },
   {
     icon: Brain,
     title: "AI-Powered Analysis",
-    description: "Leverages OpenAI's GPT-4 for intelligent clinical documentation while maintaining strict data privacy."
+    description:
+      "OpenAI chat completions (default gpt-4o-mini, configurable) run on redacted text so identifiers are not sent to the LLM.",
   },
   {
     icon: FileSearch,
     title: "RAG Clinical Knowledge",
-    description: "Retrieval-Augmented Generation provides accurate, context-aware responses using verified medical knowledge bases."
+    description:
+      "Optional retrieval embeds your redacted query against a vector store and adds top matching snippets to the system prompt.",
   },
   {
     icon: Users,
     title: "Role-Based Access",
-    description: "Granular permissions ensure staff only access data appropriate to their role and responsibilities."
+    description:
+      "Dashboard sections and admin actions are gated by role permissions (e.g. chat, PHI scan, org/user management).",
   },
   {
     icon: ClipboardList,
-    title: "Comprehensive Audit Logs",
-    description: "Complete tracking of all data access and modifications for compliance reporting and security reviews."
+    title: "Audit & History",
+    description:
+      "Chat flows record redacted prompts, response summaries, and audit events for authenticated users.",
   },
   {
     icon: Smartphone,

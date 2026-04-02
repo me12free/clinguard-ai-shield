@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AuditEventController;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\DetectionController;
@@ -9,6 +11,7 @@ use App\Http\Controllers\Api\HelloController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\PolicyController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\RoleListController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,36 +21,46 @@ Route::get('/hello', HelloController::class)->middleware('throttle:60,1');
 // Protected: require Sanctum token, rate limit
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('/user', function (Request $request) {
-        $user = $request->user();
-        $user->load('role', 'organization');
-        $data = $user->toArray();
-        $data['role'] = $user->role ? [
-            'id' => $user->role->id,
-            'role_name' => $user->role->role_name,
-            'permissions' => $user->role->permissions ?? [],
-        ] : null;
-        return response()->json($data);
+        $user = $request->user()->load('role');
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'organization_id' => $user->organization_id,
+            'role' => $user->role ? [
+                'role_name' => $user->role->role_name,
+                'permissions' => $user->role->permissions,
+            ] : null,
+        ]);
     });
     Route::post('/logout', function (Request $request) {
         $request->user()?->currentAccessToken()?->delete();
+
         return response()->json(['message' => 'Logged out']);
     });
 
-    Route::post('/detect', DetectionController::class)->middleware('permission:detect');
-    Route::post('/chat', ChatController::class)->middleware('permission:chat');
-    Route::get('/conversations', [ConversationController::class, 'index'])->middleware('permission:view_own_conversations');
-    Route::get('/policies', [PolicyController::class, 'index'])->middleware('permission:policies');
-    Route::put('/policies/{id}', [PolicyController::class, 'update'])->middleware('permission:policies');
-    Route::get('/audit-events', [AuditEventController::class, 'index'])->middleware('permission:audit');
-    Route::get('/users', [UserController::class, 'index'])->middleware('permission:users');
-    Route::put('/users/{id}', [UserController::class, 'update'])->middleware('permission:users');
-    Route::get('/organizations', [OrganizationController::class, 'index'])->middleware('permission:organizations');
-    Route::put('/organizations/{id}', [OrganizationController::class, 'update'])->middleware('permission:organizations');
+    Route::post('/detect', DetectionController::class);
+    Route::post('/chat', ChatController::class);
 
-    Route::get('/reports/summary', [ReportController::class, 'summary'])->middleware(
-        'permission:view_own_conversations,audit,organizations'
-    );
-    Route::get('/reports/export', [ReportController::class, 'exportPdf'])->middleware(
-        'permission:view_own_conversations,audit,organizations'
-    );
+    Route::get('/conversations', [ConversationController::class, 'index']);
+
+    Route::get('/policies', [PolicyController::class, 'index']);
+    Route::post('/policies', [PolicyController::class, 'store']);
+    Route::put('/policies/{id}', [PolicyController::class, 'update']);
+    Route::delete('/policies/{id}', [PolicyController::class, 'destroy']);
+
+    Route::get('/audit-events', [AuditEventController::class, 'index']);
+
+    Route::get('/roles', RoleListController::class);
+
+    Route::get('/organizations', [OrganizationController::class, 'index']);
+    Route::post('/organizations', [OrganizationController::class, 'store']);
+    Route::put('/organizations/{id}', [OrganizationController::class, 'update']);
+    Route::delete('/organizations/{id}', [OrganizationController::class, 'destroy']);
+
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
+    Route::post('/admin/users', [AdminUserController::class, 'store']);
+    Route::put('/admin/users/{id}', [AdminUserController::class, 'update']);
+    Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']);
 });

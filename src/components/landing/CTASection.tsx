@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Shield } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const CTASection = () => {
   return (
@@ -12,12 +14,15 @@ const CTASection = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/20 mb-8">
-            <Shield className="h-4 w-4 text-primary-foreground" />
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/20 mb-8 hover:opacity-90 transition-opacity"
+          >
+            <BrandLogo className="h-4 w-4 rounded-sm ring-1 ring-primary-foreground/30" />
             <span className="text-sm font-medium text-primary-foreground">
               Start protecting patient data today
             </span>
-          </div>
+          </Link>
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-6">
             Ready to Secure Your Healthcare AI Workflow?

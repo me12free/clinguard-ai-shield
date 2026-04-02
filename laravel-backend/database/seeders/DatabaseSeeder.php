@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             OrganizationSeeder::class,
             PolicySeeder::class,
+            AllowlistSeeder::class,
+            DetectionRuleSeeder::class,
         ]);
 
         $orgId = DB::table('organizations')->value('id');
@@ -22,17 +24,35 @@ class DatabaseSeeder extends Seeder
         $securityAdminId = DB::table('roles')->where('role_name', 'security_admin')->value('id');
         $systemAdminId = DB::table('roles')->where('role_name', 'system_admin')->value('id');
 
-        User::query()->updateOrCreate(
-            ['email' => 'clinician@test.com'],
-            ['name' => 'Clinician User', 'password' => Hash::make('password'), 'role_id' => $clinicianId, 'organization_id' => $orgId]
-        );
-        User::query()->updateOrCreate(
-            ['email' => 'security@test.com'],
-            ['name' => 'Security Admin', 'password' => Hash::make('password'), 'role_id' => $securityAdminId, 'organization_id' => $orgId]
-        );
-        User::query()->updateOrCreate(
-            ['email' => 'admin@test.com'],
-            ['name' => 'System Admin', 'password' => Hash::make('password'), 'role_id' => $systemAdminId, 'organization_id' => $orgId]
-        );
+        $users = [
+            [
+                'email' => 'sarah.chen@clinguard.local',
+                'name' => 'Dr. Sarah Chen',
+                'role_name' => 'clinician',
+            ],
+            [
+                'email' => 'marcus.webb@clinguard.local',
+                'name' => 'Marcus Webb',
+                'role_name' => 'security_admin',
+            ],
+            [
+                'email' => 'priya.nair@clinguard.local',
+                'name' => 'Priya Nair',
+                'role_name' => 'system_admin',
+            ],
+        ];
+
+        foreach ($users as $u) {
+            $roleId = DB::table('roles')->where('role_name', $u['role_name'])->value('id');
+            User::query()->updateOrCreate(
+                ['email' => $u['email']],
+                [
+                    'name' => $u['name'],
+                    'password' => Hash::make('password'),
+                    'role_id' => $roleId,
+                    'organization_id' => $orgId,
+                ]
+            );
+        }
     }
 }

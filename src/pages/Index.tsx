@@ -8,7 +8,6 @@ import ComplianceSection from "@/components/landing/ComplianceSection";
 import CTASection from "@/components/landing/CTASection";
 
 import Footer from "@/components/landing/Footer";
-import BackendHello from "../components/BackendHello";
 import LogoutButton from "../components/LogoutButton";
 
 const Index = () => {
@@ -29,7 +28,6 @@ const Index = () => {
       <CTASection />
       {/* Auth forms moved to separate views */}
       {token && <LogoutButton onLogout={() => setToken(null)} />}
-      <BackendHello />
       <Footer />
     </div>
   );
