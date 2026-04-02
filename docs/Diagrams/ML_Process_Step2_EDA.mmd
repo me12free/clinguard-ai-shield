@@ -1,0 +1,30 @@
+%% ML Process Step 2: Exploratory Data Analysis
+%% Raw or cleaned data -> EDA script -> insights (counts, distribution, samples).
+%% Render at mermaid.live or VS Code Mermaid extension.
+
+flowchart LR
+  subgraph input [Input]
+    D1[data/raw/*.jsonl]
+    D2[or data/cleaned/train val test.json]
+  end
+
+  EDA[eda_phi_data.py]
+
+  subgraph insights [Insights Generated]
+    I1[Record counts]
+    I2[Label distribution\nper category]
+    I3[Text length stats\nmin/max/mean]
+    I4[Sample records\nper category]
+    I5[Optional: eda_insights.json]
+  end
+
+  D1 --> EDA
+  D2 --> EDA
+  EDA --> I1
+  EDA --> I2
+  EDA --> I3
+  EDA --> I4
+  EDA --> I5
+
+  style input fill:none,stroke:#333
+  style insights fill:none,stroke:#333

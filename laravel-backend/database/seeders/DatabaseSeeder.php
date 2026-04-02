@@ -17,17 +17,22 @@ class DatabaseSeeder extends Seeder
             PolicySeeder::class,
         ]);
 
-        $roleId = DB::table('roles')->where('role_name', 'clinician')->value('id');
         $orgId = DB::table('organizations')->value('id');
+        $clinicianId = DB::table('roles')->where('role_name', 'clinician')->value('id');
+        $securityAdminId = DB::table('roles')->where('role_name', 'security_admin')->value('id');
+        $systemAdminId = DB::table('roles')->where('role_name', 'system_admin')->value('id');
 
         User::query()->updateOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => Hash::make('password'),
-                'role_id' => $roleId,
-                'organization_id' => $orgId,
-            ]
+            ['email' => 'clinician@test.com'],
+            ['name' => 'Clinician User', 'password' => Hash::make('password'), 'role_id' => $clinicianId, 'organization_id' => $orgId]
+        );
+        User::query()->updateOrCreate(
+            ['email' => 'security@test.com'],
+            ['name' => 'Security Admin', 'password' => Hash::make('password'), 'role_id' => $securityAdminId, 'organization_id' => $orgId]
+        );
+        User::query()->updateOrCreate(
+            ['email' => 'admin@test.com'],
+            ['name' => 'System Admin', 'password' => Hash::make('password'), 'role_id' => $systemAdminId, 'organization_id' => $orgId]
         );
     }
 }

@@ -1,0 +1,313 @@
+CLINGUARD AI SHIELD
+FINAL SUBMISSION TEXT: CHAPTERS 1, 2, AND 3
+
+Plain text for paste into Microsoft Word. Apply Times New Roman 12 pt, 1.5 spacing,
+justified paragraphs, centred page numbers, APA references per faculty guide.
+
+Sources: docs/Chapter_1_Introduction.md, Chapter_2_Literature_Review.md, Chapter_3_Methodology.md
+Aligned with class materials in docs/Lectures and guides (Lec 1-5, Formatting guidelines, Diagrams.txt).
+
+========================================================================
+
+CHAPTER 1: INTRODUCTION
+=======================
+
+Thesis formatting (faculty template). The final Word document should use Times New Roman 12 pt throughout, 1.5 line spacing, justified paragraphs, normal margins, and page numbers centred at the bottom. Chapter titles should be centred and bold (for example "Chapter 1: Introduction"). Subsections use numbered bold headings (1.1, 1.2). In-text citations and the reference list must follow APA style. The background below should be supported with current, relevant references when you compile the References chapter (typical expectation: at least one to one and a quarter pages of background with citations, per class notes).
+
+Voice. The report should use third person and reported speech where the faculty requires it (for example "The study proposed…", "ClinGuard was designed to…") rather than first-person promotional language.
+
+
+1.1 Background
+
+Conceptualization. Generative artificial intelligence entered everyday clinical workflows through web-based assistants that draft documentation, answer knowledge questions, and support communication. That shift created a new object of concern for information systems practice: not only whether clinicians would adopt such tools, but how institutions could process free-text clinical language without breaching duties under data protection law and professional standards. In Kenya, the Data Protection Act, 2019 establishes principles including lawful processing, purpose limitation, and integrity and confidentiality of personal data, all of which apply when health-related identifiers or contact data appear in user prompts. Internationally, regimes such as the Health Insurance Portability and Accountability Act (HIPAA) in the United States have shaped expectations for protected health information (PHI) and for minimum necessary use when information is shared with vendors.
+
+Context. Healthcare organisations experimented with large language models offered by third parties. Those models improved perceived productivity but introduced data egress risk: prompts could contain patient names, medical record numbers, dates of care, telephone numbers, and other attributes that regulators treat as sensitive. Prior mitigation included manual review, ad hoc redaction, or avoidance of external tools. Such approaches scaled poorly, produced uneven behaviour across teams, and rarely generated structured audit evidence for security officers.
+
+Proposed direction. The ClinGuard project was conceived as a web-based governance layer for clinical use of external generative AI. It combined a browser client, a policy-aware application programming interface (API), and a dedicated PHI detection and redaction service using rules, heuristics, and machine-learning components where configured. The background above frames why such a system was needed as a focused information systems response to regulated clinical AI use. (Insert APA citations throughout this section in your final submission.)
+
+
+1.2 Problem Statement
+
+Situational analysis. Despite adoption of clinical AI, many deployments lacked a single auditable control point between the clinician workstation and the model provider. Consumer-style chat experiences did not embed organisation-specific policies, role-based enforcement, or immutable-style security logging suitable for review after incidents. Manual redaction remained error-prone and slow. Smaller providers often could not procure enterprise-only governance suites yet still required defensible controls aligned with the Kenya Data Protection Act and good international practice.
+
+Weaknesses of informal approaches. Reliance on user discipline without tooling, inconsistent de-identification, absence of central policy when multiple AI tools appeared in the same institution, and limited forensic trails were recurring weaknesses described in health informatics and security literature.
+
+Proposed response. This project addressed the gap by specifying, designing, implementing, and testing a system that detected and redacted PHI before outbound calls to external models where policy required it, supported configurable policies and emergency bypass only when explicitly allowed, and recorded audit events for security-relevant actions. The problem statement therefore targeted both technical leakage risk and governance visibility.
+
+
+1.3 Objectives
+
+
+1.3.1 General objective (aim)
+
+The general objective was to develop and validate a web-based system that applied automated PHI detection and redaction, policy configuration, and audit logging so that clinical users could interact with external generative AI in a manner more consistent with organisational and regulatory expectations.
+
+
+1.3.2 Specific objectives (SMART)
+
+The following specific objectives were specific, measurable, attainable, realistic, and time-bound within the project period:
+
+(i) To review literature and practice on clinical use of large language models, PHI handling, and governance mechanisms for third-party model APIs.
+
+(ii) To analyse limitations of informal or manual approaches to protecting sensitive data in AI-assisted clinical workflows.
+
+(iii) To select and justify a systems development approach suitable for a regulated full-stack implementation that included a machine-learning component.
+
+(iv) To analyse and design a multi-tier architecture, data model, and interaction flows for governed chat and administration (documented in Chapter 4).
+
+(v) To implement a working system comprising a React frontend, a Laravel API with role-based access, and a Python detection service with optional retrieval-augmented generation.
+
+(vi) To test and validate the implemented system through automated API tests, role-based checks, and evaluation of the PHI detection model on held-out data (documented in Chapter 5).
+
+
+1.4 Research questions
+
+(i) What risks and control patterns appear in the literature when clinical text is processed by third-party generative AI?
+
+(ii) How could functional and non-functional requirements be specified for a system that redacts PHI, applies policies, and records audit events?
+
+(iii) What architecture and data structures support clear separation between presentation, orchestration, detection, and persistence?
+
+(iv) How effectively did the implemented API and model pipeline meet stated requirements under test conditions?
+
+(v) What testing and validation mechanisms (automated tests, role checks, model metrics) demonstrated that the system behaved as specified?
+
+
+1.5 Justification
+
+The project was justified on clinical, legal, and technical grounds. Clinicians gained a structured path to use AI assistants without bypassing governance. Compliance and security roles gained policy objects and audit trails that could be reviewed against internal standards and applicable law. Technically, the work showed how composable open components (Laravel, React, FastAPI, and transformer-based named-entity recognition where enabled) could be integrated behind one API, which matters for maintainability and for institutions that prefer self-hosted or hybrid deployments. The solution was intended to benefit society by reducing avoidable disclosure of sensitive health data in AI workflows and to benefit the IT community by documenting a reproducible pattern: govern first, then generate, with evidence stored in the database. (Support with references in the final document.)
+
+
+1.6 Scope and limitations
+
+Scope. The system covered user registration and authentication, governed chat with optional emergency bypass where policy allowed, organisation-scoped policies, conversation storage with redacted prompts, audit logging for security-relevant actions, and administration of users and organisations for authorised roles. It integrated with an external model provider through the API layer after redaction. A machine-learning PHI detector was trained and evaluated on project datasets as documented in Chapter 5.
+
+Out of scope. The system did not replace institutional privacy programmes, legal advice, or formal certification regimes. It did not modify electronic health record systems as a primary integration target. Real-time scraping of external clinical websites was out of scope.
+
+Limitations (of the system, not personal limitations). Detection was not guaranteed perfect for all languages, formats, or adversarial input; performance depended on training data and configuration. Deployment assumptions (HTTPS, secret management, backups, high availability) remained the organisation’s responsibility. The academic prototype was sized for demonstration and testing rather than full hospital-scale load without further capacity planning. Vendor uptime, model behaviour, and jurisdictional interpretation of law remained external constraints.
+
+
+************************************************************************
+
+
+CHAPTER 2: LITERATURE REVIEW
+============================
+
+Thesis formatting. Apply the same faculty rules as Chapter 1 (Times New Roman 12 pt, 1.5 spacing, justified text, APA references). Figures: Class notes ask for screenshots of related systems where possible; insert Figures 2.1 to 2.3 (or as directed by your supervisor) in the Word version after the related-work subsections.
+
+
+2.1 Introduction
+
+This chapter reviews published and professional literature relevant to clinical generative AI, identification and protection of sensitive health data, and governance patterns for third-party model APIs. It is organised as follows.
+
+Literature streams reviewed (mapped to sections):
+
+(i) Regulatory and ethical context for health data and third-party processing (Section 2.2).
+
+(ii) Challenges in current practice when clinical teams adopt consumer-style or lightly governed AI tools (Section 2.2.1).
+
+(iii) Technical approaches to sensitive data in text: rules, heuristics, named-entity recognition, and hybrid pipelines (Section 2.3).
+
+(iv) Related systems and product classes illustrating the market and research landscape (Section 2.4), with space for comparative screenshots in the final thesis.
+
+(v) Synthesis of gaps that motivated the ClinGuard design (Section 2.5).
+
+(vi) Conceptual framework linking inputs, processing, and outputs (Section 2.6).
+
+Full bibliographic entries appear in the References chapter in APA style. This Markdown source uses author-year placeholders in prose where you will attach final citations in Word.
+
+
+2.2 Clinical generative AI and data protection context
+
+Large language models gained traction in medicine for drafting text, summarisation, and question answering. Researchers and professional bodies warned that free-text prompts could embed identifiers and other sensitive attributes, and that vendor retention, subprocessors, and cross-border transfer complicated data protection impact assessments. The Kenya Data Protection Act, 2019 emphasises lawful basis, purpose limitation, and security of processing, which applies when health-related personal data leaves an organisation’s controlled environment. HIPAA-oriented guidance in the United States similarly stresses minimum necessary disclosure and appropriate agreements where vendors process protected information. International comparison: high-income health systems have moved faster on vendor contracting for AI, while many low- and middle-income settings face similar risks with fewer institutional procurement layers; a lightweight technical gateway remains relevant in both contexts.
+
+Literature in health informatics and AI ethics stressed transparency, human oversight, and auditability as complements to technical controls. Those themes informed ClinGuard’s emphasis on visible redaction outcomes, policy configuration, and security-oriented audit records.
+
+
+2.2.1 Challenges in current practice
+
+Common weaknesses reported in practice included: reliance on user discipline without tooling; inconsistent application of de-identification across teams; lack of central policy when multiple AI tools appeared in the same institution; and limited forensic trails after incidents. Consumer-grade chat products typically did not expose organisation-level policy objects or integrate with existing identity and access management for clinical roles (clinician, security officer, system administrator). *(Support with APA references.)*
+
+
+2.3 Technical approaches to sensitive data in text
+
+This section addresses objective (i) of Chapter 1 theoretically: how the literature describes protecting sensitive content in natural language.
+
+Rule-based and lexical methods detected patterns such as national identifiers, phone numbers, and dates with high precision in well-formed text but struggled with context and novel phrasing. Statistical and neural named-entity recognition models assigned token- or span-level labels (for example BIO tagging) and could generalise beyond fixed patterns when trained on suitable corpora. Hybrid pipelines combined rules, heuristics (such as entropy filters), and models to balance latency and recall.
+
+Retrieval-augmented generation augmented prompts with context from organisational knowledge bases; that pattern raised additional questions about what text entered the retrieval index and how retrieval results were filtered before being shown to the model. ClinGuard’s design treated retrieval as optional and subordinate to the same policy and logging discipline as the main chat path.
+
+
+2.4 Related works
+
+The following subsections discuss at least three distinct categories of related work (class expectation: minimum three, maximum four named areas). Insert screenshots in the final thesis as Figure 2.1, Figure 2.2, and Figure 2.3 (or equivalent) showing each category’s representative interface or architecture, with captions in APA style for any reproduced images you have rights to use.
+
+
+2.4.1 Consumer and enterprise large language model interfaces
+
+General-purpose chat interfaces from major technology firms offered powerful models but default configurations were not tailored to clinical governance. Enterprise offerings began to add administrative controls, retention policies, and data residency options; cost and integration complexity often constrained adoption by smaller providers. Shortcoming for this project: a lightweight, inspectable stack combining open components with explicit PHI handling, organisation policy, and audit in one student-scoped system remained a distinct niche.
+
+
+2.4.2 De-identification and clinical natural language processing toolkits
+
+Research toolkits and commercial services addressed de-identification for research corpora (including tasks in the tradition of i2b2-style shared tasks) with strong results on benchmarks. Shortcoming: many tools targeted batch document processing rather than interactive chat with low-latency expectations, and did not bundle role-based web UI, policy engines, and live LLM routing in the same application studied here.
+
+
+2.4.3 Healthcare integration and decision-support platforms
+
+Major electronic health record vendors and middleware layers integrated AI features under strict contracting and long implementation cycles. Shortcoming: those paths assumed large-vendor roadmaps; ClinGuard explored a parallel gateway for settings where clinicians experimented with external models outside the core EHR workflow.
+
+
+2.5 Gaps in related work
+
+Synthesising Sections 2.2 through 2.4, gaps relevant to this project included: (i) affordable, transparent gateways for PHI-aware prompting tied to organisational policy; (ii) unified treatment of rules, heuristics, and learned detectors in a single API consumable by a modern single-page application; (iii) audit and role separation suitable for security review in a teaching-friendly codebase; (iv) documented training and evaluation of a detector aligned with Kenya-relevant synthetic patterns combined with public PII-oriented corpora. ClinGuard was positioned to address those gaps within the scope stated in Chapter 1.
+
+
+2.6 Conceptual framework
+
+The conceptual model for ClinGuard followed input-process-output structure required in class notes, with explicit governance feedback:
+
+Inputs: authenticated clinical users; raw clinical or administrative text; organisational policies and allowlists; optional knowledge documents for retrieval.
+
+Processing: identity and authorisation; PHI detection and redaction (and optional bypass under policy); optional retrieval; call to external model API; persistence of redacted prompts and audit metadata.
+
+Outputs: model completions shown in the client; stored conversations; audit events for oversight; administrative views for policies, users, and organisations.
+
+Diagram requirement. The final thesis should include a conceptual framework diagram (symbols for user devices, application server, detection service, database, external AI) with short labels on arrows matching the three stages above. Chapter 4 provides formal UML and architecture figures that instantiate this framework in systems analysis and design notation.
+
+
+************************************************************************
+
+
+CHAPTER 3: SYSTEM DEVELOPMENT METHODOLOGY
+=========================================
+
+Thesis formatting. Same faculty template as Chapters 1 and 2 (Times New Roman 12 pt, 1.5 line spacing, justified text, APA references). Diagrams: Include a figure of the development methodology (Modified Waterfall phases) and, if required, cross-reference the OOAD diagram types listed in class materials (use case and sequence for analysis; ERD, logical schema, class diagram, architecture for design).
+
+
+3.1 Introduction
+
+This chapter describes the methodology applied to analyse, design, implement, and test ClinGuard. The work combined a structured life-cycle model with object-oriented analysis and design (OOAD) so that requirements, diagrams, and code structure remained aligned. Structured alternatives mentioned in class (SSAD, SSADM) were considered; OOAD was selected because the implementation used object-oriented frameworks (Laravel, React, Python services) and clear service boundaries.
+
+Agile is a family of iterative approaches, not a single methodology in the sense used in these notes; the project did not claim a full Scrum process but allowed limited iteration between neighbouring waterfall phases.
+
+Section 3.2 presents the development approach and phases. Section 3.3 justifies that choice. Section 3.4 summarises system analysis artefacts. Section 3.5 summarises system design artefacts (fully developed in Chapter 4). Section 3.6 lists deliverables and milestones, including the system proposal and Gantt chart expectations. Section 3.7 lists tools and technologies.
+
+
+3.2 Applied development approach
+
+
+3.2.1 Modified Waterfall
+
+The project followed a Modified Waterfall life cycle. Unlike strict linear waterfall, short feedback loops were permitted between adjacent phases (for example refining requirements after early API sketches, or adjusting the database after test failures), but the dominant order remained: requirements and planning; analysis; design; implementation; testing; documentation and packaging for examination.
+
+The phases were operationalised as follows:
+
+Requirements gathering and planning. Functional and non-functional requirements were derived from regulatory context, literature (Chapter 2), and role personas (clinician, security administrator, system administrator). Traceability linked major features to tests in Chapter 5.
+
+Requirements analysis. Requirements were consolidated into tables and narrative suitable for Chapter 4 and for API design.
+
+System analysis (OOAD). Use case and sequence diagrams captured actors, goals, and message order for the primary governed chat path and administration. These diagram types match the OOAD analysis list in class notes (use case diagrams, sequence diagrams).
+
+System design. ERD, logical/physical relational schema, class diagram, and system architecture documented data and software structure before full coding. These match the OOAD design list in class notes.
+
+Implementation. The stack was built in layers: Laravel API and migrations with PHPUnit feature tests; Python detection service; React client; integration of chat, policies, audit, and administration.
+
+Testing. PHPUnit validated HTTP contracts and permissions; manual and Playwright end-to-end tests exercised the UI; the PHI model was trained, validated, and evaluated on held-out data.
+
+Documentation. Chapters 4 and 5 recorded analysis, design, build, and verification; appendices held logical schema and API summaries.
+
+Figure requirement. A diagram of Modified Waterfall with the phases above should appear in the thesis (body or appendix) as directed by the supervisor.
+
+
+3.2.2 Role of OOAD
+
+OOAD provided a shared vocabulary (actors, objects, messages) across analysis and design. It did not require a one-to-one mapping from every PHP or TypeScript file to a UML class; it bounded responsibilities and dependencies so that PHI handling remained in agreed layers.
+
+
+3.2.3 SSAD and SSADM (optional note)
+
+The project did not produce data flow diagrams or context diagrams as primary artefacts; emphasis was on OOAD per the technology stack. If the faculty requires DFDs, they may be added as supplementary analysis figures with a short note that the main design followed OOAD.
+
+
+3.3 Justification of Modified Waterfall methodology
+
+Agile/Scrum would have supported rapid iteration but the examination-oriented project needed stable requirement and design baselines documented before defence. Pure agile risked under-documented analysis for a compliance-sensitive system.
+
+Modified Waterfall balanced documentation discipline with practical rework between neighbouring phases. OOAD matched the object-oriented structure of Laravel and React and the service boundary with the Python analyser. The combination supported traceability from objectives to tests, as required in class guidance.
+
+
+3.4 System analysis
+
+Analysis focused on what the system must do from an external viewpoint.
+
+
+3.4.1 Use case diagram
+
+The use case diagram identified human actors (clinician, security administrator, system administrator) and system actors (detection and retrieval service, external model provider). Use cases included authentication, governed chat, conversation review, policy management, audit review, and user or organisation administration. Include and extend relationships separated mandatory redaction from conditional emergency bypass. The diagram is Figure 4.1 in Chapter 4.
+
+
+3.4.2 Sequence diagram
+
+A sequence diagram for governed chat ordered messages among the browser, Laravel API, Python service, optional vector store, external model API, and database, including alternative fragments for failure modes. It is Figure 4.5 in Chapter 4.
+
+
+3.5 System design
+
+Chapter 4 contains the full design specification. The following subsections list the roles of each design artefact, as required in class notes.
+
+
+3.5.1 Database schema
+
+The entity-relationship diagram and relational (physical) schema documented entities, relationships, keys, and table definitions for organisations, users, roles, policies, conversations, audit events, and related structures. They appear as Figures 4.2 and 4.3 in Chapter 4 and align with Appendix A (logical database specification). The logical schema explains how tables and relationships implement the data model before migration.
+
+
+3.5.2 Wireframes and mockups
+
+Wireframes or mockups link requirements to layout. Design-time sketches may appear in Chapter 4 if the faculty expects them; implemented screenshots belong primarily in Chapter 5 (per examination practice in comparable projects).
+
+
+3.5.3 System architecture
+
+The system architecture diagram shows major deployment units (browser, API server, detection service, database, external AI) and trust boundaries. It appears as Figure 4.6 in Chapter 4.
+
+
+3.5.4 Class diagram
+
+The class diagram summarises principal software elements across the frontend, Laravel layer, and Python detection components. It is Figure 4.4 in Chapter 4.
+
+
+3.6 System deliverables and milestones
+
+
+3.6.1 System proposal
+
+The system proposal (early submission) stated the title, problem, objectives, scope, and planned methodology. The present document is the evolved report after implementation; it satisfies the proposal’s promises by recording analysis, design, build, and test evidence in later chapters.
+
+
+3.6.2 Deliverables for examination
+
+Deliverables included: refined introduction, literature review, and methodology chapters; OOAD and architecture figures; relational database implemented via migrations; REST API with authentication and permissions; React client; Python detection service; training and evaluation artefacts for the PHI model; automated and manual tests; and documentation sufficient for replication.
+
+
+3.6.3 Gantt chart and timeline
+
+A Gantt chart covering the project from requirements through testing should appear in Appendix A (or as directed by the school), showing Semester 1 work through Chapter 4 and Semester 2 work through implementation, testing, and defence preparation, consistent with class timelines discussed in lectures.
+
+
+3.7 Tools and technologies
+
+The following tools supported the methodology phases (expand or cite versions in Chapter 5 as needed):
+
+| Phase | Tools |
+| Authoring and version control | Git; code editor (for example Visual Studio Code) |
+| Backend API | PHP, Laravel, Composer, Laravel Sanctum |
+| Database | MySQL |
+| Frontend | Node.js, npm, React, TypeScript, Vite, Tailwind CSS |
+| Detection and ML | Python, FastAPI, PyTorch and Transformers (when ML path enabled), ChromaDB, sentence-transformers |
+| External AI | OpenAI API (configurable model) |
+| Testing | PHPUnit, Playwright |
+| Diagrams | PlantUML, Mermaid, or drawing tools per project convention |
+
+
+************************************************************************

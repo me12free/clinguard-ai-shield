@@ -2,6 +2,16 @@
 
 PHP must be on your system **PATH** for `php` and `composer` to work in the terminal.
 
+## Quick fix: use the batch scripts (no PATH change)
+
+From `laravel-backend` you can run:
+
+- **`serve.bat`** – starts the Laravel server (`php artisan serve`)
+- **`composer_install.bat`** – runs Composer (`php composer.phar install`)
+- **`run_tests.bat`** – runs tests (`php artisan test`)
+
+These scripts look for PHP in common locations: `C:\xampp\php\php.exe`, `C:\laravel\herd\php\php.exe`, `C:\php\php.exe`. If your PHP is elsewhere, create a file named **`php_exe.txt`** in the `laravel-backend` folder containing a single line: the full path to `php.exe` (e.g. `D:\tools\php\php.exe`).
+
 ## Option 1: Add existing PHP to PATH
 
 If PHP is already installed (XAMPP, Laravel Herd, standalone, etc.):

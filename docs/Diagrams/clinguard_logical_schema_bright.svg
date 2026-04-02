@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1360 1040" overflow="visible">
+  <defs>
+    <linearGradient id="logSchemaBg" x1="0" y1="0" x2="1360" y2="1040" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f1f5f9"/>
+      <stop offset="50%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f0fdfa"/>
+    </linearGradient>
+    <filter id="logTblShadow" x="-6%" y="-4%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.07"/>
+    </filter>
+  </defs>
+
+  <rect width="1360" height="1040" fill="url(#logSchemaBg)"/>
+  <rect x="12" y="8" width="1336" height="1024" rx="14" fill="none" stroke="#cbd5e1" stroke-width="1.25"/>
+
+  <text x="680" y="34" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a" font-family="system-ui, Segoe UI, sans-serif">ClinGuard - logical schema with column types and sizes</text>
+  <text x="680" y="52" text-anchor="middle" font-size="9.5" fill="#475569" font-family="system-ui, Segoe UI, sans-serif">MySQL-oriented mapping: Laravel string() = VARCHAR(255), id/foreignId = BIGINT UNSIGNED, timestamps = TIMESTAMP (nullable).</text>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#64748b" stroke-width="1.35">
+    <path d="M 316 168 L 332 168"/>
+    <path d="M 640 176 L 656 176"/>
+    <path d="M 934 118 L 962 118"/>
+    <path d="M 795 250 L 795 354 L 962 354"/>
+    <path d="M 720 250 L 720 468 L 962 468"/>
+    <path d="M 680 250 L 680 410 L 496 410 L 496 348"/>
+    <path d="M 486 306 L 486 398 L 496 398 L 496 348"/>
+    <path d="M 486 306 L 486 578"/>
+  </g>
+
+  <g font-family="system-ui, Segoe UI, sans-serif" filter="url(#logTblShadow)" font-size="8.5" fill="#334155">
+
+    <g transform="translate(48,72)">
+      <rect width="268" height="26" rx="7" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.65"/>
+      <text x="134" y="17" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5b21b6">roles</text>
+      <rect y="26" width="268" height="154" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+      <text x="8" y="40" fill="#0f172a"><tspan font-weight="700" fill="#7c3aed">PK</tspan> id BIGINT UNSIGNED AI</text>
+      <text x="8" y="54">role_name VARCHAR(255)</text>
+      <text x="8" y="68">permissions JSON NULL</text>
+      <text x="8" y="82">created_at TIMESTAMP NULL</text>
+      <text x="8" y="96">updated_at TIMESTAMP NULL</text>
+    </g>
+
+    <g transform="translate(332,72)">
+      <rect width="308" height="26" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.65"/>
+      <text x="154" y="17" text-anchor="middle" font-size="11.5" font-weight="700" fill="#065f46">users</text>
+      <rect y="26" width="308" height="210" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+      <text x="8" y="40" fill="#0f172a"><tspan font-weight="700" fill="#059669">PK</tspan> id BIGINT UNSIGNED AI</text>
+      <text x="8" y="54">name VARCHAR(255)</text>
+      <text x="8" y="68">email VARCHAR(255) <tspan font-weight="600" fill="#047857">UK</tspan></text>
+      <text x="8" y="82">email_verified_at TIMESTAMP NULL</text>
+      <text x="8" y="96">password VARCHAR(255)</text>
+      <text x="8" y="110">remember_token VARCHAR(100) NULL</text>
+      <text x="8" y="124" fill="#0f172a"><tspan font-weight="700" fill="#7c3aed">FK</tspan> role_id BIGINT UNSIGNED NULL</text>
+      <text x="8" y="138" fill="#0f172a"><tspan font-weight="700" fill="#1d4ed8">FK</tspan> organization_id BIGINT UNSIGNED NULL</text>
+      <text x="8" y="152">created_at TIMESTAMP NULL</text>
+      <text x="8" y="166">updated_at TIMESTAMP NULL</text>
+      <text x="8" y="180" fill="#64748b" font-size="7.5">FKs: null on delete (migrations)</text>
+    </g>
+
+    <g transform="translate(656,72)">
+      <rect width="278" height="26" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.65"/>
+      <text x="139" y="17" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e40af">organizations</text>
+      <rect y="26" width="278" height="154" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+      <text x="8" y="40" fill="#0f172a"><tspan font-weight="700" fill="#2563eb">PK</tspan> id BIGINT UNSIGNED AI</text>
+      <text x="8" y="54">name VARCHAR(255)</text>
+      <text x="8" y="68">registration_number VARCHAR(255) NULL</text>
+      <text x="8" y="82">subscription_tier VARCHAR(255) DEFAULT 'standard'</text>
+      <text x="8" y="96">configuration JSON NULL</text>
+      <text x="8" y="110">created_at TIMESTAMP NULL</text>
+      <text x="8" y="124">updated_at TIMESTAMP NULL</text>
+    </g>
+
+    <g transform="translate(962,72)">
+      <rect width="292" height="26" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.65"/>
+      <text x="146" y="17" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">policies</text>
+      <rect y="26" width="292" height="168" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+      <text x="8" y="40" fill="#0f172a"><tspan font-weight="700" fill="#d97706">PK</tspan> id BIGINT UNSIGNED AI</text>
+      <text x="8" y="54" fill="#0f172a"><tspan font-weight="700" fill="#1d4ed8">FK</tspan> organization_id BIGINT UNSIGNED</text>
+      <text x="8" y="68">policy_name VARCHAR(255)</text>
+      <text x="8" y="82">phi_categories JSON NULL</text>
+      <text x="8" y="96">enforcement_action VARCHAR(255) DEFAULT 'redact'</text>
+      <text x="8" y="110">confidence_threshold DECIMAL(5,4) DEFAULT 0.85</text>
+      <text x="8" y="124">created_at TIMESTAMP NULL</text>
+      <text x="8" y="138">updated_at TIMESTAMP NULL</text>
+      <text x="8" y="152" fill="#64748b" font-size="7.5">FK org: CASCADE on delete</text>
+    </g>
+
+    <g transform="translate(962,282)">
+      <rect width="292" height="26" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.65"/>
+      <text x="146" y="17" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">allowlists</text>
+      <rect y="26" width="292" height="140" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+      <text x="8" y="40" fill="#0f172a"><tspan font-weight="700" fill="#d97706">PK</tspan> id BIGINT UNSIGNED AI</text>
+      <text x="8" y="54" fill="#0f172a"><tspan font-weight="700" fill="#1d4ed8">FK</tspan> organization_id BIGINT UNSIGNED</text>
+      <text x="8" y="68">service_name VARCHAR(255)</text>
+      <text x="8" y="82">service_domain VARCHAR(255) NULL</text>
+      <text x="8" y="96">approval_date TIMESTAMP NULL</text>
+      <text x="8" y="110">created_at TIMESTAMP NULL</text>
+      <text x="8" y="124">updated_at TIMESTAMP NULL</text>
+      <text x="8" y="138" fill="#64748b" font-size="7.5">FK org: CASCADE on delete</text>
+    </g>
+
+    <g transform="translate(962,464)">
+      <rect width="292" height="26" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.65"/>
+      <text x="146" y="17" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">detection_rules</text>
+      <rect y="26" width="292" height="140" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+      <text x="8" y="40" fill="#0f172a"><tspan font-weight="700" fill="#d97706">PK</tspan> id BIGINT UNSIGNED AI</text>
+      <text x="8" y="54" fill="#0f172a"><tspan font-weight="700" fill="#1d4ed8">FK</tspan> organization_id BIGINT UNSIGNED NULL</text>
+      <text x="8" y="68">rule_type VARCHAR(255)</text>
+      <text x="8" y="82">rule_pattern TEXT NULL</text>
+      <text x="8" y="96">phi_category VARCHAR(255)</text>
+      <text x="8" y="110">created_at TIMESTAMP NULL</text>
+      <text x="8" y="124">updated_at TIMESTAMP NULL</text>
+      <text x="8" y="138" fill="#64748b" font-size="7.5">FK org: SET NULL on delete</text>
+    </g>
+
+    <g transform="translate(332,348)">
+      <rect width="328" height="26" rx="7" fill="#fff7ed" stroke="#ea580c" stroke-width="1.65"/>
+      <text x="164" y="17" text-anchor="middle" font-size="11.5" font-weight="700" fill="#9a3412">audit_events</text>
+      <rect y="26" width="328" height="196" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+      <text x="8" y="40" fill="#0f172a"><tspan font-weight="700" fill="#ea580c">PK</tspan> id BIGINT UNSIGNED AI</text>
+      <text x="8" y="54" fill="#0f172a"><tspan font-weight="700" fill="#059669">FK</tspan> user_id BIGINT UNSIGNED NULL</text>
+      <text x="8" y="68" fill="#0f172a"><tspan font-weight="700" fill="#1d4ed8">FK</tspan> organization_id BIGINT UNSIGNED NULL</text>
+      <text x="8" y="82">event_type VARCHAR(255)</text>
+      <text x="8" y="96">detected_categories JSON NULL</text>
+      <text x="8" y="110">encrypted_details BLOB NULL</text>
+      <text x="8" y="124">created_at TIMESTAMP NULL</text>
+      <text x="8" y="138">updated_at TIMESTAMP NULL</text>
+      <text x="8" y="152" fill="#64748b" font-size="7.5">FKs: SET NULL on delete</text>
+    </g>
+
+    <g transform="translate(332,578)">
+      <rect width="328" height="26" rx="7" fill="#fdf2f8" stroke="#db2777" stroke-width="1.65"/>
+      <text x="164" y="17" text-anchor="middle" font-size="11.5" font-weight="700" fill="#9d174d">conversations</text>
+      <rect y="26" width="328" height="126" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+      <text x="8" y="40" fill="#0f172a"><tspan font-weight="700" fill="#db2777">PK</tspan> id BIGINT UNSIGNED AI</text>
+      <text x="8" y="54" fill="#0f172a"><tspan font-weight="700" fill="#059669">FK</tspan> user_id BIGINT UNSIGNED</text>
+      <text x="8" y="68">prompt_redacted TEXT NULL</text>
+      <text x="8" y="82">response_summary TEXT NULL</text>
+      <text x="8" y="96">created_at TIMESTAMP NULL</text>
+      <text x="8" y="110">updated_at TIMESTAMP NULL</text>
+      <text x="8" y="124" fill="#64748b" font-size="7.5">FK user: CASCADE on delete</text>
+    </g>
+  </g>
+
+  <rect x="40" y="820" width="1280" height="200" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.15"/>
+  <text x="60" y="846" font-size="12" font-weight="700" fill="#0f172a" font-family="system-ui, Segoe UI, sans-serif">Legend</text>
+  <g font-family="system-ui, Segoe UI, sans-serif" font-size="9.5" fill="#334155">
+    <text x="60" y="868">AI = auto-increment PK. VARCHAR(255) is Laravel default for string(); explicit lengths in migrations override this.</text>
+    <text x="60" y="888">JSON maps to JSON (MySQL 5.7+) / JSONB (PostgreSQL). TEXT and BLOB are unlimited-length logical types; DB max applies.</text>
+    <text x="60" y="908">DECIMAL(5,4): 1 digit before + 4 after decimal (matches confidence_threshold migration).</text>
+    <text x="60" y="928">Docs: <tspan font-family="ui-monospace, Consolas, monospace" fill="#0f172a">docs/LOGICAL_SCHEMA.md</tspan> <tspan fill="#94a3b8">|</tspan> Migrations: <tspan font-family="ui-monospace, Consolas, monospace" fill="#0f172a">laravel-backend/database/migrations/</tspan></text>
+  </g>
+</svg>

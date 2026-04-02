@@ -1,0 +1,234 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1540 1100" overflow="visible">
+  <defs>
+    <linearGradient id="erdChenBg" x1="0" y1="0" x2="1540" y2="1100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f1f5f9"/>
+      <stop offset="50%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f0fdf4"/>
+    </linearGradient>
+    <filter id="erdCard" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1540" height="1100" fill="url(#erdChenBg)"/>
+  <rect x="12" y="8" width="1516" height="1078" rx="16" fill="none" stroke="#cbd5e1" stroke-width="1.25"/>
+
+  <text x="770" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a" font-family="system-ui, Segoe UI, sans-serif">ClinGuard - Chen notation ER diagram</text>
+  <text x="770" y="54" text-anchor="middle" font-size="10.5" fill="#475569" font-family="system-ui, Segoe UI, sans-serif">CONVERSATIONS: one attribute row, vertical spokes; creates jogs to x=748; USERS monotone anchors; POL/AUDIT staggered</text>
+
+  <g font-family="system-ui, Segoe UI, sans-serif">
+    <rect x="18" y="64" width="668" height="328" rx="18" fill="#fffbeb" fill-opacity="0.88" stroke="#f59e0b" stroke-width="1.75"/>
+    <text x="36" y="88" font-size="11.5" font-weight="700" fill="#b45309">Organisation &amp; policy</text>
+    <rect x="18" y="404" width="700" height="348" rx="18" fill="#f5f3ff" fill-opacity="0.88" stroke="#8b5cf6" stroke-width="1.75"/>
+    <text x="36" y="428" font-size="11.5" font-weight="700" fill="#6d28d9">Identity</text>
+    <rect x="738" y="200" width="784" height="668" rx="18" fill="#fdf2f8" fill-opacity="0.82" stroke="#ec4899" stroke-width="1.75"/>
+    <text x="756" y="224" font-size="11.5" font-weight="700" fill="#be185d">Sessions &amp; audit</text>
+  </g>
+
+  <!-- 2) Entities -->
+  <g font-family="system-ui, Segoe UI, sans-serif" stroke-width="2" filter="url(#erdCard)">
+    <rect x="292" y="305" width="136" height="44" rx="10" fill="#fffbeb" stroke="#b45309"/>
+    <text x="360" y="332" text-anchor="middle" font-size="11.5" font-weight="700" fill="#451a03">POLICIES</text>
+    <rect x="480" y="198" width="140" height="44" rx="10" fill="#eff6ff" stroke="#1d4ed8"/>
+    <text x="550" y="226" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e3a8a">ORGANISATIONS</text>
+    <rect x="174" y="448" width="104" height="44" rx="10" fill="#faf5ff" stroke="#6d28d9"/>
+    <text x="226" y="476" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5b21b6">ROLES</text>
+    <rect x="450" y="396" width="108" height="48" rx="10" fill="#ecfdf5" stroke="#047857"/>
+    <text x="504" y="424" text-anchor="middle" font-size="11.5" font-weight="700" fill="#065f46">USERS</text>
+    <rect x="820" y="212" width="220" height="48" rx="10" fill="#fdf2f8" stroke="#be185d"/>
+    <text x="930" y="242" text-anchor="middle" font-size="11" font-weight="700" fill="#9d174d">CONVERSATIONS</text>
+    <rect x="1080" y="516" width="156" height="44" rx="10" fill="#fff7ed" stroke="#c2410c"/>
+    <text x="1158" y="544" text-anchor="middle" font-size="10.5" font-weight="700" fill="#9a3412">AUDIT_EVENTS</text>
+  </g>
+
+  <!-- 1b) Attribute ovals + spokes (after entity rects so lines meet the box, not hidden by fill) -->
+  <g font-family="system-ui, Segoe UI, sans-serif" fill="none" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- POLICIES: single column, 36px vertical pitch (~12px gap between ry=12 ovals) -->
+    <g stroke="#b45309" stroke-width="1.2">
+      <ellipse cx="168" cy="122" rx="72" ry="12" fill="#ffffff" stroke-width="1.5"/>
+      <text x="168" y="126" text-anchor="middle" font-size="8.5" font-weight="600" fill="#451a03"><tspan text-decoration="underline">id</tspan> PK</text>
+      <ellipse cx="168" cy="158" rx="88" ry="12" fill="#fffbeb" stroke-width="1.35"/>
+      <text x="168" y="162" text-anchor="middle" font-size="8" fill="#78350f">organisation_id FK</text>
+      <ellipse cx="168" cy="194" rx="94" ry="12" fill="#fffbeb" stroke-width="1.35"/>
+      <text x="168" y="198" text-anchor="middle" font-size="8" fill="#78350f">detection_threshold</text>
+      <ellipse cx="168" cy="230" rx="78" ry="12" fill="#fffbeb" stroke-width="1.35"/>
+      <text x="168" y="234" text-anchor="middle" font-size="8" fill="#78350f">allow_bypass</text>
+      <ellipse cx="168" cy="266" rx="82" ry="12" fill="#fffbeb" stroke-width="1.35"/>
+      <text x="168" y="270" text-anchor="middle" font-size="8" fill="#78350f">redaction_rules</text>
+      <ellipse cx="168" cy="302" rx="48" ry="12" fill="#fffbeb" stroke-width="1.35"/>
+      <text x="168" y="306" text-anchor="middle" font-size="8" fill="#78350f">version</text>
+      <ellipse cx="168" cy="338" rx="74" ry="12" fill="#fffbeb" stroke-width="1.35"/>
+      <text x="168" y="342" text-anchor="middle" font-size="8" fill="#78350f">updated_at</text>
+      <line x1="240" y1="122" x2="292" y2="306"/><line x1="240" y1="158" x2="292" y2="314"/>
+      <line x1="256" y1="194" x2="292" y2="322"/><line x1="246" y1="230" x2="292" y2="330"/>
+      <line x1="250" y1="266" x2="292" y2="338"/><line x1="216" y1="302" x2="292" y2="344"/>
+      <line x1="242" y1="338" x2="292" y2="348"/>
+    </g>
+
+    <g stroke="#1d4ed8" stroke-width="1.2">
+      <ellipse cx="548" cy="68" rx="56" ry="12" fill="#ffffff" stroke-width="1.5"/>
+      <text x="548" y="72" text-anchor="middle" font-size="8.5" font-weight="600" fill="#1e3a8a"><tspan text-decoration="underline">id</tspan> PK</text>
+      <ellipse cx="548" cy="102" rx="50" ry="12" fill="#eff6ff" stroke-width="1.35"/>
+      <text x="548" y="106" text-anchor="middle" font-size="8.5" fill="#1e40af">name</text>
+      <ellipse cx="548" cy="136" rx="52" ry="12" fill="#eff6ff" stroke-width="1.35"/>
+      <text x="548" y="140" text-anchor="middle" font-size="8.5" fill="#1e40af">domain</text>
+      <ellipse cx="548" cy="170" rx="70" ry="12" fill="#eff6ff" stroke-width="1.35"/>
+      <text x="548" y="174" text-anchor="middle" font-size="8.5" fill="#1e40af">created_at</text>
+      <line x1="548" y1="80" x2="548" y2="198"/><line x1="548" y1="114" x2="548" y2="198"/>
+      <line x1="548" y1="148" x2="548" y2="198"/><line x1="548" y1="182" x2="548" y2="198"/>
+    </g>
+
+    <g stroke="#6d28d9" stroke-width="1.2">
+      <ellipse cx="92" cy="452" rx="54" ry="12" fill="#ffffff" stroke-width="1.5"/>
+      <text x="92" y="456" text-anchor="middle" font-size="8.5" font-weight="600" fill="#5b21b6"><tspan text-decoration="underline">id</tspan> PK</text>
+      <ellipse cx="92" cy="488" rx="64" ry="12" fill="#faf5ff" stroke-width="1.35"/>
+      <text x="92" y="492" text-anchor="middle" font-size="8.5" fill="#6b21a8">role_name</text>
+      <ellipse cx="92" cy="524" rx="68" ry="12" fill="#faf5ff" stroke-width="1.35"/>
+      <text x="92" y="528" text-anchor="middle" font-size="8" fill="#6b21a8">permissions</text>
+      <line x1="146" y1="452" x2="174" y2="458"/><line x1="156" y1="488" x2="174" y2="472"/>
+      <line x1="160" y1="524" x2="174" y2="486"/>
+    </g>
+
+    <!-- USERS: spokes use monotone matching (cx order, top row before bottom) to eight distinct bottom anchors — avoids crossing -->
+    <g stroke="#047857" stroke-width="1.2">
+      <ellipse cx="308" cy="598" rx="44" ry="11" fill="#ffffff" stroke-width="1.5"/>
+      <text x="308" y="602" text-anchor="middle" font-size="8" font-weight="600" fill="#065f46"><tspan text-decoration="underline">id</tspan> PK</text>
+      <ellipse cx="432" cy="598" rx="62" ry="11" fill="#ecfdf5" stroke-width="1.35"/>
+      <text x="432" y="602" text-anchor="middle" font-size="7.5" fill="#047857">org_id FK</text>
+      <ellipse cx="548" cy="598" rx="46" ry="11" fill="#ecfdf5" stroke-width="1.35"/>
+      <text x="548" y="602" text-anchor="middle" font-size="8" fill="#047857">role_id FK</text>
+      <ellipse cx="668" cy="598" rx="38" ry="11" fill="#ecfdf5" stroke-width="1.35"/>
+      <text x="668" y="602" text-anchor="middle" font-size="8" fill="#047857">name</text>
+      <ellipse cx="308" cy="678" rx="42" ry="11" fill="#ecfdf5" stroke-width="1.35"/>
+      <text x="308" y="682" text-anchor="middle" font-size="8" fill="#047857">email</text>
+      <ellipse cx="432" cy="678" rx="66" ry="11" fill="#ecfdf5" stroke-width="1.35"/>
+      <text x="432" y="682" text-anchor="middle" font-size="7.5" fill="#047857">password_hash</text>
+      <ellipse cx="548" cy="678" rx="44" ry="11" fill="#ecfdf5" stroke-width="1.35"/>
+      <text x="548" y="682" text-anchor="middle" font-size="8" fill="#047857">is_active</text>
+      <ellipse cx="668" cy="678" rx="54" ry="11" fill="#ecfdf5" stroke-width="1.35"/>
+      <text x="668" y="682" text-anchor="middle" font-size="8" fill="#047857">created_at</text>
+      <!-- from bottom of each oval (cy+ry); anchors 454-538 left-to-right match sort order -->
+      <line x1="308" y1="609" x2="454" y2="444"/><line x1="308" y1="689" x2="466" y2="444"/>
+      <line x1="432" y1="609" x2="478" y2="444"/><line x1="432" y1="689" x2="490" y2="444"/>
+      <line x1="548" y1="609" x2="502" y2="444"/><line x1="548" y1="689" x2="514" y2="444"/>
+      <line x1="668" y1="609" x2="526" y2="444"/><line x1="668" y1="689" x2="538" y2="444"/>
+    </g>
+
+    <!-- CONVERSATIONS: one row, ≥18px gaps; id oval starts right of creates jog (x=748); created_at clears AUDIT ovals -->
+    <g stroke="#be185d" stroke-width="1.2">
+      <ellipse cx="784" cy="318" rx="34" ry="11" fill="#ffffff" stroke-width="1.5"/>
+      <text x="784" y="322" text-anchor="middle" font-size="8.5" font-weight="600" fill="#9d174d"><tspan text-decoration="underline">id</tspan> PK</text>
+      <ellipse cx="882" cy="318" rx="46" ry="11" fill="#fdf2f8" stroke-width="1.35"/>
+      <text x="882" y="322" text-anchor="middle" font-size="8" fill="#9d174d">user_id FK</text>
+      <ellipse cx="1002" cy="318" rx="56" ry="11" fill="#fdf2f8" stroke-width="1.35"/>
+      <text x="1002" y="322" text-anchor="middle" font-size="7.5" fill="#9d174d">redacted_prompt</text>
+      <ellipse cx="1110" cy="318" rx="34" ry="11" fill="#fdf2f8" stroke-width="1.35"/>
+      <text x="1110" y="322" text-anchor="middle" font-size="8" fill="#9d174d">input</text>
+      <ellipse cx="1199" cy="318" rx="37" ry="11" fill="#fdf2f8" stroke-width="1.35"/>
+      <text x="1199" y="322" text-anchor="middle" font-size="8" fill="#9d174d">created_at</text>
+      <line x1="784" y1="260" x2="784" y2="307"/><line x1="882" y1="260" x2="882" y2="307"/>
+      <line x1="1002" y1="260" x2="1002" y2="307"/><line x1="1110" y1="260" x2="1110" y2="307"/>
+      <line x1="1199" y1="260" x2="1199" y2="307"/>
+    </g>
+
+    <!-- AUDIT_EVENTS: two columns, 36px vertical pitch (no stacked overlap) -->
+    <g stroke="#c2410c" stroke-width="1.2">
+      <ellipse cx="1290" cy="518" rx="50" ry="11" fill="#ffffff" stroke-width="1.5"/>
+      <text x="1290" y="522" text-anchor="middle" font-size="8.5" font-weight="600" fill="#9a3412"><tspan text-decoration="underline">id</tspan> PK</text>
+      <ellipse cx="1290" cy="554" rx="52" ry="11" fill="#fff7ed" stroke-width="1.35"/>
+      <text x="1290" y="558" text-anchor="middle" font-size="8" fill="#c2410c">user_id FK</text>
+      <ellipse cx="1290" cy="590" rx="78" ry="11" fill="#fff7ed" stroke-width="1.35"/>
+      <text x="1290" y="594" text-anchor="middle" font-size="7.5" fill="#c2410c">conversation_id FK</text>
+      <ellipse cx="1290" cy="626" rx="52" ry="11" fill="#fff7ed" stroke-width="1.35"/>
+      <text x="1290" y="630" text-anchor="middle" font-size="8" fill="#c2410c">event_type</text>
+      <ellipse cx="1465" cy="536" rx="54" ry="11" fill="#fff7ed" stroke-width="1.35"/>
+      <text x="1465" y="540" text-anchor="middle" font-size="8" fill="#c2410c">event_date</text>
+      <ellipse cx="1465" cy="578" rx="56" ry="11" fill="#fff7ed" stroke-width="1.35"/>
+      <text x="1465" y="582" text-anchor="middle" font-size="8" fill="#c2410c">ip_address</text>
+      <ellipse cx="1465" cy="620" rx="60" ry="11" fill="#fff7ed" stroke-width="1.35"/>
+      <text x="1465" y="624" text-anchor="middle" font-size="8" fill="#c2410c">occurred_at</text>
+      <line x1="1240" y1="518" x2="1236" y2="518"/><line x1="1238" y1="554" x2="1236" y2="530"/>
+      <line x1="1212" y1="590" x2="1236" y2="542"/><line x1="1238" y1="626" x2="1236" y2="554"/>
+      <line x1="1411" y1="536" x2="1236" y2="522"/><line x1="1409" y1="578" x2="1236" y2="546"/>
+      <line x1="1405" y1="620" x2="1236" y2="558"/>
+    </g>
+  </g>
+
+  <!-- 3) Relationship paths, diamonds, cardinality (lines stop at diamond edges) -->
+  <g font-family="system-ui, Segoe UI, sans-serif" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#475569" stroke-width="1.65">
+      <!-- configures: ORG -> diamond right; POL <- diamond left -->
+      <polyline points="550,242 438,242 438,258"/>
+      <polyline points="410,286 320,286 320,305"/>
+      <!-- employs: ORG -> diamond; USERS top -->
+      <polyline points="550,242 550,300 515,300 515,327"/>
+      <polyline points="515,383 504,383 504,396"/>
+      <!-- assigned_to: ROLES right <-> USERS left -->
+      <line x1="278" y1="470" x2="304" y2="444"/>
+      <line x1="360" y1="444" x2="450" y2="444"/>
+      <!-- creates: USERS TOP center -> up to diamond TOP (separate from generates which uses lower-right) -->
+      <polyline points="504,396 612,396 612,384"/>
+      <polyline points="640,412 748,412 748,168 930,168 930,212"/>
+      <!-- generates: USERS lower-RIGHT at y=438 then east; never shares segment with creates -->
+      <polyline points="558,438 772,438 772,572"/>
+      <polyline points="732,544 920,544 920,552 1080,552"/>
+      <!-- triggers: CONV to diamond; one vertical spine x=1185 then into AUDIT (fewer jogs) -->
+      <polyline points="1040,236 1057,248"/>
+      <polyline points="1113,248 1185,248 1185,528 1080,528"/>
+    </g>
+
+    <g stroke="#5b21b6" stroke-width="1.35" fill="#ede9fe">
+      <polygon points="410,230 438,258 410,286 382,258"/>
+      <text x="410" y="262" text-anchor="middle" font-size="8.5" font-weight="700" fill="#4c1d95">configures</text>
+      <polygon points="515,327 543,355 515,383 487,355"/>
+      <text x="515" y="359" text-anchor="middle" font-size="9" font-weight="700" fill="#4c1d95">employs</text>
+      <polygon points="332,416 360,444 332,472 304,444"/>
+      <text x="332" y="448" text-anchor="middle" font-size="7.5" font-weight="700" fill="#4c1d95">assigned_to</text>
+      <polygon points="612,384 640,412 612,440 584,412"/>
+      <text x="612" y="416" text-anchor="middle" font-size="9" font-weight="700" fill="#4c1d95">creates</text>
+      <polygon points="732,544 772,572 732,600 692,572"/>
+      <text x="732" y="576" text-anchor="middle" font-size="8.5" font-weight="700" fill="#4c1d95">generates</text>
+      <polygon points="1085,220 1113,248 1085,276 1057,248"/>
+      <text x="1085" y="252" text-anchor="middle" font-size="9" font-weight="700" fill="#4c1d95">triggers</text>
+    </g>
+
+    <!-- Cardinality: adjacent to diamonds / short segments -->
+    <g font-size="9" font-weight="800" fill="#0f172a">
+      <rect x="518" y="228" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="525.5" y="236.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">1</text>
+      <rect x="352" y="272" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="359.5" y="280.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">N</text>
+      <rect x="528" y="286" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="535.5" y="294.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">1</text>
+      <rect x="488" y="352" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="495.5" y="360.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">N</text>
+      <rect x="288" y="432" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="295.5" y="440.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">1</text>
+      <rect x="388" y="432" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="395.5" y="440.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">N</text>
+      <rect x="548" y="388" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="555.5" y="396.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">1</text>
+      <rect x="672" y="288" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="679.5" y="296.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">N</text>
+      <rect x="628" y="424" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="635.5" y="432.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">1</text>
+      <rect x="1008" y="528" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="1015.5" y="536.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">N</text>
+      <rect x="1008" y="218" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="1015.5" y="226.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">1</text>
+      <rect x="1128" y="508" width="15" height="13" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.75"/>
+      <text x="1135.5" y="516.5" text-anchor="middle" dominant-baseline="central" font-size="8.5">N</text>
+    </g>
+  </g>
+
+  <!-- Legend -->
+  <rect x="28" y="918" width="1484" height="168" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.25"/>
+  <text x="48" y="946" font-size="13" font-weight="700" fill="#0f172a" font-family="system-ui, Segoe UI, sans-serif">Legend</text>
+  <g font-family="system-ui, Segoe UI, sans-serif" font-size="10" fill="#334155">
+    <text x="48" y="968">Ovals use wider vertical or horizontal pitch so edges do not touch; POL/ORG/ROLES use taller stacks.</text>
+    <text x="48" y="988">USERS: each line leaves the bottom of its oval; anchors on the entity bottom are spaced left-to-right in the same order (no crisscross).</text>
+    <text x="48" y="1008">CONVERSATIONS attributes sit on one row with vertical lines from the entity bottom; creates jog to x=748 clears the id PK column.</text>
+    <text x="48" y="1028">Color key: amber policy, blue organisation, violet roles, green users, pink conversations, orange audit.</text>
+  </g>
+</svg>

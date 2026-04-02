@@ -2,145 +2,132 @@
 
 ## 4.1 Introduction
 
-This chapter presents the system analysis and design for the ClinGuard system. The design paradigm used is **Object-Oriented Analysis and Design (OOAD)** as defined in Chapter 3. Section 4.2 sets out the system requirements (functional and non-functional) reviewed in the project. Section 4.3 presents the **system analysis diagrams** (use case, sequence, and class diagrams). Section 4.4 presents the **system design diagrams** (entity-relationship diagram and logical database schema) with design commentary. Section 4.5 states the design tools used for consistency.
+ClinGuard sits at the intersection of clinical workflow, data protection, and third-party generative AI. This chapter records how that problem was **analysed** and how a **coherent design** was produced before implementation. The narrative moves from **how requirements were established**, through **stated capabilities and quality goals**, to **architecture** and **visual models** (use case, data design, object structure, and interaction over time). The design stance is **object-oriented** and consistent with the methodology in Chapter 3. Fine-grained table and field definitions appear in **Appendix A**; API behaviour is summarised in **Appendix B**. Schedule and governance artefacts, if required by the faculty format, sit outside this chapter or in an appendix.
+
+Figures **4.1** to **4.5** are the core UML and data design set. **Figure 4.6** is the high-level architecture graphic. When you assemble the thesis, place each figure **immediately after** the subsection that introduces it, and use the **caption text** supplied below for your List of Figures.
+
+**Section 4.2** traces requirement sources. **Section 4.3** condenses capability and quality requirements into tables. **Section 4.4** explains how major components fit together at runtime and points to the architecture figure. **Section 4.5** presents the diagram set that guided construction, with a short purpose statement before each graphic and a short interpretation after it.
 
 ---
 
-## 4.2 System Requirements
+## 4.2 Requirements gathering
 
-System requirements are the configuration that a system must have in order for a hardware or software application to run smoothly and efficiently. Failure to meet these requirements can result in installation problems or performance problems. The former may prevent a device or application from getting installed, whereas the latter may cause a product to malfunction or perform below expectation or even to hang or crash.
+No single workshop produced the requirement set. It emerged from **several evidence streams** woven together. Statutory and professional context was read through the **Kenya Data Protection Act 2019** and **HIPAA-aligned** practice notes on health identifiers and minimum necessary use. Vendor-facing material for **large language model APIs** clarified what leaves the organisation’s control once a prompt is transmitted. Chapter 2’s literature gap fed **design goals** (governance before generation, explainable redaction, audit trails). Finally, the three intended **personas** (**Clinician**, **Security Admin**, **System Admin**) were used as a checklist: each needed explicit affordances (safe prompting, policy and log visibility, tenant and user lifecycle) and explicit **denials** where separation of duty matters.
 
-Some of the system requirements reviewed in the project include:
-
-### 4.2.1 Functional Requirements
-
-Functional requirements are product features or functions that the system implements to enable users to accomplish their tasks; they describe system behaviour under specific conditions. The following functional requirements were identified and implemented, listed with roman numerals:
-
-**(i) Authentication and Authorization Module**  
-This module manages user access control and role-based permissions. The system collects user credentials (email, password, name, role) during registration. Authentication uses secure login with password hashing (bcrypt) to keep credentials secure, together with session management and multi-factor authentication. Roles include Clinician, Administrator, and Security Officer with defined permission levels.
-
-**(ii) PHI Detection and Redaction Module**  
-This module identifies and redacts Protected Health Information from AI prompts in real time. It collects prompt text from user inputs and processes it through a hybrid detection engine (regex, entropy analysis, and machine learning). It detects PHI types such as patient names, medical record numbers, phone numbers, email addresses, diagnoses, medications, and dates, and replaces them with standardised placeholders while preserving clinical context.
-
-**(iii) OpenAI Integration Module**  
-This module enables secure communication with OpenAI’s API for clinical documentation assistance. It handles API key management, request formatting, response processing, and error handling, with rate limiting, retries, and fallback procedures.
-
-**(iv) RAG Knowledge Retrieval Module**  
-The Retrieval-Augmented Generation module enhances AI responses with evidence-based clinical knowledge. It retrieves information from medical knowledge bases (treatment guidelines, drug databases, diagnostic and procedure codes) using vector similarity search to rank relevant clinical information.
-
-**(v) Policy Management Module**  
-This administrative module allows organisations to configure PHI detection policies and compliance settings (detection thresholds, redaction rules, bypass permissions, audit requirements). It supports policy templates per department and role, with version control.
-
-**(vi) Audit and Compliance Module**  
-This module maintains audit trails for regulatory compliance and security monitoring. It logs user actions, PHI detection events, policy violations, and system access, and generates compliance reports for Kenya Data Protection Act 2019 and searchable audit interfaces for administrators.
-
-**(vii) User Interface Module**  
-The frontend provides a web interface for clinicians and administrators. It collects user interactions (forms, navigation) and implements real-time PHI highlighting, safe rewrite suggestions, and display of AI responses with contextual clinical information.
-
-### 4.2.2 Non-Functional Requirements
-
-Non-functional requirements define how the system should perform rather than what it does. The following were addressed, listed with roman numerals:
-
-**(i) System Security**  
-System security describes the protection of the system and data from unauthorised access and harm. It was achieved through encrypted data transmission (HTTPS/TLS 1.3), secure password storage (bcrypt hashing), CSRF protection, input validation and sanitisation, rate limiting, and secure session management. Security updates and vulnerability scanning are part of the development lifecycle.
-
-**(ii) Data Security**  
-Data security was achieved through encryption in transit and at rest. Sensitive data (PHI, credentials, audit logs) is encrypted to AES-256 standards. Database and file-system encryption, secure key management, data retention policies, and encrypted backups are in place.
-
-**(iii) Performance, Privacy and Benchmarks**  
-Performance was addressed through efficient PHI detection with sub-200 ms latency for prompts up to 300 tokens; caching, query optimisation, and asynchronous processing; and load balancing with performance monitoring. Privacy is maintained by design (e.g. PHI redaction before external API calls). The detection model performance is evaluated against benchmarks (e.g. F1 targets for PHI categories).
-
-**(iv) Scalability**  
-Modular design for horizontal scaling of web and database servers; containerised deployment (Docker), connection pooling, stateless design; auto-scaling and performance testing.
-
-**(v) Usability**  
-Intuitive interface following healthcare best practices; responsive design for desktop and tablet; clear PHI indicators and contextual help; user experience testing with healthcare professionals.
-
-**(vi) Reliability**  
-Redundant configurations, failover, error handling; target 99.9% uptime; backups and recovery testing.
-
-**(vii) Compliance**  
-Kenya Data Protection Act 2019 and HIPAA-aligned controls; audit logging, data subject rights, breach notification; privacy by design and compliance audits.
-
-**Brief comparison:** Functional requirements define *what* the system does (features and behaviour); non-functional requirements define *how well* the system performs (security, performance, scalability, usability, reliability, compliance).
+Early **UI walkthroughs** on chat, policy, and audit screens surfaced expectations that rarely appear in tables alone: users wanted **visible confidence** that sensitive fragments were caught, **predictable failure** when a service was down, and **no silent drops** of clinical text. Those observations fed the non-functional emphasis in Section 4.3 and the sequence model in Section 4.5. Wireframes or early screenshots, if you include them in the final Word document, belong with this chapter only if your examiner expects **design-time** UI evidence; otherwise **implemented** screenshots are reserved for Chapter 5.
 
 ---
 
-## 4.3 System Analysis Diagrams
+## 4.3 System requirements
 
-The following diagrams describe the system from an **analysis** perspective: they capture functional requirements, interactions, and static structure without implementation detail. They were produced using the OOAD approach defined in Chapter 3.
+Requirements split naturally into **capabilities** (what ClinGuard must make possible) and **qualities** (how it must feel and behave while doing so).
 
-### 4.3.1 Use Case Diagram
+### 4.3.1 Functional requirements
 
-The use case diagram shows functional requirements and actor interactions within the ClinGuard system. Primary actors are Clinician, Security Admin, and System Admin; external service actors are Detection System and OpenAI API. Administrative staff (Chapter 3) use the same web interface as clinicians under the Clinician actor with role-based policies. Use cases include Login, Register, Compose Clinical Notes, Review PHI Detection, Apply Redaction, Submit Prompt to AI, View RAG Context, Emergency Bypass, Configure Policies, View Audit Logs, and Manage Users. Include and extend relationships show dependencies (e.g. Compose includes Review PHI and Redact; Emergency Bypass extends Submit Prompt to AI).
+Table 4.1 captures the capability contract at headline level. Together, the rows describe a **governed chat path**: identity and roles, PHI handling, optional knowledge retrieval, policy-governed model access, persistence, configuration, oversight, and administration.
 
-*[Diagram to be inserted here.]*
+**Table 4.1** Functional requirements
 
-**Figure 4.1** Use Case Diagram.
+| ID | Description |
+|----|-------------|
+| FRQ 1 | **Onboarding and session security:** account creation, login, and API access backed by password hashing and token issuance. |
+| FRQ 2 | **Least-privilege UI and API:** clinicians, security administrators, and system administrators each see and invoke only what their role permits. |
+| FRQ 3 | **PHI governance pipeline:** identify and replace protected fragments in outbound (and ad hoc) text before external AI when policy demands it. |
+| FRQ 4 | **Orchestrated completion path:** chat and related operations run detection, optional **RAG**, and **OpenAI** completion only when rules allow. |
+| FRQ 5 | **Controlled exception path:** emergency **bypass** of redaction exists only when policy explicitly permits it, with **immutable-style audit** of the decision. |
+| FRQ 6 | **Conversation record:** store threads and metadata needed for later review within the relational model. |
+| FRQ 7 | **Living policy:** authorised staff adjust thresholds, categories, enforcement posture, and related fields **per organisation**. |
+| FRQ 8 | **Security telemetry:** append-only style logging of sensitive operations (chat, policy edits, bypass, and kin). |
+| FRQ 9 | **Tenant administration:** system administrators manage users and organisations within the implemented scope. |
+| FRQ 10 | **Single cohesive client:** a web application covering login, dashboard, chat, and role-specific consoles. |
 
----
+### 4.3.2 Non-functional requirements
 
-### 4.3.2 Sequence Diagram
+Table 4.2 states cross-cutting qualities. They deliberately overlap with regulation: **privacy** and **auditability** are first-class design inputs, not afterthoughts.
 
-The sequence diagram shows the full chat flow: validation, authentication, PHI detection, redaction, RAG query, OpenAI completion, persistence (conversations and audit events), and response. Participants include Clinician, React Frontend, Laravel API, Python Detection Engine, RAG/Vector DB, OpenAI API, and Database. Alternative flows cover unavailability of detection, RAG, or OpenAI. An optional standalone PHI detection flow is included.
+**Table 4.2** Non-functional requirements
 
-*[Diagram to be inserted here.]*
-
-**Figure 4.2** Sequence Diagram.
-
----
-
-### 4.3.3 Class Diagram
-
-The class diagram shows the static structure of the ClinGuard system using OOAD. It includes frontend components (PHIDetection, PromptEditor, UserInterface), backend components (UserController, PolicyManager, OpenAIService, PHIDetectionService), the base controller, and Python analysis components (RegexAnalyzer, EntropyAnalyzer, MLClassifier, PHIDetector). Stereotypes distinguish <<frontend>>, <<backend>>, <<base>>, and <<python>>. Relationships show inheritance (e.g. UserController and PolicyManager extend BaseController), aggregation (PolicyManager–Policy), and usage/dependency (e.g. PHIDetectionService uses the analyzers and PHIDetector; UserInterface uses PHIDetection and PromptEditor).
-
-*[Diagram to be inserted here.]*
-
-**Figure 4.3** Class Diagram.
-
----
-
-## 4.4 System Design Diagrams
-
-The following diagrams describe the **design** of the system: the data model and database schema that will be implemented. They are separate from the analysis diagrams in Section 4.3.
-
-### 4.4.1 Entity-Relationship Diagram (ERD)
-
-The ERD represents the logical data model for the ClinGuard system. Entities are USER, ORGANIZATION, ROLE, POLICY, ALLOWLIST, DETECTION_RULE, AUDIT_EVENT, and CONVERSATION. Primary and foreign keys use entity-specific names. Relationships use verb phrases (e.g. employs, defines, creates) and one-to-many cardinality.
-
-From a design perspective, the model was normalised to third normal form. Foreign key placement (e.g. user_id, organization_id) supports multi-tenancy and audit scoping. Relationships and cardinalities align with the logical schema and the implemented database.
-
-*[Diagram to be inserted here.]*
-
-**Figure 4.4** Entity-Relationship Diagram.
+| ID | Requirement |
+|----|-------------|
+| NFR 1 | **Usability:** interfaces remain legible and efficient for clinical and back-office users under normal workloads. |
+| NFR 2 | **Access control:** every protected route proves identity and checks permission before side effects. |
+| NFR 3 | **Secret hygiene:** credentials are hashed at rest; third-party keys never ship to the browser bundle. |
+| NFR 4 | **Privacy by design:** default posture minimises raw PHI exposure to vendors; redaction precedes external calls when required. |
+| NFR 5 | **Integrity and validation:** relational constraints, input validation, and authorisation combine to prevent casual tampering. |
+| NFR 6 | **Operational clarity:** failures in detection, retrieval, or the LLM surface as actionable feedback, not opaque errors. |
+| NFR 7 | **Evolvability:** API, database, and Python analyser can be scaled or replaced on independent cadences. |
+| NFR 8 | **Demonstrable compliance posture:** audit artefacts support internal review and mapping to applicable data-protection duties. |
 
 ---
 
-### 4.4.2 Logical Database Schema
+## 4.4 System Architecture
 
-The logical database schema shows how the real database will be formed by logically setting out tables and relationships. It defines all tables with data types, sizes/precision, nullability, keys, and defaults, and is suitable for MySQL. Keys are identified by entity-specific names (e.g. user_id, organization_id) for clarity.
+ClinGuard was conceived as **five cooperating bands**, not a monolith: **presentation** (browser + React), **orchestration** (Laravel REST + auth + business rules), **analysis and retrieval** (Python + optional vector store), **persistence** (MySQL), and **external cognition** (OpenAI over TLS). The intent is twofold: keep **policy, audit, and prompt transformation** on infrastructure the institution controls, and let the **statistical detector and embeddings** improve without rewriting the PHP core.
 
-Design choices include data types (BIGINT UNSIGNED, VARCHAR, TIMESTAMP, DECIMAL, JSON, BLOB, TEXT), size/precision, nullability, and keys. The schema is normalised and matches the implemented MySQL database.
+### 4.4.1 Orchestration layer and service boundaries
 
-| Table | Purpose | Primary key | Foreign keys |
-|-------|---------|-------------|--------------|
-| users | System users (clinicians, admins) | user_id | role_id, organization_id |
-| organizations | Tenants / healthcare organisations | organization_id | — |
-| roles | Role definitions | role_id | — |
-| policies | PHI policy per organisation | policy_id | organization_id |
-| allowlists | Allowed external services | allowlist_id | organization_id |
-| detection_rules | PHI detection rules per org | detection_rule_id | organization_id |
-| audit_events | Audit log (chat, login, etc.) | audit_event_id | user_id, organization_id |
-| conversations | Stored chat (redacted prompt, summary) | conversation_id | user_id |
+**Laravel** owns the request lifecycle: validate input, attach the caller’s **Sanctum** identity, evaluate **permission middleware**, read and write organisations, users, policies, conversations, and audit rows, and **call outward** only after internal rules succeed. The **Python** service is treated as a **specialist dependency**: it returns structured analysis (and optional RAG context) consumed by the API before any LLM call. **React** is a **thin client**: it renders state and never holds provider secrets. When retrieval is enabled, **ChromaDB** sits beside the analyser; completion still flows through the API so logging and redaction stay centralised.
 
-*[Diagram or further table detail to be inserted here if required.]*
+The architecture figure gives examiners a **single-page mental model**: which boxes you operate, which protocols connect them, and where PHI is transformed before it crosses the trust boundary to an external model provider. When you export the diagram, ensure **legends** (HTTPS, internal network, optional GPU for training) match your deployment story.
 
-**Figure 4.5** Logical Database Schema.
+![Figure 4.6: System architecture](figures/Figure_4_6_architecture.png)
+
+**Figure 4.6** System architecture (presentation, API, detection and RAG, database, external AI).
 
 ---
 
-## 4.5 Design Tools and Implementation Strategy
+## 4.5 System Design
 
-For consistency, the following tools were used: **Visual Paradigm** for use case, sequence, and other analysis diagrams, and **Mermaid** for diagram specification and rendering. Drawings were captured as screenshots for inclusion in the document to avoid watermarks.
+Design diagrams are the **contract** between analysis and code: they state agreed actors, data shapes, object boundaries, and message order. The subsections follow the usual examination order: **who** can do **what** (use case), **what is stored** (ERD and relational schema), **how code is grouped** (class diagram), and **how time unfolds** during the main clinical workflow (sequence diagram).
 
-The implementation strategy followed object-oriented principles (modular design, encapsulation, separation of concerns) and supported the Modified Waterfall methodology described in Chapter 3. The OOAD analysis and design provide the foundation for implementation, ensuring the system meets functional and non-functional requirements while maintaining scalability, security, and regulatory compliance.
+### 4.5.1 Use case diagram
+
+A use case diagram answers **which goals** each actor pursues against the system boundary and which use cases **always** run as part of another (**include**) versus which run only **under conditions** (**extend**). For ClinGuard, that distinction matters for **redaction** (normally included in chat) versus **emergency bypass** (extended only when policy allows). External systems appear as secondary actors where the application depends on them to complete a goal.
+
+![Figure 4.1: Use case diagram](figures/Figure_4_1_use_case.png)
+
+**Figure 4.1** Use case diagram for ClinGuard.
+
+**Interpretation.** The diagram should make it obvious that **clinicians** drive chat and conversation review, **security administrators** own policy and audit views, and **system administrators** own cross-tenant user and organisation management. Machine actors (**detection/RAG service**, **OpenAI**) sit outside the organisational boundary but inside the technical workflow.
+
+### 4.5.2 Database schema
+
+The **entity-relationship** view expresses **business meaning** (who belongs to which organisation, how policies attach, how conversations and audit rows relate to users). The **physical schema** view expresses **implementation truth**: table names, column types, keys, and nullability as in **MySQL**, traceable to **Appendix A**. Together they show that persistence was designed **before** bulk coding, not improvised during it.
+
+![Figure 4.2: Entity-relationship diagram](figures/Figure_4_3_erd.png)
+
+**Figure 4.2** Entity-relationship diagram.
+
+![Figure 4.3: Database schema diagram](figures/Figure_4_4_database_schema.png)
+
+**Figure 4.3** Database schema diagram.
+
+**Interpretation.** Examiners typically check that every **foreign key** story in the schema matches a **relationship** line in the ERD and that sensitive tables (policies, audit events, conversations) have a clear **owning organisation** or **owning user** path.
+
+### 4.5.3 Class diagram
+
+The class diagram is not a line-by-line map of every file; it is a **structural summary** of layers (client composition, Laravel HTTP and domain types, Python analyser types) and the **dependencies** that must not be inverted (for example the browser must not call OpenAI directly). Stereotypes or package groupings, if you use them on the drawing, should match the technology labels you use in Chapter 5.
+
+![Figure 4.4: Class diagram](figures/Figure_4_5_class.png)
+
+**Figure 4.4** Class diagram.
+
+**Interpretation.** Use this figure in the viva to explain **where** a change lives: UI-only tweaks, API rule changes, detector model swaps, or database migrations.
+
+### 4.5.4 Sequence diagram
+
+The **sequence** diagram for **governed chat** is the most important dynamic view: it shows **when** redaction runs relative to retrieval and completion, **where** failures can occur, and **what** gets persisted. **Alt** or **opt** fragments (detector timeout, empty RAG hit, OpenAI error) keep one diagram readable without hiding unhappy paths.
+
+![Figure 4.5: Sequence diagram (chat flow)](figures/Figure_4_2_sequence.png)
+
+**Figure 4.5** Sequence diagram for chat and PHI handling.
+
+**Interpretation.** Align this figure with the test cases in Chapter 5: each **horizontal segment** should correspond to something you can **observe** in logs, API payloads, or screenshots (redacted prompt text, audit event types, HTTP status codes).
+
+If your faculty expects **additional** sequence diagrams for **login**, **registration**, or **policy update**, add them as **Figure 4.7**, **4.8**, and so on after this subsection, each with the same pattern: purpose paragraph, figure, interpretation. The primary submission can still rely on **Figure 4.5** as the critical path.
+
+---
+
+## References
+
+Full citations, legislation, and standards appear in the **References** chapter. **Appendix A** holds the logical database specification; **Appendix B** summarises the API surface.

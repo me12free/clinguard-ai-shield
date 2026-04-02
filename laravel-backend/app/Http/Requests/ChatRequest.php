@@ -16,6 +16,7 @@ class ChatRequest extends FormRequest
     {
         return [
             'prompt' => ['required', 'string', 'max:10000'],
+            'bypass_phi' => ['sometimes', 'boolean'],
         ];
     }
 }

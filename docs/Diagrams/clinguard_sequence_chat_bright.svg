@@ -1,0 +1,224 @@
+<svg width="100%" viewBox="0 0 720 1240" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="seqBgBright" x1="0" y1="0" x2="720" y2="1240" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#e8f2ff"/>
+    <stop offset="42%" stop-color="#ffffff"/>
+    <stop offset="100%" stop-color="#f0fdf8"/>
+  </linearGradient>
+  <!-- UML: synchronous call — solid line + filled (closed) arrowhead; caller blocks until reply -->
+  <marker id="arrowSync" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0 0 L10 4 L0 8 Z" fill="#1e40af"/>
+  </marker>
+  <!-- UML: asynchronous message — solid line + open arrowhead; caller does not wait for completion -->
+  <marker id="arrowAsyncOpen" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="#1e40af" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <!-- UML: reply / return — typically dotted + open arrowhead -->
+  <marker id="arrowReturnOpen" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<rect width="720" height="1240" fill="url(#seqBgBright)"/>
+<rect x="14" y="10" width="692" height="1220" rx="12" fill="none" stroke="#cbd5e1" stroke-width="1" opacity="0.9"/>
+
+<text x="360" y="22" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" fill="#0f172a" font-family="system-ui, Segoe UI, sans-serif">ClinGuard - sequence diagram</text>
+<text x="360" y="38" text-anchor="middle" fill="#64748b" font-size="9.5" font-family="system-ui, Segoe UI, sans-serif">UML: time progresses downward; dashed vertical lifelines = object existence over time.</text>
+
+<!-- ===== LIFELINE HEADERS ===== -->
+<g font-family="system-ui, Segoe UI, sans-serif">
+  <rect x="20" y="46" width="78" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="59" y="68" text-anchor="middle" dominant-baseline="central" fill="#1e3a8a" font-size="12.5" font-weight="600">Clinician</text>
+</g>
+<g font-family="system-ui, Segoe UI, sans-serif">
+  <rect x="118" y="46" width="78" height="40" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="157" y="68" text-anchor="middle" dominant-baseline="central" fill="#312e81" font-size="12.5" font-weight="600">React UI</text>
+</g>
+<g font-family="system-ui, Segoe UI, sans-serif">
+  <rect x="216" y="46" width="86" height="40" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="259" y="62" text-anchor="middle" fill="#5b21b6" font-size="11" font-weight="600">Laravel</text>
+  <text x="259" y="76" text-anchor="middle" fill="#5b21b6" font-size="11" font-weight="600">API</text>
+</g>
+<g font-family="system-ui, Segoe UI, sans-serif">
+  <rect x="318" y="46" width="84" height="40" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.2"/>
+  <text x="360" y="68" text-anchor="middle" dominant-baseline="central" fill="#065f46" font-size="12.5" font-weight="600">Detection</text>
+</g>
+<g font-family="system-ui, Segoe UI, sans-serif">
+  <rect x="416" y="46" width="78" height="40" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="455" y="68" text-anchor="middle" dominant-baseline="central" fill="#9a3412" font-size="12.5" font-weight="600">RAG/DB</text>
+</g>
+<g font-family="system-ui, Segoe UI, sans-serif">
+  <rect x="506" y="46" width="78" height="40" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="545" y="68" text-anchor="middle" dominant-baseline="central" fill="#92400e" font-size="12.5" font-weight="600">OpenAI</text>
+</g>
+<g font-family="system-ui, Segoe UI, sans-serif">
+  <rect x="594" y="46" width="78" height="40" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="633" y="68" text-anchor="middle" dominant-baseline="central" fill="#334155" font-size="12.5" font-weight="600">Database</text>
+</g>
+
+<!-- Lifeline x positions -->
+<!-- 59, 157, 259, 360, 455, 545, 633 -->
+
+<line x1="59" y1="92" x2="59" y2="1210" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4" opacity="0.75"/>
+<line x1="157" y1="92" x2="157" y2="1210" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4" opacity="0.75"/>
+<line x1="259" y1="92" x2="259" y2="1210" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4" opacity="0.75"/>
+<line x1="360" y1="92" x2="360" y2="1210" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4" opacity="0.75"/>
+<line x1="455" y1="92" x2="455" y2="1210" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4" opacity="0.75"/>
+<line x1="545" y1="92" x2="545" y2="1210" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4" opacity="0.75"/>
+<line x1="633" y1="92" x2="633" y2="1210" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4" opacity="0.75"/>
+
+<!-- ACTIVATION BARS (execution occurrence / focus of control) -->
+<rect x="55" y="108" width="8" height="638" rx="2" fill="#3b82f6" opacity="0.2"/>
+<rect x="153" y="122" width="8" height="622" rx="2" fill="#6366f1" opacity="0.2"/>
+<rect x="255" y="154" width="8" height="506" rx="2" fill="#7c3aed" opacity="0.2"/>
+<rect x="356" y="222" width="8" height="120" rx="2" fill="#059669" opacity="0.22"/>
+<rect x="451" y="420" width="8" height="84" rx="2" fill="#ea580c" opacity="0.2"/>
+<rect x="541" y="500" width="8" height="84" rx="2" fill="#d97706" opacity="0.22"/>
+<rect x="629" y="592" width="8" height="72" rx="2" fill="#64748b" opacity="0.24"/>
+
+<!-- Messages: synchronous = solid + filled arrow; return = dotted + open arrow; async audit = solid + open arrow -->
+<!-- 1 sync -->
+<line x1="63" y1="112" x2="152" y2="112" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowSync)"/>
+<text x="108" y="102" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">1: enter prompt</text>
+
+<!-- 2 sync -->
+<line x1="163" y1="152" x2="254" y2="152" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowSync)"/>
+<text x="209" y="142" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">2: POST /api/chat</text>
+
+<!-- 3 sync (caller waits for DB / auth resolution) -->
+<line x1="259" y1="192" x2="633" y2="192" stroke="#1e40af" stroke-width="1.15" marker-end="url(#arrowSync)"/>
+<text x="440" y="182" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">3: validate Bearer token</text>
+
+<!-- 4 sync -->
+<line x1="263" y1="232" x2="356" y2="232" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowSync)"/>
+<text x="309" y="222" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">4: POST /detect</text>
+
+<!-- alt combined fragment -->
+<rect x="210" y="242" width="300" height="158" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.2" stroke-dasharray="8 4"/>
+<rect x="210" y="242" width="52" height="20" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="0.9"/>
+<text x="236" y="255" text-anchor="middle" dominant-baseline="central" fill="#475569" font-size="11.5" font-weight="700" font-family="system-ui, Segoe UI, sans-serif">alt</text>
+<text x="360" y="256" text-anchor="middle" dominant-baseline="central" fill="#334155" font-size="11.5" font-family="system-ui, Segoe UI, sans-serif">[PHI found]</text>
+
+<!-- 5 return -->
+<line x1="356" y1="280" x2="264" y2="280" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 5" marker-end="url(#arrowReturnOpen)"/>
+<text x="310" y="270" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">5: spans + redacted text</text>
+
+<!-- 6 async (non-blocking audit dispatch; implementation may vary) -->
+<line x1="263" y1="312" x2="628" y2="312" stroke="#1e40af" stroke-width="1.15" marker-end="url(#arrowAsyncOpen)"/>
+<text x="446" y="302" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">6: log phi_detection (async)</text>
+
+<line x1="210" y1="342" x2="450" y2="342" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="360" y="336" text-anchor="middle" dominant-baseline="central" fill="#64748b" font-size="11" font-weight="600" font-family="system-ui, Segoe UI, sans-serif">[no PHI]</text>
+<text x="360" y="358" text-anchor="middle" fill="#475569" font-size="11.5" font-family="system-ui, Segoe UI, sans-serif">pass-through (no redaction)</text>
+
+<!-- loop combined fragment (iterative retrieval) -->
+<rect x="226" y="378" width="256" height="108" rx="8" fill="#fafafa" stroke="#64748b" stroke-width="1.2" stroke-dasharray="8 4"/>
+<rect x="226" y="378" width="52" height="20" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="0.9"/>
+<text x="252" y="391" text-anchor="middle" dominant-baseline="central" fill="#475569" font-size="11.5" font-weight="700" font-family="system-ui, Segoe UI, sans-serif">loop</text>
+<text x="400" y="392" text-anchor="middle" fill="#334155" font-size="10.5" font-family="system-ui, Segoe UI, sans-serif">[for each chunk in ranked retrieval]</text>
+
+<!-- 7 sync -->
+<line x1="263" y1="432" x2="450" y2="432" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowSync)"/>
+<text x="357" y="422" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">7: query clinical knowledge</text>
+
+<!-- 8 return -->
+<line x1="450" y1="472" x2="264" y2="472" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 5" marker-end="url(#arrowReturnOpen)"/>
+<text x="357" y="462" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">8: relevant context chunks</text>
+
+<!-- 9 sync -->
+<line x1="263" y1="516" x2="540" y2="516" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowSync)"/>
+<text x="402" y="478" text-anchor="middle" fill="#1e293b" font-size="11.5" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">
+  <tspan x="402" dy="0">9: POST completions</tspan>
+  <tspan x="402" dy="14">(redacted prompt + RAG)</tspan>
+</text>
+
+<!-- 10 return -->
+<line x1="540" y1="556" x2="264" y2="556" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 5" marker-end="url(#arrowReturnOpen)"/>
+<text x="402" y="544" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">10: AI response text</text>
+
+<!-- 11 sync -->
+<line x1="263" y1="596" x2="628" y2="596" stroke="#1e40af" stroke-width="1.15" marker-end="url(#arrowSync)"/>
+<text x="446" y="584" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">11: persist conversation + redacted prompt</text>
+
+<!-- 12 async -->
+<line x1="263" y1="636" x2="628" y2="636" stroke="#1e40af" stroke-width="1.15" marker-end="url(#arrowAsyncOpen)"/>
+<text x="446" y="624" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">12: log chat_completion (async)</text>
+
+<!-- 13 return -->
+<line x1="254" y1="680" x2="164" y2="680" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 5" marker-end="url(#arrowReturnOpen)"/>
+<text x="209" y="646" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">
+  <tspan x="209" dy="0">13: JSON response</tspan>
+  <tspan x="209" dy="13">(response, redacted_prompt, spans)</tspan>
+</text>
+
+<!-- 14 return -->
+<line x1="152" y1="720" x2="63" y2="720" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 5" marker-end="url(#arrowReturnOpen)"/>
+<text x="108" y="686" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">
+  <tspan x="108" dy="0">14: render AI reply</tspan>
+  <tspan x="108" dy="13">+ PHI highlights</tspan>
+</text>
+
+<!-- OPTIONAL BYPASS (opt combined fragment) -->
+<rect x="28" y="750" width="520" height="132" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="8 4"/>
+<rect x="28" y="750" width="44" height="20" rx="4" fill="#fde68a" stroke="#d97706" stroke-width="0.9"/>
+<text x="50" y="763" text-anchor="middle" dominant-baseline="central" fill="#92400e" font-size="11.5" font-weight="700" font-family="system-ui, Segoe UI, sans-serif">opt</text>
+<text x="300" y="764" text-anchor="middle" fill="#78350f" font-size="11" font-family="system-ui, Segoe UI, sans-serif">
+  <tspan x="300" dy="0">[bypass_phi = true</tspan>
+  <tspan x="300" dy="14">AND policy allows bypass]</tspan>
+</text>
+
+<line x1="63" y1="790" x2="152" y2="790" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowSync)"/>
+<text x="108" y="778" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">emergency bypass request</text>
+
+<line x1="163" y1="824" x2="254" y2="824" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowSync)"/>
+<text x="209" y="812" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">POST /api/chat + bypass_phi: true</text>
+
+<line x1="263" y1="858" x2="628" y2="858" stroke="#1e40af" stroke-width="1.15" marker-end="url(#arrowSync)"/>
+<text x="446" y="846" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">log chat_bypass audit event (mandatory)</text>
+
+<!-- STANDALONE DETECT -->
+<rect x="28" y="896" width="400" height="96" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.2" stroke-dasharray="8 4"/>
+<rect x="28" y="896" width="44" height="20" rx="4" fill="#bbf7d0" stroke="#16a34a" stroke-width="0.9"/>
+<text x="50" y="909" text-anchor="middle" dominant-baseline="central" fill="#14532d" font-size="11.5" font-weight="700" font-family="system-ui, Segoe UI, sans-serif">opt</text>
+<text x="240" y="910" text-anchor="middle" fill="#166534" font-size="11.5" font-family="system-ui, Segoe UI, sans-serif">[standalone PHI detection only]</text>
+
+<line x1="63" y1="938" x2="254" y2="938" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowSync)"/>
+<text x="159" y="926" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">POST /api/detect</text>
+
+<line x1="254" y1="972" x2="63" y2="972" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 5" marker-end="url(#arrowReturnOpen)"/>
+<text x="159" y="960" text-anchor="middle" fill="#1e293b" font-size="12" font-weight="500" font-family="system-ui, Segoe UI, sans-serif">200 OK: { spans }</text>
+
+<!-- Legend: UML notation key -->
+<rect x="28" y="1008" width="664" height="228" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="48" y="1032" fill="#0f172a" font-size="12" font-weight="700" font-family="system-ui, Segoe UI, sans-serif">UML sequence notation (this diagram)</text>
+
+<line x1="48" y1="1048" x2="88" y2="1048" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowSync)"/>
+<text x="96" y="1052" dominant-baseline="central" fill="#334155" font-size="10.5" font-family="system-ui, Segoe UI, sans-serif">Synchronous - solid line, filled arrow (caller waits)</text>
+
+<line x1="48" y1="1068" x2="88" y2="1068" stroke="#1e40af" stroke-width="1.45" marker-end="url(#arrowAsyncOpen)"/>
+<text x="96" y="1072" dominant-baseline="central" fill="#334155" font-size="10.5" font-family="system-ui, Segoe UI, sans-serif">Asynchronous - solid line, open arrow (caller continues)</text>
+
+<line x1="48" y1="1088" x2="88" y2="1088" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 5" marker-end="url(#arrowReturnOpen)"/>
+<text x="96" y="1092" dominant-baseline="central" fill="#334155" font-size="10.5" font-family="system-ui, Segoe UI, sans-serif">Return / reply - dotted line, open arrow</text>
+
+<text x="48" y="1112" fill="#475569" font-size="10.5" font-family="system-ui, Segoe UI, sans-serif">
+  <tspan x="48" dy="0">Lifeline - dashed vertical line = object existence over time (participants / actors across the top).</tspan>
+  <tspan x="48" dy="14">Execution occurrence - narrow shaded rectangle on a lifeline = focus of control while processing.</tspan>
+  <tspan x="48" dy="14">Combined fragments - alt (alternatives), loop (iteration), opt (optional) in dashed regions with guards in [ ].</tspan>
+  <tspan x="48" dy="14">Creation / destruction - not used in main flow above; see miniature examples below.</tspan>
+</text>
+
+<!-- Illustrative create / destroy (aligned below text, inside legend box) -->
+<g font-family="system-ui, Segoe UI, sans-serif" fill="#64748b">
+  <text x="48" y="1176" font-size="9.5" font-style="italic" fill="#64748b">Illustrative only (UML reference):</text>
+  <!-- creation: message to new object box -->
+  <line x1="52" y1="1198" x2="92" y2="1198" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrowSync)"/>
+  <rect x="98" y="1186" width="34" height="24" rx="3" fill="#f1f5f9" stroke="#64748b" stroke-width="1"/>
+  <text x="140" y="1202" dominant-baseline="central" fill="#475569" font-size="9.5" font-style="normal">new object</text>
+  <text x="140" y="1214" font-size="8.5" font-style="normal">&#171;create&#187;</text>
+  <!-- destruction: lifeline ends at stereotypical X (UML object termination) -->
+  <line x1="322" y1="1184" x2="322" y2="1200" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 3"/>
+  <path d="M 314 1200 L 330 1216 M 330 1200 L 314 1216" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="340" y="1210" dominant-baseline="central" font-size="9.5" font-style="normal" fill="#475569">destruction</text>
+</g>
+</svg>

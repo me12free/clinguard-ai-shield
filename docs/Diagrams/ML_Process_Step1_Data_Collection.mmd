@@ -1,0 +1,22 @@
+%% ML Process Step 1: Data Collection
+%% Sources -> raw files. Insights: raw counts, sources, paths.
+%% Render at mermaid.live or VS Code Mermaid extension.
+
+flowchart LR
+  subgraph sources [Data Sources]
+    S1[Synthetic generation\ngenerate_synthetic_phi / acquire]
+    S2[Public datasets\nHugging Face API]
+  end
+
+  S1 -->|Kenya-aligned PHI| R1[data/raw/synthetic_phi.jsonl]
+  S2 -->|pii-masking-65k etc.| R2[data/raw/pii_masking_65k/*.jsonl]
+
+  subgraph outputs [Raw Outputs]
+    R1
+    R2
+  end
+
+  sources --> outputs
+
+  style sources fill:none,stroke:#333
+  style outputs fill:none,stroke:#333

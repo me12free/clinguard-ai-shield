@@ -1,0 +1,51 @@
+%% ClinGuard PHI Model Training Pipeline (Chapter 5.4.1)
+%% Data acquisition -> Cleanup -> Train -> Evaluate -> Model artifacts.
+%% Render at mermaid.live or VS Code Mermaid extension; export PNG/SVG.
+
+flowchart LR
+  subgraph acquire [Data Acquisition]
+    A1[Synthetic: generate_synthetic_phi.py]
+    A2[Public: Hugging Face pii-masking-65k]
+    A1 --> A3[data/raw/]
+    A2 --> A3
+  end
+
+  subgraph clean [Cleanup]
+    B1[clean_phi_data.py]
+    B2[Merge, English filter, dedup]
+    B3[70 / 15 / 15 split]
+    B1 --> B2 --> B3
+    B3 --> B4[train.json val.json test.json stats.json]
+  end
+
+  subgraph train [Training]
+    C1[train_phi_model.py]
+    C2[Base: BERT or DistilBERT]
+    C3[Token NER, BIO labels]
+    C1 --> C2 --> C3
+    C3 --> C4[phi_model/ or PHI_MODEL_PATH]
+  end
+
+  subgraph eval [Evaluation]
+    D1[evaluate_phi_model.py]
+    D2[eval_report.json: F1, accuracy, precision, recall]
+    D1 --> D2
+  end
+
+  subgraph export [Export]
+    E1[Compare runs by F1]
+    E2[Top 2: phi_model_rank1, phi_model_rank2]
+    E3[Zip per model or combined]
+    E1 --> E2 --> E3
+  end
+
+  A3 --> B1
+  B4 --> C1
+  C4 --> D1
+  D2 --> E1
+
+  style acquire fill:none,stroke:#333
+  style clean fill:none,stroke:#333
+  style train fill:none,stroke:#333
+  style eval fill:none,stroke:#333
+  style export fill:none,stroke:#333

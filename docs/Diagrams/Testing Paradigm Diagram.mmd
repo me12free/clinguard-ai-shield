@@ -1,0 +1,32 @@
+%% ClinGuard Testing Paradigm (Chapter 5.4.2)
+%% Unit/Feature (white-box), Integration (black-box), E2E (black-box).
+%% Render at mermaid.live or VS Code Mermaid extension; export PNG/SVG.
+
+flowchart LR
+  subgraph unit [Unit and Feature Testing]
+    direction TB
+    A1[PHPUnit feature tests]
+    A2[Auth, PHI detect, Chat, Bypass, Policies, Roles, Audit]
+    A1 --- A2
+  end
+
+  subgraph integration [Integration Testing]
+    direction TB
+    B1[Laravel API]
+    B2[Python Detection Engine]
+    B1 <-->|HTTP| B2
+  end
+
+  subgraph e2e [End-to-End Testing]
+    direction TB
+    C1[Playwright or Manual]
+    C2[Dashboard, Chat, Policies, Audit, 403 checks]
+    C1 --- C2
+  end
+
+  unit -->|"White-box: known code paths"| integration
+  integration -->|"Black-box: system boundaries"| e2e
+
+  style unit fill:none,stroke:#333
+  style integration fill:none,stroke:#333
+  style e2e fill:none,stroke:#333

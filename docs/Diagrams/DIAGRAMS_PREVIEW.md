@@ -355,4 +355,213 @@ flowchart TD
 
 ---
 
-*OOAD only. Source `.mmd` files are in this folder. Logical schema: `LOGICAL_SCHEMA.md`. SSAD files (`context.mmd`, `dfd-level1.mmd`) are not part of this project and can be ignored or removed.*
+## Chapter 5 & Appendix Diagrams
+
+### 7. Testing Paradigm (5.4.2)
+
+**Unit/Feature (white-box), Integration (black-box), E2E (black-box).** For Chapter 5.4.2 testing paradigm.
+
+```mermaid
+flowchart LR
+  subgraph unit [Unit and Feature Testing]
+    direction TB
+    A1[PHPUnit feature tests]
+    A2[Auth, PHI detect, Chat, Bypass, Policies, Roles, Audit]
+    A1 --- A2
+  end
+
+  subgraph integration [Integration Testing]
+    direction TB
+    B1[Laravel API]
+    B2[Python Detection Engine]
+    B1 <-->|HTTP| B2
+  end
+
+  subgraph e2e [End-to-End Testing]
+    direction TB
+    C1[Playwright or Manual]
+    C2[Dashboard, Chat, Policies, Audit, 403 checks]
+    C1 --- C2
+  end
+
+  unit -->|"White-box: known code paths"| integration
+  integration -->|"Black-box: system boundaries"| e2e
+
+  style unit fill:none,stroke:#333
+  style integration fill:none,stroke:#333
+  style e2e fill:none,stroke:#333
+```
+
+*Source: `Testing Paradigm Diagram.mmd`*
+
+---
+
+### 8. PHI Training Pipeline (5.4.1)
+
+**Data acquisition → Cleanup → Train → Evaluate → Export.** For Chapter 5.4.1 ML training and model analysis.
+
+```mermaid
+flowchart LR
+  subgraph acquire [Data Acquisition]
+    A1[Synthetic: generate_synthetic_phi.py]
+    A2[Public: Hugging Face pii-masking-65k]
+    A1 --> A3[data/raw/]
+    A2 --> A3
+  end
+
+  subgraph clean [Cleanup]
+    B1[clean_phi_data.py]
+    B2[Merge, English filter, dedup]
+    B3[70 / 15 / 15 split]
+    B1 --> B2 --> B3
+    B3 --> B4[train.json val.json test.json stats.json]
+  end
+
+  subgraph train [Training]
+    C1[train_phi_model.py]
+    C2[Base: BERT or DistilBERT]
+    C3[Token NER, BIO labels]
+    C1 --> C2 --> C3
+    C3 --> C4[phi_model/ or PHI_MODEL_PATH]
+  end
+
+  subgraph eval [Evaluation]
+    D1[evaluate_phi_model.py]
+    D2[eval_report.json: F1, accuracy, precision, recall]
+    D1 --> D2
+  end
+
+  subgraph export [Export]
+    E1[Compare runs by F1]
+    E2[Top 2: phi_model_rank1, phi_model_rank2]
+    E3[Zip per model or combined]
+    E1 --> E2 --> E3
+  end
+
+  A3 --> B1
+  B4 --> C1
+  C4 --> D1
+  D2 --> E1
+
+  style acquire fill:none,stroke:#333
+  style clean fill:none,stroke:#333
+  style train fill:none,stroke:#333
+  style eval fill:none,stroke:#333
+  style export fill:none,stroke:#333
+```
+
+*Source: `PHI Training Pipeline.mmd`*
+
+---
+
+### 9. Dataset Flow (5.3)
+
+**Sources → Raw → Cleanup → Train/Val/Test; features and labels.** For Chapter 5.3 dataset description.
+
+```mermaid
+flowchart LR
+  subgraph sources [Data Sources]
+    S1[Synthetic: Kenya-aligned names, IDs, MRN, SSN, dates, emails, phones]
+    S2[Public: ai4privacy/pii-masking-65k from Hugging Face]
+    S1 --> Raw
+    S2 --> Raw
+  end
+
+  Raw[data/raw/ synthetic_phi.jsonl pii_masking_65k]
+
+  subgraph cleanup [Cleanup - clean_phi_data.py]
+    C1[Merge all raw JSONL]
+    C2[Filter English only]
+    C3[Deduplicate]
+    C4[Split 70% train, 15% val, 15% test]
+    C1 --> C2 --> C3 --> C4
+  end
+
+  subgraph outputs [Cleaned Outputs]
+    O1[train.json]
+    O2[val.json]
+    O3[test.json]
+    O4[stats.json]
+  end
+
+  subgraph features [Features and Labels]
+    F1[Text: character-level]
+    F2[Spans: start, end, category]
+    F3[Categories: NAME, MRN, SSN, EMAIL, PHONE, DATE, ID_NUMBER, KENYA_NATIONAL_ID, PHI]
+    F4[Token-level: BIO labels for NER]
+    F1 --> F2 --> F3 --> F4
+  end
+
+  Raw --> C1
+  C4 --> O1
+  C4 --> O2
+  C4 --> O3
+  C4 --> O4
+  O1 --> F1
+  O2 --> F1
+  O3 --> F1
+
+  style sources fill:none,stroke:#333
+  style cleanup fill:none,stroke:#333
+  style outputs fill:none,stroke:#333
+  style features fill:none,stroke:#333
+```
+
+*Source: `Dataset Flow Diagram.mmd`*
+
+---
+
+### 10. Project Gantt Chart (Appendix)
+
+**One-year project timeline.** Adjust dates to match your actual schedule.
+
+```mermaid
+gantt
+    title ClinGuard Project Timeline (BBIT 4 EC IS PROJECTS II)
+    dateFormat YYYY-MM-DD
+
+    section Proposal
+    Concept note           :concept, 2025-09-01, 4w
+    Proposal writing       :proposal, after concept, 6w
+    Proposal defense       :defense, after proposal, 2w
+
+    section Chapters 1-3
+    Chapter 1 Introduction :ch1, after defense, 3w
+    Chapter 2 Literature   :ch2, after ch1, 4w
+    Chapter 3 Methodology  :ch3, after ch2, 4w
+
+    section Chapter 4
+    System Analysis and Design :ch4, after ch3, 5w
+
+    section Chapter 5
+    Implementation environment :ch5env, after ch4, 2w
+    Dataset and training   :ch5train, after ch5env, 4w
+    Testing paradigm and results :ch5test, after ch5train, 3w
+
+    section Chapter 6 and Final
+    Chapter 6 Conclusions and recommendations :ch6, after ch5test, 2w
+    Final submission and revisions :final, after ch6, 4w
+    Gantt chart and appendix :appendix, after ch6, 2w
+```
+
+*Source: `Project Gantt Chart.mmd`*
+
+---
+
+## ML process per-step diagrams (Chapter 5 – dataset and training)
+
+For the full ML pipeline from data collection to deployment, use the per-step diagram source files. Each step has its own `.mmd` file; render at [mermaid.live](https://mermaid.live) or with the Mermaid extension. See **docs/ML_PROCESS_AND_INSIGHTS.md** for the process description and insights at each step.
+
+| Step | Diagram file | Purpose |
+|------|----------------|--------|
+| 1 | `ML_Process_Step1_Data_Collection.mmd` | Sources → raw files |
+| 2 | `ML_Process_Step2_EDA.mmd` | Raw/cleaned → EDA → insights |
+| 3 | `ML_Process_Step3_Data_Cleaning.mmd` | Raw → clean → train/val/test + stats |
+| 4 | `ML_Process_Step4_Data_Preparation.mmd` | Cleaned → tokenization → BIO labels |
+| 5 | `ML_Process_Step5_Model_Training.mmd` | Train/val → training loop → model artifacts |
+| 6 | `ML_Process_Step6_Evaluation.mmd` | Model + test → metrics → report |
+| 7 | `ML_Process_Step7_Deployment.mmd` | Model → inference (phi_detector) |
+
+---
+
+*OOAD and Chapter 5. Source `.mmd` files are in this folder. Logical schema: `LOGICAL_SCHEMA.md`. Chapter 5: Testing Paradigm, PHI Training Pipeline, Dataset Flow, Project Gantt Chart, ML process steps 1–7.*

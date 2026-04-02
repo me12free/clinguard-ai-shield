@@ -1,0 +1,35 @@
+%% ML Process Step 6: Evaluation
+%% Model + test set -> evaluate_phi_model.py -> metrics and report.
+%% Render at mermaid.live or VS Code Mermaid extension.
+
+flowchart LR
+  subgraph input [Input]
+    M[Model dir\nconfig, weights, tokenizer, label_map]
+    Test[test.json]
+  end
+
+  Eval[evaluate_phi_model.py]
+
+  subgraph metrics [Metrics Computed]
+    M1[Token-level accuracy]
+    M2[Precision\nPHI vs O binary]
+    M3[Recall]
+    M4[F1]
+    M5[n_test, n_tokens_eval]
+  end
+
+  subgraph output [Output and Insights]
+    R[eval_report.json]
+  end
+
+  M --> Eval
+  Test --> Eval
+  Eval --> M1
+  Eval --> M2
+  Eval --> M3
+  Eval --> M4
+  Eval --> M5
+  Eval --> R
+
+  style input fill:none,stroke:#333
+  style output fill:none,stroke:#333

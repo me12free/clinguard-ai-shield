@@ -22,10 +22,20 @@ class ChatController extends Controller
     public function __invoke(ChatRequest $request): JsonResponse
     {
         $prompt = $request->validated('prompt');
+        $bypassPhi = (bool) ($request->validated('bypass_phi') ?? false);
         $user = Auth::user();
 
-        $spans = $this->detection->detect($prompt);
-        $redactedPrompt = $this->redact($prompt, $spans);
+        if ($bypassPhi && ! $this->isBypassAllowed()) {
+            return response()->json(['message' => 'Emergency bypass is not allowed.'], 403);
+        }
+
+        if ($bypassPhi) {
+            $spans = [];
+            $redactedPrompt = $prompt;
+        } else {
+            $spans = $this->detection->detect($prompt);
+            $redactedPrompt = $this->redact($prompt, $spans);
+        }
 
         $ragResults = $this->detection->ragQuery($redactedPrompt, 5);
         $response = $this->openai->chat($redactedPrompt, $ragResults);
@@ -39,8 +49,8 @@ class ChatController extends Controller
         AuditEvent::create([
             'user_id' => $user->id,
             'organization_id' => $user->organization_id,
-            'event_type' => 'chat',
-            'detected_categories' => array_keys(array_count_values(array_column($spans, 'category'))),
+            'event_type' => $bypassPhi ? 'chat_bypass' : 'chat',
+            'detected_categories' => $bypassPhi ? null : array_keys(array_count_values(array_column($spans, 'category'))),
         ]);
 
         return response()->json([
@@ -49,6 +59,23 @@ class ChatController extends Controller
             'rag_context' => $ragResults,
             'redacted_prompt' => $redactedPrompt,
         ]);
+    }
+
+    /** Whether the current user is allowed to use emergency bypass (no PHI redaction). */
+    private function isBypassAllowed(): bool
+    {
+        if (config('clinguard.allow_emergency_bypass')) {
+            return true;
+        }
+        $user = Auth::user();
+        $user?->load('role');
+        if ($user && $user->role) {
+            $permissions = $user->role->permissions ?? [];
+            if (is_array($permissions) && in_array('emergency_bypass', $permissions, true)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Build redacted text by replacing PHI spans from end to start. */

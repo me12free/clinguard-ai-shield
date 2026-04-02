@@ -1,0 +1,31 @@
+%% ML Process Step 7: Deployment
+%% Model artifact -> inference (phi_detector) -> API / app.
+%% Render at mermaid.live or VS Code Mermaid extension.
+
+flowchart LR
+  subgraph artifact [Model Artifact]
+    Z[Zipped or copied model dir\nphi_model_rank1 etc.]
+  end
+
+  subgraph deploy [Deployment]
+    D1[Unzip / copy to\ndetection_engine/phi_model/]
+    D2[phi_detector.py loads model\nwhen USE_ML=1]
+    D3[Token classification NER]
+    D4[Return spans to Laravel API]
+  end
+
+  D1 --> D2 --> D3 --> D4
+
+  subgraph runtime [Runtime Insights]
+    R1[Which model deployed]
+    R2[Latency, GPU vs CPU]
+    R3[Fallback if load fails]
+  end
+
+  Z --> D1
+  D4 --> R1
+  D2 --> R2
+  D2 --> R3
+
+  style deploy fill:none,stroke:#333
+  style runtime fill:none,stroke:#333

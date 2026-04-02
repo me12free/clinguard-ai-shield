@@ -113,8 +113,24 @@ Paths work the same on Windows (PowerShell/CMD), macOS, and Linux. Use `-e png` 
 | Logical Schema  | Open `Logical Schema.md`   | Preview → Print to PDF / copy  |
 | Use Case        | [plantuml.com/plantuml/uml](https://www.plantuml.com/plantuml/uml) | Use site’s PNG/SVG export      |
 | ERD, Sequence, Activity, Class | [mermaid.live](https://mermaid.live) or `DIAGRAMS_PREVIEW.md` | Mermaid Live or extension export |
+| Chapter 5 & Appendix (Testing, PHI Pipeline, Dataset, Gantt) | `DIAGRAMS_PREVIEW.md` (sections 7–10) or individual `.mmd` files | Same as above |
 
 All of these work on **Windows, macOS, and Linux**; the only variable is whether you use browser, editor, or CLI.
+
+---
+
+## 5a. Chapter 5 & Appendix diagrams (Mermaid)
+
+**Source files:** `Testing Paradigm Diagram.mmd`, `PHI Training Pipeline.mmd`, `Dataset Flow Diagram.mmd`, `Project Gantt Chart.mmd`
+
+- **Preview:** Open **`DIAGRAMS_PREVIEW.md`** and scroll to "Chapter 5 & Appendix Diagrams" (sections 7–10), or open each `.mmd` file in the editor with a Mermaid extension.
+- **Export:** Use [mermaid.live](https://mermaid.live) (paste file contents) or the Mermaid CLI as in section 3 Option C, e.g.:
+  ```bash
+  npx -y @mermaid-js/mermaid-cli -i "docs/Diagrams/Testing Paradigm Diagram.mmd" -o "docs/Diagrams/Testing Paradigm Diagram.png"
+  npx -y @mermaid-js/mermaid-cli -i "docs/Diagrams/PHI Training Pipeline.mmd" -o "docs/Diagrams/PHI Training Pipeline.png"
+  npx -y @mermaid-js/mermaid-cli -i "docs/Diagrams/Dataset Flow Diagram.mmd" -o "docs/Diagrams/Dataset Flow Diagram.png"
+  npx -y @mermaid-js/mermaid-cli -i "docs/Diagrams/Project Gantt Chart.mmd" -o "docs/Diagrams/Project Gantt Chart.png"
+  ```
 
 ---
 

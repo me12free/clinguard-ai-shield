@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PolicyUpdateRequest;
 use App\Models\AuditEvent;
 use App\Models\Policy;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +25,7 @@ class PolicyController extends Controller
     }
 
     /** Update a policy (must belong to user's organization). */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(PolicyUpdateRequest $request, int $id): JsonResponse
     {
         $user = Auth::user();
         $policy = Policy::find($id);

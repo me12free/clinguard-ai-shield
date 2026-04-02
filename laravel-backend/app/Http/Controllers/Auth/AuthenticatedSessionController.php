@@ -22,6 +22,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
+        $user->load('role', 'organization');
         $token = $user->createToken('spa')->plainTextToken;
 
         AuditEvent::create([
@@ -31,7 +32,19 @@ class AuthenticatedSessionController extends Controller
             'detected_categories' => null,
         ]);
 
-        return response()->json(['token' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email]]);
+        $userData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role_id' => $user->role_id,
+            'organization_id' => $user->organization_id,
+            'role' => $user->role ? [
+                'id' => $user->role->id,
+                'role_name' => $user->role->role_name,
+                'permissions' => $user->role->permissions ?? [],
+            ] : null,
+        ];
+        return response()->json(['token' => $token, 'user' => $userData]);
     }
 
     /**

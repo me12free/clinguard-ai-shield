@@ -1,0 +1,32 @@
+%% ML Process Step 4: Data Preparation / Feature Engineering
+%% Cleaned records -> tokenization + BIO alignment -> model-ready tensors.
+%% Render at mermaid.live or VS Code Mermaid extension.
+
+flowchart LR
+  subgraph input [Cleaned Data]
+    T1[train.json]
+    T2[val.json]
+  end
+
+  subgraph prep [Preparation in train_phi_model.py]
+    P1[Load text and spans]
+    P2[Tokenize with BERT tokenizer\nmax_length=128]
+    P3[Align character spans to tokens\nspans_to_token_labels]
+    P4[BIO labels: O, B-PHI, I-PHI]
+    P5[Build Dataset: input_ids, attention_mask, labels]
+  end
+
+  P1 --> P2 --> P3 --> P4 --> P5
+
+  subgraph artifacts [Artifacts]
+    A1[label_map.json\nid2label, label2id]
+    A2[Train/val DataLoader]
+  end
+
+  T1 --> P1
+  T2 --> P1
+  P5 --> A2
+  P4 --> A1
+
+  style prep fill:none,stroke:#333
+  style artifacts fill:none,stroke:#333

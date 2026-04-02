@@ -1,229 +1,559 @@
-# ClinGuard PHI Model: Full Google Colab Guide (Start to End)
+# ClinGuard PHI Model: Full Pipeline on Google Colab (Start to End)
 
-This guide walks you through **training the PHI detection model on Google Colab** from start to finish, with every code cell and where to put it. At the end you will download the trained model and plug it into your project.
+**Everything is generated on Colab.** I do not assume any data or models from my PC. Data is acquired and cleaned here; the model is trained and evaluated here; I only download the final zip and drop it into my project on my machine at the end.
 
----
+**Clean notebook (one step per cell, first-person notes, EDA diagrams):** For a version with each step in its own cell, short pipeline diagrams, and extra EDA plots (label distribution, text length histogram), see **[COLAB_NOTEBOOK_CLEAN.md](COLAB_NOTEBOOK_CLEAN.md)**. Copy its Markdown and Code blocks into Colab in order.
 
-## Before you start (on your PC)
-
-1. **Get your cleaned data** from your project:
-   - `detection_engine/data/cleaned/train.json`
-   - `detection_engine/data/cleaned/val.json`
-   - `detection_engine/data/cleaned/test.json`  
-   If you don’t have these yet, run locally first: `python scripts/acquire_datasets.py` then `python scripts/clean_phi_data.py` (see [DATASET_CLEANUP.md](DATASET_CLEANUP.md)).
-
-2. **Decide how you’ll get code and data into Colab:**
-   - **Option A:** Your repo is on **GitHub** (public or you’re okay cloning it). You’ll clone the repo and then upload only the three JSON files (since `data/cleaned/` is gitignored).
-   - **Option B:** You don’t use GitHub for this. You’ll upload the three JSON files **and** the file `detection_engine/train_phi_model.py` into Colab.
-
-The steps below use **Option A** (clone + upload data). If you use Option B, the “Clone” cell is replaced by “Create folder + upload `train_phi_model.py`” and you’ll put the JSONs in a `data/cleaned/` folder you create.
+I run the **entire pipeline on Colab**: data generation (synthetic), acquisition (public/generated), cleanup, training three models (Run 1: BERT 3ep, Run 2: BERT 2ep, Run 3: DistilBERT 3ep), evaluating all three, **comparing all 3 by F1 and exporting the top 2**, then zipping those two for download. Every step below uses only what was produced in earlier cells in this same notebook.
 
 ---
 
-## Step 1: Open Colab and turn on GPU
+## Why I do it all on Colab
 
-1. Go to **https://colab.research.google.com/**.
-2. **File → New notebook**.
-3. **Runtime → Change runtime type**.
-4. Set **Hardware accelerator** to **T4 GPU** (or “GPU”) → **Save**.
+- **GPU** – Training is much faster than on my laptop CPU.
+- **No local data** – Data is created and cleaned in this runtime; I never upload train/val/test from my PC.
+- **Reproducible** – Same scripts as in the repo; I run them in order and record before/after from what Colab produces.
 
 ---
 
-## Step 2: Clone the repo and go to the detection engine folder
+## Before you start
 
-**Cell 1** (run this first):
+1. **Open Colab:** https://colab.research.google.com/ → **File → New notebook**.
+2. **Enable GPU:** **Runtime → Change runtime type → Hardware accelerator: T4 GPU** → Save.
+3. **Repo:** Replace `me12free` in the clone URL with your GitHub username if yours is different.
+
+**ML process (steps, insights, diagrams):** For a full description of the ML pipeline from data collection to deployment, the insights at each step, and per-step diagrams, see **[docs/ML_PROCESS_AND_INSIGHTS.md](ML_PROCESS_AND_INSIGHTS.md)**. The diagrams (Step 1–7) are in `docs/Diagrams/` as `ML_Process_Step1_Data_Collection.mmd` through `ML_Process_Step7_Deployment.mmd`. Use the optional EDA cells (4b, 5b) below to collect insights for your report.
+
+---
+
+# SECTION 1: Setup – clone repo, install deps, check GPU
+
+## Cell 1 – Clone or pull repo and go to detection_engine
+
+I clone the repo so I have the scripts (acquire, clean, train, evaluate). If the folder already exists (e.g. I’m re-running the notebook), I pull the latest so I use the current code. All paths in the cells below are relative to the Colab runtime and the repo layout; nothing depends on my local machine.
 
 ```python
-# Clone your repo (replace with YOUR GitHub username or full repo URL)
-!git clone https://github.com/me12free/clinguard-ai-shield.git
-%cd clinguard-ai-shield/detection_engine
-```
-
-**Where to put it:** First cell of the notebook.  
-**If you don’t use GitHub (Option B):** Skip this and create a folder instead, e.g. `!mkdir -p /content/clinguard/data/cleaned` and upload `train_phi_model.py` to `/content/clinguard/` and the three JSONs to `/content/clinguard/data/cleaned/`. Then use `/content/clinguard` as the project root in the next steps.
-
----
-
-## Step 3: Install dependencies (training only)
-
-**Cell 2:**
-
-```python
-# Install only what’s needed for training (no chromadb/sentence-transformers)
-!pip install -q transformers datasets accelerate scikit-learn torch langdetect
-```
-
-**Where to put it:** Second cell. Run after the clone.
-
----
-
-## Step 4: Create data folder and upload your train/val/test JSONs
-
-**Cell 3:**
-
-```python
-# Create the folder that would normally hold cleaned data (gitignore means it’s not in the repo)
-!mkdir -p data/cleaned
-
-# Upload train.json, val.json, test.json from your PC
-from google.colab import files
-print("Upload train.json")
-uploaded = files.upload()
-# Move if needed (Colab often puts uploads in current dir)
-# Then upload val and test:
-print("Upload val.json")
-files.upload()
-print("Upload test.json")
-files.upload()
-```
-
-**Where to put it:** Third cell.  
-**What to do:** When you run the cell, click “Choose Files” and select **train.json** from `detection_engine/data/cleaned/`. After the first upload, run the same cell again (or add more `files.upload()` calls) and choose **val.json**, then **test.json**. Ensure all three end up in `detection_engine/data/cleaned/` (e.g. if they land in the current directory, run `!mv train.json val.json test.json data/cleaned/`).
-
-**Simpler one-shot upload (one run, pick all three files):**
-
-```python
-!mkdir -p data/cleaned
-from google.colab import files
-uploaded = files.upload()  # Select train.json, val.json, test.json together
-for f in ['train.json', 'val.json', 'test.json']:
-  if f in uploaded:
-    !mv "$f" data/cleaned/
-```
-
-**Where to put it:** Use this as Cell 3 instead if you prefer selecting all three files at once.
-
----
-
-## Step 5: Set environment variables and run training
-
-**Cell 4:**
-
-```python
-# Tell the training script where data and output are; use GPU-friendly batch size
+# Clone my repo, or pull latest if I already cloned it (e.g. re-running this notebook)
 import os
-os.environ["PHI_DATA_DIR"] = "data/cleaned"
-os.environ["PHI_MODEL_PATH"] = "/content/phi_model"
-os.environ["PHI_EPOCHS"] = "3"
-os.environ["PHI_BATCH_SIZE"] = "16"
-
-# Run your project’s training script (same code as local)
-%run train_phi_model.py
-```
-
-**Where to put it:** Fourth cell.  
-**What it does:** Uses your repo’s `train_phi_model.py` so the saved model is exactly what `phi_detector.py` expects. Training runs on the Colab GPU. When it finishes, the model is in `/content/phi_model/`.
-
-**If you used Option B** (no clone, you uploaded `train_phi_model.py` to `/content/clinguard/` and data to `/content/clinguard/data/cleaned/`):
-
-```python
-%cd /content/clinguard
-import os
-os.environ["PHI_DATA_DIR"] = "/content/clinguard/data/cleaned"
-os.environ["PHI_MODEL_PATH"] = "/content/phi_model"
-os.environ["PHI_EPOCHS"] = "3"
-os.environ["PHI_BATCH_SIZE"] = "16"
-%run train_phi_model.py
+repo_name = "clinguard-ai-shield"
+if os.path.isdir(repo_name):
+  %cd clinguard-ai-shield
+  !git pull
+  %cd detection_engine
+else:
+  !git clone https://github.com/me12free/clinguard-ai-shield.git
+  %cd clinguard-ai-shield/detection_engine
 ```
 
 ---
 
-## Step 6: Zip the model and download it
+## Cell 2 – Install dependencies
 
-**Cell 5:**
+I install only what’s needed for data acquisition, cleanup, training, and evaluation. I skip chromadb and sentence-transformers here so the environment stays small and installs quickly.
 
 ```python
-# Zip the saved model so you can download one file
-!zip -r /content/phi_model.zip /content/phi_model
-
-# Download to your PC
-from google.colab import files
-files.download("/content/phi_model.zip")
+# Install everything I need for: data download, cleanup, training, evaluation, and ML summary charts
+!pip install -q transformers datasets accelerate scikit-learn torch langdetect matplotlib
 ```
 
-**Where to put it:** Fifth cell. Run after training has finished. Your browser will download `phi_model.zip`.
-
 ---
 
-## Step 7: On your PC – put the model in your project
+## Cell 3 – Check GPU
 
-1. **Unzip** `phi_model.zip` on your computer. You should get a folder **`phi_model`** with:
-   - `config.json`
-   - `tokenizer_config.json`, `tokenizer.json`, `vocab.txt` (and maybe other tokenizer files)
-   - `model.safetensors` or `pytorch_model.bin`
-   - `label_map.json`
-
-2. **Replace** the contents of your project’s model folder with this:
-   - Open your project: `clinguard-ai-shield/detection_engine/`
-   - **Delete or rename** the existing `phi_model` folder (e.g. rename to `phi_model_old` if you want to keep it).
-   - **Copy** the unzipped `phi_model` folder into `detection_engine/` so that you have:
-     ```
-     detection_engine/
-       phi_model/
-         config.json
-         tokenizer_config.json
-         tokenizer.json
-         ...
-         model.safetensors  (or pytorch_model.bin)
-         label_map.json
-     ```
-
-3. **Run your app** as usual. The detection engine (`phi_detector.py`) will load this model when `USE_ML=1` and `config.json` is present. No code changes needed.
-
----
-
-## Quick reference: all cells in order
-
-| Order | What to do | Where to put the code |
-|-------|------------|------------------------|
-| 1 | Clone repo, `%cd` to `detection_engine` | Cell 1 |
-| 2 | `pip install` (transformers, datasets, accelerate, scikit-learn, torch, langdetect) | Cell 2 |
-| 3 | `mkdir data/cleaned`, then `files.upload()` for train/val/test.json and move into `data/cleaned/` | Cell 3 |
-| 4 | Set `PHI_DATA_DIR`, `PHI_MODEL_PATH`, `PHI_EPOCHS`, `PHI_BATCH_SIZE`, then `%run train_phi_model.py` | Cell 4 |
-| 5 | `zip` `/content/phi_model` and `files.download("phi_model.zip")` | Cell 5 |
-
----
-
-## Optional: check GPU and data before training
-
-**Optional cell** (after Cell 2, before uploading data):
+I confirm the runtime is using the GPU so training will be fast. If this prints `False`, I go back to Runtime → Change runtime type and set GPU again.
 
 ```python
+# I check that the GPU is available so training runs fast
 import torch
 print("GPU available:", torch.cuda.is_available())
 if torch.cuda.is_available():
   print("Device:", torch.cuda.get_device_name(0))
 ```
 
-**Optional check** that data is in place (after Cell 3):
+---
+
+# SECTION 2: Data – why I use both synthetic and generated (public) data
+
+I use **two sources** that get merged and then cleaned:
+
+1. **Synthetic data** – Generated by my script from templates (Kenya names, 8-digit national ID, MRN, SSN, dates, emails, phones). I use it because: (a) it’s **Kenya-aligned** for my context, (b) **no sign-up** or external dependency, (c) **reproducible** (fixed seed), (d) it gives me **control** over PHI categories (e.g. KENYA_NATIONAL_ID).
+2. **Generated/public data** – Fetched from Hugging Face (e.g. ai4privacy/pii-masking-65k). I use it because: (a) **larger scale** and real-world PII patterns, (b) **no registration**, (c) it complements synthetic so the model sees both in-repo and public-style text.
+
+After cleanup I have **one** train/val/test set built from both: normalized, English-only (for my use case), deduplicated, and split. That’s what I train and evaluate on.
+
+---
+
+## Cell 4 – Acquire all raw data (synthetic + public)
+
+I run the acquisition script once. It (1) downloads the public PII dataset (pii-masking-65k) from Hugging Face and saves it under `data/raw/pii_masking_65k/`, (2) generates synthetic examples and saves them to `data/raw/synthetic_phi.jsonl`. So after this cell I have both “generated” and “synthetic” raw data in `data/raw/`.
+
+**Before (in this Colab):** No `data/raw/` or it’s empty.  
+**After (in this Colab):** `data/raw/synthetic_phi.jsonl` and `data/raw/pii_masking_65k/pii_masking_65k.jsonl` produced by the scripts above. Optionally pii_masking_300k if it loads. I can set `PHI_SYNTHETIC_COUNT` to get more synthetic examples.
 
 ```python
-!ls -la data/cleaned/
+# I set how many synthetic examples I want (optional; default in script is 2000)
+import os
+os.environ["PHI_SYNTHETIC_COUNT"] = "2000"
+
+# This script: (1) downloads public PII data from Hugging Face into data/raw/, (2) generates synthetic data into data/raw/synthetic_phi.jsonl
+!python scripts/acquire_datasets.py
+
+# I quickly check what was created
+!ls -la data/raw/
+!wc -l data/raw/synthetic_phi.jsonl 2>/dev/null || true
+!ls data/raw/pii_masking_65k/ 2>/dev/null || true
 ```
 
-You should see `train.json`, `val.json`, `test.json`.
+### Cell 4b (optional): EDA on raw data – ML process Step 2
+
+Run this after Cell 4 to get **insights from Step 2 (EDA)** on the raw dataset: record counts, label distribution, text length stats, and sample snippets per category. Saves `data/raw/eda_insights.json` if you set `PHI_EDA_OUT=1`.
+
+```python
+# EDA on raw data (ML process Step 2 – insights for Chapter 5)
+import os
+os.environ["PHI_DATA_DIR"] = "data/raw"
+os.environ["PHI_EDA_OUT"] = "1"
+!python scripts/eda_phi_data.py
+```
 
 ---
 
-## If something goes wrong
+# SECTION 3: Cleanup – one format, English-only, dedup, split
 
-- **“No module named 'transformers'”**  
-  Run Cell 2 again (`pip install ...`).
+I run the cleanup script so that all raw data (synthetic + public) is merged, normalized, filtered to English only (for my ClinGuard context), deduplicated, and split into train/val/test. The script writes `data/cleaned/train.json`, `val.json`, `test.json`, and `data/cleaned/stats.json`. I use the stats to record **before and after** for my notes.
 
-- **“No such file or directory: train.json” or “data/cleaned”**  
-  Run Cell 3 again and ensure all three JSONs are uploaded and moved into `data/cleaned/`. Use `!ls data/cleaned/` to confirm.
+**Before (in this Colab):** Raw JSONL in `data/raw/` from the previous cell (mixed languages in pii_masking).  
+**After (in this Colab):** One cleaned dataset in `data/cleaned/` with train/val/test and `stats.json` (total read, dropped invalid, dropped non-English, after dedup, train/val/test counts).
 
-- **“Runtime disconnected”**  
-  Colab free tier can disconnect. Re-run from Cell 1; you’ll need to re-upload the data (and re-run training). For long runs, consider saving checkpoints (e.g. `save_steps` in the script) or Colab Pro.
+```python
+# Cleanup: merge all raw data, keep only English (KEEP_LANG=en), deduplicate, split 70/15/15
+# I keep English only because my project targets English clinical text (Kenya context)
+!python scripts/clean_phi_data.py
 
-- **Out of memory (OOM)**  
-  Reduce batch size: in Cell 4 set `os.environ["PHI_BATCH_SIZE"] = "8"` (or `"4"`).
+# Before/after: I read the stats the script wrote so I can record what happened
+import json
+with open("data/cleaned/stats.json") as f:
+  stats = json.load(f)
+print("After cleanup:")
+print("  Total records read (before):", stats.get("before_count"))
+print("  Dropped (invalid):", stats.get("dropped_invalid"))
+print("  Dropped (non-English):", stats.get("dropped_language"))
+print("  After dedup:", stats.get("after_dedup"))
+print("  Train / Val / Test:", stats.get("train"), "/", stats.get("val"), "/", stats.get("test"))
+```
+
+### Cell 5b (optional): EDA on cleaned data – ML process Step 2 (post-clean)
+
+Run this after the cleanup cell to get **EDA insights on the cleaned dataset** (same metrics as Step 2 but on train/val/test). Writes `data/cleaned/eda_insights.json` when `PHI_EDA_OUT=1`. Use with the printed `stats.json` summary above for **Step 3 insights** (before/after counts, split sizes, label distribution).
+
+```python
+# EDA on cleaned data (ML process Step 2 after clean – insights for Chapter 5)
+import os
+os.environ["PHI_DATA_DIR"] = "data/cleaned"
+os.environ["PHI_EDA_OUT"] = "1"
+!python scripts/eda_phi_data.py
+```
 
 ---
 
-## Summary
+# SECTION 4: Training – one main run
 
-- **Colab:** Enable GPU → clone repo → install deps → upload `train.json`, `val.json`, `test.json` to `data/cleaned/` → run `train_phi_model.py` via `%run` with env vars → zip `/content/phi_model` → download `phi_model.zip`.
-- **Your PC:** Unzip and place the `phi_model` folder inside `detection_engine/`. Your project then uses this model with no extra integration steps.
+I set the data path (the cleaned data from the previous cell), output path, epochs, and batch size, then run the repo’s training script. The model is saved to `/content/phi_model` in this Colab runtime. I use a GPU-friendly batch size so training finishes in reasonable time.
 
-For GPU training options and local integration details, see [GPU_AND_COLAB_TRAINING.md](GPU_AND_COLAB_TRAINING.md).
+```python
+# I point the script at the cleaned data and where to save the model; I use a larger batch size because I have a GPU
+import os
+os.environ["PHI_DATA_DIR"] = "data/cleaned"
+os.environ["PHI_MODEL_PATH"] = "/content/phi_model"
+os.environ["PHI_EPOCHS"] = "3"
+os.environ["PHI_BATCH_SIZE"] = "16"
+
+# This runs the repo’s train_phi_model.py; output is compatible with phi_detector when I drop the model into my project later
+%run train_phi_model.py
+```
+
+---
+
+# SECTION 5: Compare all 3 runs and export the top 2
+
+I run three training runs in this notebook (different settings), evaluate all three, then **compare all 3 by F1** and keep the **top 2** models for export. Here: (1) Run 1 (3 epochs, BERT) → `/content/phi_model`, (2) Run 2 (2 epochs) → `/content/phi_model_run2`, (3) Run 3 (3 epochs, DistilBERT) → `/content/phi_model_run3`. I evaluate each on the full test set from cleanup. I rank all three by F1, copy the best to `/content/phi_model_rank1` and the second-best to `/content/phi_model_rank2`, then zip both into one archive for download.
+
+**Run 1:** Model from the previous training cell; output in `/content/phi_model`.  
+**Run 2:** Train with 2 epochs → `/content/phi_model_run2`.  
+**Run 3:** Train with DistilBERT → `/content/phi_model_run3`.  
+**Evaluate all three:** Run the evaluation script on each model.  
+**Pick top 2:** Rank by F1, copy best → `phi_model_rank1`, second-best → `phi_model_rank2`, then zip both.
+
+```python
+# ----- Run 1: evaluate the model we just trained in the previous cell (in this Colab) -----
+# I evaluate it so I have numbers to compare with run 2 and run 3
+import os
+os.environ["PHI_MODEL_PATH"] = "/content/phi_model"
+os.environ["PHI_DATA_DIR"] = "data/cleaned"
+os.environ["EVAL_SAMPLE"] = "0"   # 0 = full test set so the comparison is fair
+!python scripts/evaluate_phi_model.py
+
+import json
+with open("/content/phi_model/eval_report.json") as f:
+  run1 = json.load(f)
+print("Run 1 (default 3 epochs):", "F1 =", run1.get("f1"), "Accuracy =", run1.get("accuracy"))
+```
+
+```python
+# ----- Run 2: different setting (e.g. 2 epochs) so I can compare -----
+import os
+os.environ["PHI_DATA_DIR"] = "data/cleaned"
+os.environ["PHI_MODEL_PATH"] = "/content/phi_model_run2"
+os.environ["PHI_EPOCHS"] = "2"
+os.environ["PHI_BATCH_SIZE"] = "16"
+%run train_phi_model.py
+```
+
+```python
+# I evaluate run 2 on the same test set
+import os
+os.environ["PHI_MODEL_PATH"] = "/content/phi_model_run2"
+os.environ["PHI_DATA_DIR"] = "data/cleaned"
+os.environ["EVAL_SAMPLE"] = "0"
+!python scripts/evaluate_phi_model.py
+
+import json
+with open("/content/phi_model_run2/eval_report.json") as f:
+  run2 = json.load(f)
+print("Run 2 (2 epochs):", "F1 =", run2.get("f1"), "Accuracy =", run2.get("accuracy"))
+```
+
+```python
+# ----- Run 3: different base model (DistilBERT) so we can compare all three -----
+import os
+os.environ["PHI_DATA_DIR"] = "data/cleaned"
+os.environ["PHI_MODEL_PATH"] = "/content/phi_model_run3"
+os.environ["BASE_MODEL"] = "distilbert-base-uncased"
+os.environ["PHI_EPOCHS"] = "3"
+os.environ["PHI_BATCH_SIZE"] = "16"
+%run train_phi_model.py
+```
+
+```python
+# I evaluate run 3 on the same test set
+import os
+os.environ["PHI_MODEL_PATH"] = "/content/phi_model_run3"
+os.environ["PHI_DATA_DIR"] = "data/cleaned"
+os.environ["EVAL_SAMPLE"] = "0"
+!python scripts/evaluate_phi_model.py
+
+import json
+with open("/content/phi_model_run3/eval_report.json") as f:
+  run3 = json.load(f)
+print("Run 3 (DistilBERT, 3 epochs):", "F1 =", run3.get("f1"), "Accuracy =", run3.get("accuracy"))
+```
+
+```python
+# I compare all three runs (all produced in this Colab), rank by F1, and copy the top 2 to phi_model_rank1 and phi_model_rank2
+import json
+import os
+import shutil
+candidates = [
+  ("/content/phi_model", "run1 (BERT 3ep)"),
+  ("/content/phi_model_run2", "run2 (BERT 2ep)"),
+  ("/content/phi_model_run3", "run3 (DistilBERT 3ep)"),
+]
+results = []
+for model_dir, label in candidates:
+  report_path = os.path.join(model_dir, "eval_report.json")
+  if os.path.isfile(report_path):
+    with open(report_path) as f:
+      report = json.load(f)
+    f1 = report.get("f1", 0)
+    results.append((f1, model_dir, label, report))
+  else:
+    results.append((-1, model_dir, label, None))
+results.sort(key=lambda x: -x[0])  # descending F1
+top2 = results[:2]
+if len(top2) < 2:
+  print("Fewer than 2 runs have eval reports; copying available run(s).")
+for i, (f1, model_dir, label, report) in enumerate(top2, 1):
+  dest = f"/content/phi_model_rank{i}"
+  if os.path.isdir(dest):
+    shutil.rmtree(dest)
+  shutil.copytree(model_dir, dest)
+  print(f"Rank {i}: {label} -> phi_model_rank{i} (F1={f1:.4f})")
+print("Top 2 are in /content/phi_model_rank1 and /content/phi_model_rank2. Run the next cell to zip and download.")
+```
+
+---
+
+# ML focus: Run summary and charts for Chapter 5 (diagrams and interpretation)
+
+After training and comparing runs, use this cell to produce **metrics table** and **charts** for your Chapter 5 write-up (sections 5.3, 5.4.1) and for interpreting results. The output aligns with the **Dataset Flow** and **PHI Training Pipeline** diagrams: same pipeline (acquire → clean → train → evaluate), with concrete numbers and a figure you can paste or screenshot into your report.
+
+**What this cell does:**
+
+1. Loads `eval_report.json` from each run (phi_model, phi_model_run2, phi_model_run3, and rank1/rank2 if present).
+2. Prints a **summary table** (Run, F1, Accuracy, Precision, Recall, n_test) for copy-paste or screenshot into Chapter 5.5 or 5.4.1.
+3. Draws a **bar chart** comparing F1 (and optionally accuracy) across runs and saves it to `/content/phi_ml_summary.png` so you can download it for “screenshots of the graphs” (Lec 9).
+4. Saves a **JSON summary** to `/content/phi_ml_run_summary.json` for your records or later interpretation.
+
+Run this cell **after** the “Compare all 3 runs” cell (so all eval_report.json files exist). Then you can download `phi_ml_summary.png` and use the printed table and the chart for your insights.
+
+```python
+# ML focus: run summary and charts for Chapter 5 (diagrams and report)
+import os
+import json
+
+# Runs to include (same order as in the PHI Training Pipeline diagram)
+RUNS = [
+  ("/content/phi_model", "Run 1 (BERT 3 ep)"),
+  ("/content/phi_model_run2", "Run 2 (BERT 2 ep)"),
+  ("/content/phi_model_run3", "Run 3 (DistilBERT 3 ep)"),
+  ("/content/phi_model_rank1", "Rank 1 (best F1)"),
+  ("/content/phi_model_rank2", "Rank 2 (second)"),
+]
+
+rows = []
+for dir_path, label in RUNS:
+  report_path = os.path.join(dir_path, "eval_report.json")
+  if os.path.isfile(report_path):
+    with open(report_path) as f:
+      r = json.load(f)
+    rows.append({
+      "run": label,
+      "f1": r.get("f1", 0),
+      "accuracy": r.get("accuracy", 0),
+      "precision": r.get("precision", 0),
+      "recall": r.get("recall", 0),
+      "n_test": r.get("n_test", 0),
+    })
+
+if not rows:
+  print("No eval_report.json found. Run the evaluate cells and the compare cell first.")
+else:
+  # Table for Chapter 5 (copy or screenshot)
+  print("=== ML run summary for Chapter 5 (Dataset / Training / Testing) ===\n")
+  print(f"{'Run':<28} {'F1':>8} {'Accuracy':>10} {'Precision':>10} {'Recall':>8} {'n_test':>8}")
+  print("-" * 76)
+  for row in rows:
+    print(f"{row['run']:<28} {row['f1']:>8.4f} {row['accuracy']:>10.4f} {row['precision']:>10.4f} {row['recall']:>8.4f} {row['n_test']:>8}")
+  print()
+
+  # Bar chart (F1 and Accuracy across runs) – for 5.4.1 "graphs"
+  try:
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    labels = [r["run"] for r in rows]
+    f1_vals = [r["f1"] for r in rows]
+    acc_vals = [r["accuracy"] for r in rows]
+    x = np.arange(len(labels))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    bars1 = ax.bar(x - width/2, f1_vals, width, label="F1")
+    bars2 = ax.bar(x + width/2, acc_vals, width, label="Accuracy")
+    ax.set_ylabel("Score")
+    ax.set_title("PHI model runs: F1 and Accuracy (Chapter 5.4.1 – model analysis)")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=15, ha="right")
+    ax.legend()
+    ax.set_ylim(0, 1.05)
+    fig.tight_layout()
+    out_png = "/content/phi_ml_summary.png"
+    plt.savefig(out_png, dpi=150, bbox_inches="tight")
+    plt.show()
+    print("Chart saved to", out_png, "- use Files panel or run: from google.colab import files; files.download(out_png)")
+  except Exception as e:
+    print("Matplotlib not available or error:", e, "- install with: !pip install matplotlib")
+
+  # Save JSON summary for your interpretation / appendix
+  summary_path = "/content/phi_ml_run_summary.json"
+  with open(summary_path, "w") as f:
+    json.dump(rows, f, indent=2)
+  print("Summary JSON saved to", summary_path)
+```
+
+**Optional: download the chart from Colab**
+
+```python
+# Run after the cell above to download the chart image for your report
+from google.colab import files
+files.download("/content/phi_ml_summary.png")
+```
+
+**Interpretation (you can use these as prompts for your write-up):** Compare F1 and accuracy across Run 1 (BERT 3 ep), Run 2 (BERT 2 ep), and Run 3 (DistilBERT). Rank 1 and Rank 2 are the top two by F1. In Chapter 5.4.1 you can state which configuration was selected and why (e.g. “Run 1 achieved the highest F1 and was copied to phi_model_rank1 and used as the deployed model”). The **Dataset Flow** and **PHI Training Pipeline** diagrams in `docs/Diagrams/` describe the same pipeline; this cell gives you the numbers and one graph to support that narrative.
+
+---
+
+# SECTION 6: Zip the top 2 models and download
+
+I zip both `phi_model_rank1` and `phi_model_rank2` (the top 2 by F1 from the previous cell) into one archive so I have one file to download with both models.
+
+```python
+# I zip the top 2 models (rank1 and rank2) into one archive; if only one run had eval reports, only rank1 is zipped
+import os
+import subprocess
+zip_dirs = [d for d in ["/content/phi_model_rank1", "/content/phi_model_rank2"] if os.path.isdir(d)]
+if not zip_dirs:
+  raise SystemExit("Run the compare cell first so phi_model_rank1 (and optionally rank2) exist.")
+subprocess.run(["zip", "-r", "/content/phi_model_top2.zip"] + zip_dirs, check=True)
+
+from google.colab import files
+files.download("/content/phi_model_top2.zip")
+```
+
+---
+
+# Alternative: Zip each model separately
+
+If you want to zip **each** model directory into its own archive (so you can download only rank1, or all three runs plus rank1/rank2 individually), use this cell instead of or after the “zip top 2” cell above. Each zip is written to `/content/<name>.zip`; you can download from the Colab file browser or trigger a download per file.
+
+```python
+# Zip each model directory into its own archive for easy per-model download
+import os
+import subprocess
+from google.colab import files
+
+model_dirs = [
+  ("/content/phi_model", "phi_model"),
+  ("/content/phi_model_run2", "phi_model_run2"),
+  ("/content/phi_model_run3", "phi_model_run3"),
+  ("/content/phi_model_rank1", "phi_model_rank1"),
+  ("/content/phi_model_rank2", "phi_model_rank2"),
+]
+zips_created = []
+for dir_path, name in model_dirs:
+  if os.path.isdir(dir_path):
+    zip_path = f"/content/{name}.zip"
+    subprocess.run(["zip", "-r", zip_path, dir_path], check=True)
+    zips_created.append((zip_path, name))
+    print(f"Created {zip_path}")
+
+if not zips_created:
+  print("No model directories found. Run the training and compare cells first.")
+else:
+  # Option A: download each zip (Colab may prompt for each)
+  for zip_path, name in zips_created:
+    files.download(zip_path)
+  # Option B: skip downloads and use Colab file browser: Files → right-click each .zip → Download
+  # print("Zips ready at:", [z for z, _ in zips_created])
+```
+
+On your PC, unzip any of the downloaded archives; each contains one model folder (e.g. `phi_model_rank1/` with `config.json`, tokenizer files, weights, `label_map.json`). Use the best-ranked model as `detection_engine/phi_model/` as in Section 7.
+
+---
+
+# SECTION 7: On my PC – use the model in my project (only step that involves my machine)
+
+Everything so far was generated on Colab. Only now do I use my PC:
+
+1. I **download** `phi_model_top2.zip` from Colab (the file produced in the previous cell).
+2. On my PC I **unzip** it. I get two folders: `phi_model_rank1` (best F1) and `phi_model_rank2` (second-best). Each has `config.json`, tokenizer files, model weights, and `label_map.json`.
+3. I use **rank1** as my main model: rename `phi_model_rank1` to `phi_model` and put it inside my repo at `detection_engine/phi_model/` (replace any existing contents there). I keep `phi_model_rank2` as backup or for A/B testing.
+4. I **run my app** as usual. `phi_detector.py` loads from `phi_model/` when `USE_ML=1` and `config.json` is there; no code changes are needed.
+
+---
+
+# Quick reference – all cells in order
+
+| Order | What I do |
+|-------|-----------|
+| 1 | Clone or pull repo, `%cd` to `detection_engine` |
+| 2 | `pip install` (transformers, datasets, accelerate, scikit-learn, torch, langdetect) |
+| 3 | Check GPU |
+| 4 | Run `acquire_datasets.py` (synthetic + public data) → raw data in `data/raw/` |
+| 5 | Run `clean_phi_data.py` → cleaned train/val/test in `data/cleaned/`; print stats (before/after) |
+| 6 | Set env vars, run `train_phi_model.py` → model in `/content/phi_model` (Run 1) |
+| 7 | Evaluate run 1 |
+| 8 | Train run 2 (2 epochs) → `/content/phi_model_run2` |
+| 9 | Evaluate run 2 |
+| 10 | Train run 3 (DistilBERT) → `/content/phi_model_run3` |
+| 11 | Evaluate run 3 |
+| 12 | Compare all three by F1, copy top 2 to `phi_model_rank1` and `phi_model_rank2` |
+| 12a | **ML focus:** Run summary and charts cell → table + `phi_ml_summary.png` + `phi_ml_run_summary.json` for Chapter 5 |
+| 13 | Zip both `phi_model_rank1` and `phi_model_rank2` → `phi_model_top2.zip`, download |
+
+---
+
+# Before/After at a glance
+
+| Stage | Before | After |
+|-------|--------|--------|
+| **Acquire (Cell 4)** | No `data/raw/` or empty | `data/raw/synthetic_phi.jsonl` + `data/raw/pii_masking_65k/*.jsonl` |
+| **Cleanup (Cell 5)** | Raw JSONL, mixed languages | `data/cleaned/train.json`, `val.json`, `test.json`, `stats.json` |
+| **Train run 1 (Cell 6)** | No model | `/content/phi_model/` (BERT, 3 epochs) |
+| **Eval run 1 (Cell 7)** | — | `/content/phi_model/eval_report.json` |
+| **Train run 2 (Cell 8)** | — | `/content/phi_model_run2/` (BERT, 2 epochs) |
+| **Eval run 2 (Cell 9)** | — | `/content/phi_model_run2/eval_report.json` |
+| **Train run 3 (Cell 10)** | — | `/content/phi_model_run3/` (DistilBERT, 3 epochs) |
+| **Eval run 3 (Cell 11)** | — | `/content/phi_model_run3/eval_report.json` |
+| **Pick top 2 (Cell 12)** | Three model dirs | `/content/phi_model_rank1/` (best F1), `/content/phi_model_rank2/` (second) |
+| **Zip (Cell 13)** | rank1 + rank2 on Colab | `phi_model_top2.zip` to download; unzip on PC → rank1 + rank2 |
+
+---
+
+# Optional: fewer runs (e.g. only run 1 and run 2)
+
+If I skip run 3, the compare cell still works: it ranks whatever runs have an `eval_report.json` and copies the top 2 (or the only one/two available) to `phi_model_rank1` and, if present, `phi_model_rank2`. The zip then includes whichever rank dirs exist.
+
+---
+
+# Alternative: single best model (run1 vs run2 only)
+
+If I only run run1 and run2 and want to zip **one** folder (the single best), I use this compare cell and then zip `phi_model_final`:
+
+```python
+# I compare run1 and run2 and copy the best model to a single folder (phi_model_final) for zipping
+# I load both reports from disk so this cell works even if I re-run it without re-running the eval cells
+import json
+import os
+import shutil
+with open("/content/phi_model/eval_report.json") as f:
+  run1 = json.load(f)
+with open("/content/phi_model_run2/eval_report.json") as f:
+  run2 = json.load(f)
+f1_1 = run1.get("f1", 0)
+f1_2 = run2.get("f1", 0)
+if f1_2 >= f1_1:
+  print("I'm using run 2 as the final model (higher or equal F1).")
+  if os.path.isdir("/content/phi_model_final"):
+    shutil.rmtree("/content/phi_model_final")
+  shutil.copytree("/content/phi_model_run2", "/content/phi_model_final")
+else:
+  print("I'm using run 1 as the final model (higher F1).")
+  if os.path.isdir("/content/phi_model_final"):
+    shutil.rmtree("/content/phi_model_final")
+  shutil.copytree("/content/phi_model", "/content/phi_model_final")
+```
+
+Then zip and download the single folder:
+
+```python
+!zip -r /content/phi_model_final.zip /content/phi_model_final
+from google.colab import files
+files.download("/content/phi_model_final.zip")
+```
+
+On my PC I unzip `phi_model_final.zip`, rename the folder to `phi_model`, and put it in `detection_engine/phi_model/`.
+
+---
+
+# If something goes wrong
+
+- **“No module named …”** – I run the install cell again.
+- **“No raw data” or “No cleaned data”** – I run the acquire cell, then the cleanup cell, in order.
+- **“Runtime disconnected”** – I re-run from Cell 1; I’ll need to re-run acquire and cleanup (and training) because the runtime is fresh.
+- **Out of memory** – I set `PHI_BATCH_SIZE=8` or `4` and re-run training.
+- **Evaluation script can’t find model** – I set `PHI_MODEL_PATH` to the folder that has `config.json` (e.g. `/content/phi_model` or `/content/phi_model_run2`) and run from `detection_engine`.
+
+---
+
+# Summary
+
+- **Context:** Everything is generated on Colab. I do not assume any data or models from my PC; only the final zip is used on my machine.
+- **Data:** Both **synthetic** (Kenya-aligned, reproducible) and **generated/public** (e.g. pii-masking-65k) are produced by the acquisition script in `data/raw/` in this runtime.
+- **Cleanup:** One run merges, normalizes, filters English, deduplicates, and splits → single train/val/test in `data/cleaned/` and before/after in `stats.json`.
+- **Training and testing:** I train three models (Run 1: BERT 3ep, Run 2: BERT 2ep, Run 3: DistilBERT 3ep), evaluate all three, **compare all 3 by F1**, and copy the **top 2** to `phi_model_rank1` and `phi_model_rank2`.
+- **Delivery:** I zip both rank1 and rank2 into `phi_model_top2.zip` and download it; on my PC I unzip to get both folders and use rank1 (best F1) as `detection_engine/phi_model/`.
+
+For GPU details and local integration, see [GPU_AND_COLAB_TRAINING.md](GPU_AND_COLAB_TRAINING.md).
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+StrReplace

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
@@ -8,12 +9,15 @@ import CTASection from "@/components/landing/CTASection";
 
 import Footer from "@/components/landing/Footer";
 import BackendHello from "../components/BackendHello";
-// import RegisterForm from "../components/RegisterForm";
-// import LoginForm from "../components/LoginForm";
 import LogoutButton from "../components/LogoutButton";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [token, setToken] = React.useState<string | null>(localStorage.getItem("auth_token"));
+
+  useEffect(() => {
+    if (token) navigate("/dashboard", { replace: true });
+  }, [token, navigate]);
 
   return (
     <div className="min-h-screen bg-background">

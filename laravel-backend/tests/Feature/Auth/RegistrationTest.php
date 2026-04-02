@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
+use Database\Seeders\OrganizationSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,7 +13,9 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
-        $response = $this->post('/register', [
+        $this->seed([RoleSeeder::class, OrganizationSeeder::class]);
+
+        $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -19,6 +23,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertNoContent();
+        $response->assertCreated();
+        $response->assertJsonStructure(['token', 'user' => ['id', 'name', 'email']]);
     }
 }

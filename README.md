@@ -65,12 +65,13 @@ This repository contains both the React frontend and Laravel backend:
 3. **Python detection engine (separate terminal, use venv)**
    ```bash
    cd detection_engine
+   cp .env.example .env   # optional overrides (USE_ML, PHI_MODEL_PATH, RAG_EMBED_MODEL)
    python -m venv venv
    venv\Scripts\activate   # Windows
    pip install -r requirements.txt
    uvicorn main:app --host 127.0.0.1 --port 8001
    ```
-   Or run `scripts\run_detection.bat` (Windows).
+   Or run `scripts\run_detection.bat` (Windows). A Colab-trained model in `detection_engine/phi_model/` is used automatically when `USE_ML=1` (see [docs/COLAB_FULL_GUIDE.md](docs/COLAB_FULL_GUIDE.md)). The detector uses `label_map.json` for category names (e.g. B-PHI → PHI). If the model dir is missing or invalid, only regex and entropy run (no crash).
 
 4. **Frontend**
    ```bash
@@ -80,6 +81,21 @@ This repository contains both the React frontend and Laravel backend:
    npm run dev
    ```
    Open http://localhost:5173. Sign in or register, then use **Dashboard** to send prompts (PHI detected, redacted, RAG + OpenAI).
+
+### Environment variables reference
+
+| Variable | Where | Description |
+|----------|--------|-------------|
+| `VITE_API_URL` | Project root `.env` | Backend API base URL (e.g. http://127.0.0.1:8000) |
+| `DETECTION_ENGINE_URL` | Laravel `.env` | Python detection engine URL (e.g. http://127.0.0.1:8001) |
+| `OPENAI_API_KEY` | Laravel `.env` | OpenAI API key for chat completions |
+| `OPENAI_MODEL` | Laravel `.env` | OpenAI model (e.g. gpt-4o-mini) |
+| `USE_ML` | detection_engine `.env` | Set to 1 to use trained NER model from phi_model/ |
+| `PHI_MODEL_PATH` | detection_engine `.env` | Path to trained model dir (default: ./phi_model) |
+| `RAG_EMBED_MODEL` | detection_engine `.env` | Sentence embedding model for RAG (e.g. all-MiniLM-L6-v2) |
+| `KEEP_LANG` | detection_engine `.env` | Language filter for cleanup script (e.g. en) |
+
+Laravel and detection_engine have full `.env.example` files in their directories.
 
 ### API security
 
@@ -103,6 +119,10 @@ See `docs/diagrams/`: Use Case, Sequence, ERD, Class, Context, DFD Level 1, Acti
 ```
 
 ## Development
+
+### Testing
+
+From `laravel-backend/` run the full test suite: `php artisan test` (or `run_tests.bat` on Windows). Tests use in-memory SQLite and cover auth, PHI detect/chat, bypass, roles/permissions, policies, conversations, audit, users, and organizations. See [laravel-backend/TESTING.md](laravel-backend/TESTING.md) for details and E2E verification steps.
 
 See [SECURITY.md](SECURITY.md) for security best practices and reporting guidelines.
 

@@ -11,8 +11,8 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             ['role_name' => 'clinician', 'permissions' => json_encode(['chat', 'detect', 'view_own_conversations'])],
-            ['role_name' => 'security_admin', 'permissions' => json_encode(['chat', 'detect', 'policies', 'audit'])],
-            ['role_name' => 'system_admin', 'permissions' => json_encode(['chat', 'detect', 'policies', 'audit', 'users', 'organizations'])],
+            ['role_name' => 'security_admin', 'permissions' => json_encode(['chat', 'detect', 'view_own_conversations', 'policies', 'audit', 'emergency_bypass'])],
+            ['role_name' => 'system_admin', 'permissions' => json_encode(['chat', 'detect', 'view_own_conversations', 'policies', 'audit', 'users', 'organizations', 'emergency_bypass'])],
         ];
         foreach ($roles as $role) {
             DB::table('roles')->updateOrInsert(
