@@ -58,7 +58,7 @@ class ReportApiTest extends TestCase
     {
         $user = $this->createUserWithRole('security_admin');
 
-        $response = $this->actingAs($user, 'sanctum')->getJson('/api/reports/summary');
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/reports/summary?scope=global');
         $response->assertOk();
         $response->assertJsonPath('scope', 'organization');
         $response->assertJsonPath('capabilities.organization_reports', true);
@@ -91,7 +91,7 @@ class ReportApiTest extends TestCase
 
     public function test_reports_export_returns_pdf_for_system_admin(): void
     {
-        if (! class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+        if (! class_exists('Barryvdh\\DomPDF\\Facade\\Pdf')) {
             $this->markTestSkipped('barryvdh/laravel-dompdf not installed; run composer update in laravel-backend.');
         }
 
@@ -118,5 +118,33 @@ class ReportApiTest extends TestCase
         $json = $response->json();
         $this->assertNotEmpty($json['series']['audit_by_event_type']);
         $this->assertNotEmpty($json['breakdowns']['phi_categories_in_audits']);
+    }
+
+    public function test_reports_summary_applies_dynamic_filters(): void
+    {
+        $user = $this->createUserWithRole('security_admin');
+        AuditEvent::query()->create([
+            'user_id' => $user->id,
+            'organization_id' => $user->organization_id,
+            'event_type' => 'chat',
+            'detected_categories' => ['NAME'],
+            'created_at' => now()->subDays(2),
+            'updated_at' => now()->subDays(2),
+        ]);
+        AuditEvent::query()->create([
+            'user_id' => $user->id,
+            'organization_id' => $user->organization_id,
+            'event_type' => 'policy_update',
+            'detected_categories' => ['DATE'],
+            'created_at' => now()->subDays(2),
+            'updated_at' => now()->subDays(2),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/reports/summary?event_types[]=chat&phi_categories[]=NAME');
+        $response->assertOk();
+        $response->assertJsonPath('meta.applied_filters.event_types.0', 'chat');
+        $rows = $response->json('series.audit_by_event_type');
+        $this->assertCount(1, $rows);
+        $this->assertSame('chat', $rows[0]['event_type']);
     }
 }

@@ -128,6 +128,70 @@ export interface RoleRow {
   permissions?: string[];
 }
 
+export type ReportFilters = {
+  from?: string;
+  to?: string;
+  organization_id?: number;
+  event_types?: string[];
+  user_id?: number;
+  phi_categories?: string[];
+  scope?: "personal" | "organization" | "global";
+  include_sections?: Array<"kpis" | "series" | "breakdowns" | "tables" | "composed_daily">;
+};
+
+export interface ReportSummary {
+  generated_at: string;
+  scope: "personal" | "organization" | "global";
+  scope_label: string;
+  meta?: {
+    generated_at: string;
+    scope: string;
+    applied_filters: {
+      from: string;
+      to: string;
+      organization_id?: number | null;
+      event_types?: string[];
+      user_id?: number | null;
+      phi_categories?: string[];
+    };
+    capabilities: {
+      personal_reports: boolean;
+      organization_reports: boolean;
+      global_reports: boolean;
+      pdf_export: boolean;
+    };
+  };
+  capabilities: {
+    personal_reports: boolean;
+    organization_reports: boolean;
+    global_reports: boolean;
+  };
+  kpis: Record<string, string | number | null>;
+  series: {
+    conversations_by_day?: Array<{ date: string; count: number }>;
+    audit_by_day?: Array<{ date: string; count: number }>;
+    audit_by_event_type?: Array<{ event_type: string; count: number }>;
+  };
+  composed_daily: Array<{ date: string; conversations: number; audit_events: number }>;
+  tables: {
+    recent_conversations?: Array<{ id: number; created_at: string; prompt_preview: string | null; summary_preview: string | null }>;
+    recent_audit_events?: Array<{ id: number; created_at: string; event_type: string; user_id: number | null; organization_id?: number | null }>;
+    organizations_summary?: Array<{
+      id: number;
+      name: string;
+      subscription_tier?: string;
+      users_count: number;
+      conversations_count: number;
+      audit_events_count: number;
+      policies_count: number;
+    }>;
+    users_by_role?: Array<{ role_name: string; count: number }>;
+  };
+  breakdowns: {
+    phi_categories_in_audits: Array<{ category: string; count: number }>;
+  };
+}
+
 async function request<T>(
   path: string,
   options: RequestInit & { requireAuth?: boolean } = {}
@@ -174,6 +238,9 @@ async function request<T>(
     if ((path === "/login" || path === "/register") && res.status === 404 && /not found/i.test(message)) {
       message =
         "Auth endpoint not found. Check VITE_API_URL or dev proxy settings. You may be pointing the app to the detection engine instead of Laravel.";
+    } else if (/SQLSTATE\\[HY000\\]\\s*\\[2002\\]/i.test(message) || /Connection refused.*\\bmysql\\b/i.test(message)) {
+      message =
+        "Backend database connection failed. Start MySQL and confirm laravel-backend/.env DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, and DB_PASSWORD are correct.";
     } else if (res.status === 419 || /Page Expired|CSRF token/i.test(message)) {
       message =
         "Session expired or CSRF mismatch (419). If you set VITE_API_URL, use the same hostname as this page (localhost vs 127.0.0.1), or leave VITE_API_URL empty to use the dev proxy. See .env.example.";
@@ -187,6 +254,44 @@ async function request<T>(
 }
 
 export const api = {
+  getReportsSummary(filters: ReportFilters = {}): Promise<ReportSummary> {
+    const params = new URLSearchParams();
+    if (filters.from) params.set("from", filters.from);
+    if (filters.to) params.set("to", filters.to);
+    if (filters.organization_id != null) params.set("organization_id", String(filters.organization_id));
+    if (filters.user_id != null) params.set("user_id", String(filters.user_id));
+    if (filters.scope) params.set("scope", filters.scope);
+    (filters.event_types ?? []).forEach((v) => params.append("event_types[]", v));
+    (filters.phi_categories ?? []).forEach((v) => params.append("phi_categories[]", v));
+    const suffix = params.toString() ? `?${params.toString()}` : "";
+    return request<ReportSummary>(`/api/reports/summary${suffix}`, { requireAuth: true });
+  },
+
+  async downloadReportsPdf(filters: ReportFilters = {}): Promise<Blob> {
+    const params = new URLSearchParams();
+    if (filters.from) params.set("from", filters.from);
+    if (filters.to) params.set("to", filters.to);
+    if (filters.organization_id != null) params.set("organization_id", String(filters.organization_id));
+    if (filters.user_id != null) params.set("user_id", String(filters.user_id));
+    if (filters.scope) params.set("scope", filters.scope);
+    (filters.event_types ?? []).forEach((v) => params.append("event_types[]", v));
+    (filters.phi_categories ?? []).forEach((v) => params.append("phi_categories[]", v));
+    (filters.include_sections ?? []).forEach((v) => params.append("include_sections[]", v));
+    const suffix = params.toString() ? `?${params.toString()}` : "";
+    const token = getToken();
+    const headers: Record<string, string> = { Accept: "application/pdf" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(buildUrl(`/api/reports/export${suffix}`), {
+      method: "GET",
+      headers,
+      credentials: "include",
+    });
+    if (!res.ok) {
+      throw new Error(`PDF export failed (${res.status})`);
+    }
+    return res.blob();
+  },
+
   login(email: string, password: string): Promise<LoginResponse> {
     return request<LoginResponse>("/login", {
       method: "POST",
@@ -226,51 +331,6 @@ export const api = {
     return request<ChatResponse>("/api/chat", {
       method: "POST",
       body: JSON.stringify({ prompt: prompt.trim(), bypass_phi: bypassPhi === true }),
-      requireAuth: true,
-    });
-  },
-
-  getConversations(): Promise<{ data: { id: number; prompt_redacted: string | null; response_summary: string | null; created_at: string }[] }> {
-    return request("/api/conversations", { requireAuth: true });
-  },
-
-  getPolicies(): Promise<{ data: Policy[] }> {
-    return request("/api/policies", { requireAuth: true });
-  },
-
-  updatePolicy(id: number, body: Partial<PolicyUpdate>): Promise<Policy> {
-    return request(`/api/policies/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(body),
-      requireAuth: true,
-    });
-  },
-
-  getAuditEvents(params?: { event_type?: string }): Promise<{ data: AuditEvent[] }> {
-    const q = params?.event_type ? `?event_type=${encodeURIComponent(params.event_type)}` : "";
-    return request(`/api/audit-events${q}`, { requireAuth: true });
-  },
-
-  getUsers(): Promise<{ data: User[] }> {
-    return request("/api/users", { requireAuth: true });
-  },
-
-  updateUser(id: number, body: Partial<{ name: string; role_id: number | null; organization_id: number | null }>): Promise<User> {
-    return request(`/api/users/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(body),
-      requireAuth: true,
-    });
-  },
-
-  getOrganizations(): Promise<{ data: Organization[] }> {
-    return request("/api/organizations", { requireAuth: true });
-  },
-
-  updateOrganization(id: number, body: Partial<Organization>): Promise<Organization> {
-    return request(`/api/organizations/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(body),
       requireAuth: true,
     });
   },

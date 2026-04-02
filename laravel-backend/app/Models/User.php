@@ -59,16 +59,6 @@ class User extends Authenticatable
         return $this->belongsTo(Organization::class);
     }
 
-    public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Role::class);
-    }
-
-    public function organization(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Organization::class);
-    }
-
     public function hasPermission(string $permission): bool
     {
         $role = $this->role;

@@ -31,20 +31,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Menu, Pencil, ScanLine, Sparkles, Trash2 } from "lucide-react";
+import { AlertCircle, ChevronDown, Menu, Pencil, ScanLine, Sparkles, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LogoutButton from "@/components/LogoutButton";
@@ -55,6 +46,7 @@ import {
   PHI_SCAN_QUICK_PROMPTS,
 } from "@/lib/chatQuickPrompts";
 import { cn } from "@/lib/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import ReportsSection from "@/components/dashboard/ReportsSection";
 
 interface Span {
@@ -67,10 +59,6 @@ interface Span {
 interface RagChunk {
   content?: string;
   text?: string;
-}
-
-function hasPermission(user: User | null, permission: string): boolean {
-  return !!user?.role?.permissions?.includes(permission);
 }
 
 function SectionShell({
@@ -115,33 +103,6 @@ function ClinicalChatBlock({ onConversationSaved }: { onConversationSaved?: () =
     }
   };
   const [bypassPhi, setBypassPhi] = useState(false);
-  const [conversations, setConversations] = useState<{ id: number; prompt_redacted: string | null; response_summary: string | null; created_at: string }[]>([]);
-  const [policies, setPolicies] = useState<Policy[]>([]);
-  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-
-  useEffect(() => {
-    const onLogout = () => {
-      setToken(null);
-      setUser(null);
-      navigate("/login", { replace: true });
-    };
-    window.addEventListener("auth:logout", onLogout);
-    return () => window.removeEventListener("auth:logout", onLogout);
-  }, [navigate]);
-
-  useEffect(() => {
-    if (!token) {
-      navigate("/login", { replace: true });
-      return;
-    }
-    api.getUser().then(setUser).catch(() => setUser(null));
-  }, [token, navigate]);
-
-  if (!token) {
-    return null;
-  }
 
   const handleSend = async () => {
     if (!prompt.trim()) {
@@ -349,119 +310,6 @@ function ClinicalChatBlock({ onConversationSaved }: { onConversationSaved?: () =
           )}
         </Card>
       )}
-            </TabsContent>
-          )}
-
-          {showConversations && (
-            <TabsContent value="conversations">
-              <Card>
-                <CardHeader><CardTitle>My conversations</CardTitle></CardHeader>
-                <CardContent>
-                  {conversations.length === 0 && <p className="text-sm text-muted-foreground">No conversations yet.</p>}
-                  <Table>
-                    <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Prompt (redacted)</TableHead><TableHead>Summary</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                      {conversations.map((c) => (
-                        <TableRow key={c.id}>
-                          <TableCell className="text-sm">{new Date(c.created_at).toLocaleString()}</TableCell>
-                          <TableCell className="text-sm max-w-xs truncate">{c.prompt_redacted ?? "—"}</TableCell>
-                          <TableCell className="text-sm max-w-xs truncate">{c.response_summary ?? "—"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-
-          {showPolicies && (
-            <TabsContent value="policies">
-              <Card>
-                <CardHeader><CardTitle>Policies</CardTitle></CardHeader>
-                <CardContent>
-                  {policies.length === 0 && <p className="text-sm text-muted-foreground">No policies.</p>}
-                  <ul className="space-y-2 text-sm">
-                    {policies.map((p) => (
-                      <li key={p.id} className="border-b pb-2">
-                        <strong>{p.policy_name}</strong> — {p.enforcement_action}, threshold: {p.confidence_threshold}
-                        {p.phi_categories?.length ? ` (${p.phi_categories.join(", ")})` : ""}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-
-          {showAudit && (
-            <TabsContent value="audit">
-              <Card>
-                <CardHeader><CardTitle>Audit events</CardTitle></CardHeader>
-                <CardContent>
-                  {auditEvents.length === 0 && <p className="text-sm text-muted-foreground">No events.</p>}
-                  <Table>
-                    <TableHeader><TableRow><TableHead>Time</TableHead><TableHead>Type</TableHead><TableHead>User ID</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                      {auditEvents.map((e) => (
-                        <TableRow key={e.id}>
-                          <TableCell className="text-sm">{new Date(e.created_at).toLocaleString()}</TableCell>
-                          <TableCell>{e.event_type}</TableCell>
-                          <TableCell>{e.user_id ?? "—"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-
-          {showUsers && (
-            <TabsContent value="users">
-              <Card>
-                <CardHeader><CardTitle>Users</CardTitle></CardHeader>
-                <CardContent>
-                  {users.length === 0 && <p className="text-sm text-muted-foreground">No users.</p>}
-                  <Table>
-                    <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Role</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                      {users.map((u) => (
-                        <TableRow key={u.id}>
-                          <TableCell>{u.name}</TableCell>
-                          <TableCell>{u.email}</TableCell>
-                          <TableCell>{u.role?.role_name ?? "—"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-
-          {showOrgs && (
-            <TabsContent value="organizations">
-              <Card>
-                <CardHeader><CardTitle>Organizations</CardTitle></CardHeader>
-                <CardContent>
-                  {organizations.length === 0 && <p className="text-sm text-muted-foreground">No organizations.</p>}
-                  <ul className="space-y-2 text-sm">
-                    {organizations.map((o) => (
-                      <li key={o.id}><strong>{o.name}</strong> — {o.subscription_tier ?? "—"}</li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-
-          {showReports && (
-            <TabsContent value="reports" className="space-y-4">
-              <ReportsSection />
-            </TabsContent>
-          )}
-        </Tabs>
     </div>
   );
 }
@@ -923,69 +771,83 @@ function PoliciesBlock({
         </div>
       )}
 
-      <Card className="border-border/80 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">Create policy</CardTitle>
-          <CardDescription className="text-xs">
-            Matches DB: policy_name, organization_id, phi_categories (array), enforcement_action, confidence_threshold (0–1).
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 max-w-4xl">
-          {sys && (
-            <div className="space-y-1 sm:col-span-2">
-              <Label className="text-xs">Organization</Label>
-              <p className="text-[11px] text-muted-foreground">
-                Use the filter above to choose which org this policy belongs to (or pick a specific org in the filter).
-              </p>
-            </div>
-          )}
-          <div className="space-y-1">
-            <Label className="text-xs">Policy name</Label>
-            <Input
-              value={newPolicy.policy_name}
-              onChange={(e) => setNewPolicy((s) => ({ ...s, policy_name: e.target.value }))}
-              placeholder="e.g. Default PHI policy"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">PHI categories</Label>
-            <Input
-              value={newPolicy.phi_categories_str}
-              onChange={(e) => setNewPolicy((s) => ({ ...s, phi_categories_str: e.target.value }))}
-              placeholder="comma-separated e.g. NAME, DOB, MRN"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Enforcement action</Label>
-            <Select
-              value={newPolicy.enforcement_action}
-              onValueChange={(v) => setNewPolicy((s) => ({ ...s, enforcement_action: v }))}
+      <Collapsible defaultOpen={false}>
+        <Card className="border-border/80 shadow-sm">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="group w-full text-left outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="redact">redact</SelectItem>
-                <SelectItem value="block">block</SelectItem>
-                <SelectItem value="alert">alert</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Confidence threshold</Label>
-            <Input
-              value={newPolicy.confidence_str}
-              onChange={(e) => setNewPolicy((s) => ({ ...s, confidence_str: e.target.value }))}
-              placeholder="0.85"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Button type="button" onClick={() => void create()} disabled={creating}>
-              {creating ? "Creating…" : "Create policy"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+              <CardHeader className="flex flex-row items-start justify-between gap-3 pb-4">
+                <div className="min-w-0 space-y-1">
+                  <CardTitle className="text-base">Create policy</CardTitle>
+                  <CardDescription className="text-xs">
+                    Matches DB: policy_name, organization_id, phi_categories (array), enforcement_action, confidence_threshold (0–1).
+                  </CardDescription>
+                </div>
+                <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              </CardHeader>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="grid gap-4 sm:grid-cols-2 max-w-4xl pt-0">
+              {sys && (
+                <div className="space-y-1 sm:col-span-2">
+                  <Label className="text-xs">Organization</Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Use the filter above to choose which org this policy belongs to (or pick a specific org in the filter).
+                  </p>
+                </div>
+              )}
+              <div className="space-y-1">
+                <Label className="text-xs">Policy name</Label>
+                <Input
+                  value={newPolicy.policy_name}
+                  onChange={(e) => setNewPolicy((s) => ({ ...s, policy_name: e.target.value }))}
+                  placeholder="e.g. Default PHI policy"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">PHI categories</Label>
+                <Input
+                  value={newPolicy.phi_categories_str}
+                  onChange={(e) => setNewPolicy((s) => ({ ...s, phi_categories_str: e.target.value }))}
+                  placeholder="comma-separated e.g. NAME, DOB, MRN"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Enforcement action</Label>
+                <Select
+                  value={newPolicy.enforcement_action}
+                  onValueChange={(v) => setNewPolicy((s) => ({ ...s, enforcement_action: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="redact">redact</SelectItem>
+                    <SelectItem value="block">block</SelectItem>
+                    <SelectItem value="alert">alert</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Confidence threshold</Label>
+                <Input
+                  value={newPolicy.confidence_str}
+                  onChange={(e) => setNewPolicy((s) => ({ ...s, confidence_str: e.target.value }))}
+                  placeholder="0.85"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Button type="button" onClick={() => void create()} disabled={creating}>
+                  {creating ? "Creating…" : "Create policy"}
+                </Button>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       <Card className="border-border/80 shadow-sm">
         <CardHeader>
@@ -1165,6 +1027,7 @@ function OverviewBlock({
   canAudit,
   canManageOrgs,
   canManageUsers,
+  canReports,
   onGo,
 }: {
   user: User;
@@ -1174,6 +1037,7 @@ function OverviewBlock({
   canAudit: boolean;
   canManageOrgs: boolean;
   canManageUsers: boolean;
+  canReports: boolean;
   onGo: (id: DashboardSectionId) => void;
 }) {
   const roleName = user.role?.role_name;
@@ -1230,6 +1094,11 @@ function OverviewBlock({
           {canManageUsers && (
             <Button variant="outline" size="sm" onClick={() => onGo("users")}>
               Users
+            </Button>
+          )}
+          {canReports && (
+            <Button variant="outline" size="sm" onClick={() => onGo("reports")}>
+              Reports
             </Button>
           )}
         </CardContent>
@@ -1425,55 +1294,69 @@ function OrganizationsAdminBlock({ onChanged }: { onChanged: () => void }) {
   return (
     <div className="space-y-6">
       {err && <p className="text-destructive text-sm">{err}</p>}
-      <Card className="border-border/80 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">New organization</CardTitle>
-          <CardDescription className="text-xs">
-            Fields match <code className="text-[10px]">organizations</code>: name, registration_number, subscription_tier, configuration (JSON).
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2 max-w-4xl">
-          <div className="space-y-1">
-            <Label className="text-xs">Name</Label>
-            <Input
-              value={createForm.name}
-              onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="Organization legal name"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Registration number</Label>
-            <Input
-              value={createForm.registration_number}
-              onChange={(e) => setCreateForm((f) => ({ ...f, registration_number: e.target.value }))}
-              placeholder="Optional"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Subscription tier</Label>
-            <Input
-              value={createForm.subscription_tier}
-              onChange={(e) => setCreateForm((f) => ({ ...f, subscription_tier: e.target.value }))}
-              placeholder="standard"
-            />
-          </div>
-          <div className="space-y-1 sm:col-span-2">
-            <Label className="text-xs">Configuration (JSON object)</Label>
-            <Textarea
-              rows={4}
-              className="font-mono text-xs"
-              value={createForm.configuration_json}
-              onChange={(e) => setCreateForm((f) => ({ ...f, configuration_json: e.target.value }))}
-              placeholder='{ "feature_flags": { "rag": true } }'
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Button type="button" onClick={() => void create()}>
-              Create organization
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Collapsible defaultOpen={false}>
+        <Card className="border-border/80 shadow-sm">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="group w-full text-left outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <CardHeader className="flex flex-row items-start justify-between gap-3 pb-4">
+                <div className="min-w-0 space-y-1">
+                  <CardTitle className="text-base">New organization</CardTitle>
+                  <CardDescription className="text-xs">
+                    Fields match <code className="text-[10px]">organizations</code>: name, registration_number, subscription_tier, configuration (JSON).
+                  </CardDescription>
+                </div>
+                <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              </CardHeader>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="grid gap-3 sm:grid-cols-2 max-w-4xl pt-0">
+              <div className="space-y-1">
+                <Label className="text-xs">Name</Label>
+                <Input
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Organization legal name"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Registration number</Label>
+                <Input
+                  value={createForm.registration_number}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, registration_number: e.target.value }))}
+                  placeholder="Optional"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Subscription tier</Label>
+                <Input
+                  value={createForm.subscription_tier}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, subscription_tier: e.target.value }))}
+                  placeholder="standard"
+                />
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-xs">Configuration (JSON object)</Label>
+                <Textarea
+                  rows={4}
+                  className="font-mono text-xs"
+                  value={createForm.configuration_json}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, configuration_json: e.target.value }))}
+                  placeholder='{ "feature_flags": { "rag": true } }'
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Button type="button" onClick={() => void create()}>
+                  Create organization
+                </Button>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
       <Card className="border-border/80 shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">All organizations</CardTitle>
@@ -1690,67 +1573,81 @@ function UsersAdminBlock({ organizations, onChanged }: { organizations: Organiza
   return (
     <div className="space-y-6">
       {err && <p className="text-destructive text-sm">{err}</p>}
-      <Card className="border-border/80 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">Create user</CardTitle>
-          <CardDescription className="text-xs">
-            Matches <code className="text-[10px]">users</code>: name, email, password (hashed server-side), role_id, organization_id.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2 max-w-3xl">
-          <div className="space-y-1">
-            <Label className="text-xs">Name</Label>
-            <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Email</Label>
-            <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Password</Label>
-            <Input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Role</Label>
-            <Select value={form.role_id} onValueChange={(v) => setForm((f) => ({ ...f, role_id: v }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                {roles.map((r) => (
-                  <SelectItem key={r.id} value={String(r.id)}>
-                    {r.role_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1 sm:col-span-2">
-            <Label className="text-xs">Organization</Label>
-            <Select value={form.organization_id} onValueChange={(v) => setForm((f) => ({ ...f, organization_id: v }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Organization" />
-              </SelectTrigger>
-              <SelectContent>
-                {organizations.map((o) => (
-                  <SelectItem key={o.id} value={String(o.id)}>
-                    {o.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="sm:col-span-2">
-            <Button type="button" onClick={() => void createUser()}>
-              Create user
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Collapsible defaultOpen={false}>
+        <Card className="border-border/80 shadow-sm">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="group w-full text-left outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <CardHeader className="flex flex-row items-start justify-between gap-3 pb-4">
+                <div className="min-w-0 space-y-1">
+                  <CardTitle className="text-base">Create user</CardTitle>
+                  <CardDescription className="text-xs">
+                    Provision accounts and assign roles (system admin). Matches <code className="text-[10px]">users</code>: name, email, password (hashed server-side), role_id, organization_id.
+                  </CardDescription>
+                </div>
+                <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              </CardHeader>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="grid gap-3 sm:grid-cols-2 max-w-3xl pt-0">
+              <div className="space-y-1">
+                <Label className="text-xs">Name</Label>
+                <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Email</Label>
+                <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Password</Label>
+                <Input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Role</Label>
+                <Select value={form.role_id} onValueChange={(v) => setForm((f) => ({ ...f, role_id: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((r) => (
+                      <SelectItem key={r.id} value={String(r.id)}>
+                        {r.role_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-xs">Organization</Label>
+                <Select value={form.organization_id} onValueChange={(v) => setForm((f) => ({ ...f, organization_id: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {organizations.map((o) => (
+                      <SelectItem key={o.id} value={String(o.id)}>
+                        {o.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="sm:col-span-2">
+                <Button type="button" onClick={() => void createUser()}>
+                  Create user
+                </Button>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
       <Card className="border-border/80 shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">Directory</CardTitle>
@@ -1993,6 +1890,7 @@ export default function Dashboard() {
   const canAudit = hasPermission(user, "audit");
   const canOrgs = canManageOrganizations(user);
   const canUsers = canManageUsers(user);
+  const canReports = hasPermission(user, "view_own_conversations") || hasPermission(user, "audit") || canOrgs;
   const navItems = navItemsForRole(roleName);
   const activeSection = section ?? defaultSectionForRole(roleName);
 
@@ -2056,6 +1954,7 @@ export default function Dashboard() {
               canAudit={canAudit}
               canManageOrgs={canOrgs}
               canManageUsers={canUsers}
+              canReports={canReports}
               onGo={go}
             />
           </SectionShell>
@@ -2154,7 +2053,7 @@ export default function Dashboard() {
       case "users":
         if (!canUsers) return null;
         return (
-          <SectionShell title="Users" description="Provision accounts and assign roles (system admin).">
+          <SectionShell title="Users" description="Directory and account management.">
             <UsersAdminBlock
               organizations={organizations}
               onChanged={() => {
@@ -2162,6 +2061,13 @@ export default function Dashboard() {
                 void refreshAudit();
               }}
             />
+          </SectionShell>
+        );
+      case "reports":
+        if (!canReports) return null;
+        return (
+          <SectionShell title="Reports" description="Role-scoped metrics, charts, and export-ready reporting.">
+            <ReportsSection />
           </SectionShell>
         );
       default:
@@ -2185,9 +2091,9 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-svh flex flex-col md:flex-row bg-gradient-to-b from-background via-background to-muted/30">
+    <div className="flex h-svh flex-col overflow-hidden md:flex-row bg-gradient-to-b from-background via-background to-muted/30">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-[280px] shrink-0 flex-col border-r border-border/70 bg-card/90 backdrop-blur-sm">
+      <aside className="hidden md:flex h-svh w-[280px] shrink-0 flex-col border-r border-border/70 bg-card/90 backdrop-blur-sm">
         <div className="p-6 border-b border-border/60">
           <Link
             to="/"
@@ -2200,7 +2106,7 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
-        {sidebarNav}
+        <div className="min-h-0 flex-1 overflow-y-auto">{sidebarNav}</div>
         <div className="mt-auto p-4 border-t border-border/60">
           {user && (
             <p className="text-[11px] text-muted-foreground truncate" title={user.email}>
@@ -2211,7 +2117,7 @@ export default function Dashboard() {
       </aside>
 
       {/* Main column */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
           <div className="flex h-14 items-center justify-between gap-3 px-4 md:px-8">
             <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -2268,7 +2174,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+        <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
           {loadError && (
             <Card className="mb-6 border-destructive/40 bg-destructive/5">
               <CardContent className="pt-6 text-destructive text-sm">{loadError}</CardContent>

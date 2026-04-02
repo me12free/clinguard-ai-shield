@@ -24,8 +24,8 @@ class DetectionController extends Controller
         $out = $this->detection->detect($request->validated('text'));
 
         return response()->json([
-            'spans' => $out['spans'],
-            'engine_error' => $out['engine_error'],
+            'spans' => $out['spans'] ?? [],
+            'engine_error' => $out['engine_error'] ?? null,
         ]);
     }
 }

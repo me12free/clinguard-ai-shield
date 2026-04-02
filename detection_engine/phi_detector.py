@@ -39,6 +39,33 @@ PATTERNS = [
     (r"\b\d{4}-\d{2}-\d{2}\b", "DATE"),
 ]
 
+# Terms that are clinically meaningful but not direct identifiers; keep visible for model quality.
+_NON_PHI_EXACT = frozenset(
+    {
+        "a1c",
+        "egfr",
+        "ldl",
+        "hdl",
+        "triglycerides",
+        "metformin",
+        "lisinopril",
+        "atorvastatin",
+        "insulin",
+        "amlodipine",
+        "losartan",
+        "bullet",
+        "points",
+    }
+)
+_NON_PHI_UNITS = frozenset({"mg", "g", "kg", "ml", "mcg", "bid", "tid", "qid", "qd", "po", "iv"})
+
+# Numeric clinical patterns commonly useful for reasoning (not direct identifiers by themselves).
+_NON_PHI_NUMERIC_PATTERNS = [
+    re.compile(r"^\d+(\.\d+)?%$"),          # e.g., 8.4%
+    re.compile(r"^\d+/\d+$"),               # e.g., 152/94
+    re.compile(r"^\d+(\.\d+)?$"),           # plain scalar
+]
+
 
 def _entropy(s: str) -> float:
     """Shannon entropy; high => random-looking (e.g. IDs)."""
@@ -90,6 +117,44 @@ def _followup_name_scan(text: str) -> list[dict[str, Any]]:
     out = []
     for m in re.finditer(r"(?i)\bfor\s+([A-Z][a-z]+)\s+([A-Z][a-z]+)\s*,", text):
         start, end = m.start(1), m.end(2)
+        out.append({"start": start, "end": end, "category": "NAME", "text": text[start:end]})
+    return out
+
+
+def _doctor_name_scan(text: str) -> list[dict[str, Any]]:
+    """Catch clinician/provider names like `Dr. Kevin Hart`."""
+    out = []
+    for m in re.finditer(r"(?i)\bDr\.?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})", text):
+        start, end = m.start(1), m.end(1)
+        out.append({"start": start, "end": end, "category": "NAME", "text": text[start:end]})
+    return out
+
+
+def _facility_scan(text: str) -> list[dict[str, Any]]:
+    """Catch common facility names like `Riverside Family Clinic`."""
+    out = []
+    for m in re.finditer(
+        r"\b([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,4}\s+(?:Clinic|Hospital|Medical\s+Center|Health\s+Center|Center))\b",
+        text,
+    ):
+        start, end = m.start(1), m.end(1)
+        out.append({"start": start, "end": end, "category": "ENTITY", "text": text[start:end]})
+    return out
+
+
+def _context_name_scan(text: str) -> list[dict[str, Any]]:
+    """
+    Catch patient-style names with strong local context.
+    Examples:
+    - `note for Maria Thompson,`
+    - `seen today at ... by Dr ...` (handled separately for doctor)
+    """
+    out = []
+    for m in re.finditer(
+        r"(?i)\b(?:note\s+for|follow-?up\s+for|case\s+discussion:\s*)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\b",
+        text,
+    ):
+        start, end = m.start(1), m.end(1)
         out.append({"start": start, "end": end, "category": "NAME", "text": text[start:end]})
     return out
 
@@ -181,6 +246,62 @@ def _apply_span_merges(text: str, spans: list[dict[str, Any]]) -> list[dict[str,
     return _merge_spans(out)
 
 
+def _is_non_phi_token(token: str) -> bool:
+    t = token.strip().lower()
+    if not t:
+        return False
+    if t in _NON_PHI_EXACT:
+        return True
+    # Multi-word phrases like "metformin 1000 mg" / "A1c 8.4%" / "58 mg"
+    parts = [p for p in re.split(r"\s+", t) if p]
+    if len(parts) > 1:
+        all_ok = True
+        for p in parts:
+            if p in _NON_PHI_EXACT or p in _NON_PHI_UNITS:
+                continue
+            if any(rx.match(p) for rx in _NON_PHI_NUMERIC_PATTERNS):
+                continue
+            all_ok = False
+            break
+        if all_ok:
+            return True
+    if any(p.match(t) for p in _NON_PHI_NUMERIC_PATTERNS):
+        return True
+    return False
+
+
+def _filter_non_phi_spans(spans: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Keep strict identifiers, drop over-broad PHI-like spans that hurt clinical utility.
+    Never drops explicit identifier categories like NAME/MRN/DATE/EMAIL/PHONE.
+    """
+    strict_keep_cats = frozenset(
+        {
+            "NAME",
+            "MRN",
+            "DATE",
+            "EMAIL",
+            "PHONE",
+            "SSN",
+            "KENYA_NATIONAL_ID",
+            "ID_NUMBER",
+            "ENTITY",
+        }
+    )
+    out: list[dict[str, Any]] = []
+    for s in spans:
+        cat = str(s.get("category", "PHI")).upper()
+        txt = str(s.get("text", "")).strip()
+        if cat in strict_keep_cats:
+            out.append(s)
+            continue
+        # For broad PHI/entropy buckets, keep only when token does not match common non-PHI clinical content.
+        if cat in {"PHI", "HIGH_ENTROPY"} and _is_non_phi_token(txt):
+            continue
+        out.append(s)
+    return out
+
+
 # Cached (tokenizer, model, device) per resolved model path — avoids reloading on every request.
 _ner_model_cache: dict[str, tuple[Any, Any, Any]] = {}
 
@@ -204,6 +325,35 @@ def _get_cached_ner(model_dir: Path) -> tuple[Any, Any, Any] | None:
         return None
 
 
+def _load_id2label(model_dir: Path, model: Any) -> dict[str, str]:
+    """
+    Resolve id->label map for local token classifier.
+    Priority:
+    1) label_map.json in model dir (if provided by training pipeline)
+    2) model.config.id2label from transformers config
+    """
+    # 1) Optional explicit map file
+    map_file = model_dir / "label_map.json"
+    if map_file.exists():
+        try:
+            data = json.loads(map_file.read_text(encoding="utf-8"))
+            # Expected shape: {"id2label": {"0":"O","1":"B-PHI",...}}
+            id2label = data.get("id2label") if isinstance(data, dict) else None
+            if isinstance(id2label, dict) and id2label:
+                return {str(k): str(v) for k, v in id2label.items()}
+        except Exception:
+            pass
+
+    # 2) transformers config
+    cfg = getattr(model, "config", None)
+    raw = getattr(cfg, "id2label", None) if cfg is not None else None
+    if isinstance(raw, dict) and raw:
+        return {str(k): str(v) for k, v in raw.items()}
+
+    # Safe default for binary PHI token classifiers (O / B-PHI / I-PHI)
+    return {"0": "O", "1": "B-PHI", "2": "I-PHI"}
+
+
 def _ner_spans_local(model_dir: Path, text: str) -> list[dict[str, Any]]:
     """Run token classification from trained phi_model; map token predictions to character spans."""
     try:
@@ -213,6 +363,7 @@ def _ner_spans_local(model_dir: Path, text: str) -> list[dict[str, Any]]:
         if loaded is None:
             return []
         tokenizer, model, device = loaded
+        id2label = _load_id2label(model_dir, model)
         enc = tokenizer(text, return_offsets_mapping=True, truncation=True, max_length=512)
         with torch.no_grad():
             logits = model(
@@ -297,7 +448,8 @@ def detect(text: str) -> list[dict[str, Any]]:
     if mode == "ner_only":
         if not use_ml:
             return []
-        return _apply_span_merges(text, _ner_spans(text))
+        merged = _apply_span_merges(text, _ner_spans(text))
+        return _filter_non_phi_spans(merged)
 
     if mode == "regex_only":
         spans = (
@@ -305,8 +457,12 @@ def detect(text: str) -> list[dict[str, Any]]:
             + _patient_line_name_scan(text)
             + _entropy_scan(text)
             + _followup_name_scan(text)
+            + _doctor_name_scan(text)
+            + _facility_scan(text)
+            + _context_name_scan(text)
         )
-        return _apply_span_merges(text, spans)
+        merged = _apply_span_merges(text, spans)
+        return _filter_non_phi_spans(merged)
 
     # both
     spans = (
@@ -314,7 +470,11 @@ def detect(text: str) -> list[dict[str, Any]]:
         + _patient_line_name_scan(text)
         + _entropy_scan(text)
         + _followup_name_scan(text)
+        + _doctor_name_scan(text)
+        + _facility_scan(text)
+        + _context_name_scan(text)
     )
     if use_ml:
         spans += _ner_spans(text)
-    return _apply_span_merges(text, spans)
+    merged = _apply_span_merges(text, spans)
+    return _filter_non_phi_spans(merged)

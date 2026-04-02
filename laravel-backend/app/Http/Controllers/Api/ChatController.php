@@ -24,14 +24,25 @@ class ChatController extends Controller
     public function __invoke(ChatRequest $request): JsonResponse
     {
         $prompt = $request->validated('prompt');
+        // Optional toggle from client; defaults to false.
+        $bypassPhi = (bool) $request->boolean('bypass_phi', false);
         $user = Auth::user()->load('role');
         if (! RoleAccess::hasPermission($user, 'chat')) {
             return response()->json(['message' => 'Forbidden: chat permission required.'], 403);
         }
 
-        $detected = $this->detection->detect($prompt);
-        $spans = $detected['spans'];
-        $redactedPrompt = $this->redact($prompt, $spans);
+        if ($bypassPhi) {
+            if (! config('clinguard.allow_emergency_bypass', false)) {
+                return response()->json(['message' => 'Emergency bypass is not allowed.'], 403);
+            }
+            $detected = ['spans' => [], 'engine_error' => null];
+            $spans = [];
+            $redactedPrompt = $prompt;
+        } else {
+            $detected = $this->detection->detect($prompt);
+            $spans = $detected['spans'] ?? [];
+            $redactedPrompt = $this->redact($prompt, $spans);
+        }
 
         $ragResults = $this->detection->ragQuery($redactedPrompt, 5);
         $response = $this->openai->chat($redactedPrompt, $ragResults);
@@ -86,11 +97,17 @@ class ChatController extends Controller
     private function redact(string $text, array $spans): string
     {
         $sorted = collect($spans)->sortByDesc('start')->values()->all();
+        $textLen = mb_strlen($text, 'UTF-8');
         foreach ($sorted as $span) {
             $start = (int) ($span['start'] ?? 0);
             $end = (int) ($span['end'] ?? $start);
             $cat = $span['category'] ?? 'PHI';
-            $text = substr($text, 0, $start) . '[REDACTED-' . $cat . ']' . substr($text, $end);
+            $start = max(0, min($start, $textLen));
+            $end = max($start, min($end, $textLen));
+            $prefix = mb_substr($text, 0, $start, 'UTF-8');
+            $suffix = mb_substr($text, $end, null, 'UTF-8');
+            $text = $prefix . '[REDACTED-' . $cat . ']' . $suffix;
+            $textLen = mb_strlen($text, 'UTF-8');
         }
         return $text;
     }

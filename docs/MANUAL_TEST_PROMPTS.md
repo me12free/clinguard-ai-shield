@@ -63,6 +63,142 @@ In a patient with cirrhosis and MELD-Na 22, what are the main indications to dis
 
 ---
 
+## 12 diverse clinician prompts (stress-test paths)
+
+Use these to stress **PHI detection**, **redaction quality**, **RAG grounding**, and **model response quality** in Clinical AI. Synthetic identifiers are intentional for pipeline testing.
+
+### 1) Hypertension + CKD follow-up
+
+```
+Follow-up for Jordan Lee (DOB 02/14/1962, MRN 5531902) with HTN and CKD stage 3a. Current meds: losartan 100 mg daily, amlodipine 5 mg daily. Home BP averages 148/92 this week; clinic BP 154/94. eGFR 54, potassium 4.9.
+Please provide:
+1) likely reasons BP remains above goal,
+2) non-patient-specific options to intensify therapy,
+3) monitoring labs and timing after med changes,
+4) brief counseling points for adherence and sodium reduction.
+Keep to concise bullets.
+```
+
+### 2) Diabetes intensification (cardio-renal focus)
+
+```
+Case discussion: Priya Nair, MRN 8822041, age 59, type 2 diabetes on metformin 1000 mg BID. A1c 8.6%, BMI 33, urine albumin/creatinine 72 mg/g, eGFR 68.
+Draft an internal teaching note comparing SGLT2 inhibitor vs GLP-1 RA add-on options with:
+- cardiovascular/renal considerations,
+- practical pros/cons,
+- safety monitoring.
+Do not provide patient-specific prescribing.
+```
+
+### 3) Anticoagulation + pain management
+
+```
+Patient Daniel Brooks (DOB 09/03/1957, MRN 4401187) takes apixaban 5 mg BID for atrial fibrillation and asks to use ibuprofen for back pain.
+Give a short chart-ready summary:
+- bleeding risk considerations,
+- safer pain alternatives,
+- counseling language for documentation.
+Use clear bullets suitable for primary care notes.
+```
+
+### 4) COPD exacerbation triage
+
+```
+Urgent visit scenario: Mina Torres, age 66, COPD with increased cough, purulent sputum, and dyspnea for 3 days. SpO2 91% RA, HR 108, RR 24, temp 38.1 C.
+Provide:
+1) red-flag criteria for ED transfer,
+2) outpatient vs inpatient decision factors,
+3) concise initial management framework,
+4) follow-up interval and warning signs.
+Format as rapid triage checklist.
+```
+
+### 5) Heart failure medication review
+
+```
+Follow-up review for Omar Hassan (MRN 7712440) with HFrEF (EF 35%). Current meds: carvedilol, sacubitril/valsartan, spironolactone, furosemide. Reports weight gain 2.4 kg in 1 week and mild orthopnea.
+Please draft:
+- probable causes of decompensation,
+- medication optimization principles (non-patient-specific),
+- labs and monitoring priorities,
+- patient education points for home monitoring.
+```
+
+### 6) AKI risk medication reconciliation
+
+```
+Medication safety review: Sarah Kim, DOB 05/18/1970, CKD stage 3b, on lisinopril, hydrochlorothiazide, and occasional naproxen use. Recent creatinine rose from 1.3 to 1.8.
+Create a concise assessment:
+- likely contributors,
+- medication classes to reassess,
+- short-term lab monitoring plan,
+- counseling to reduce recurrence risk.
+```
+
+### 7) Polypharmacy in older adult
+
+```
+Geriatric clinic case: Mr. Luis Romero, age 81, 14 active medications, recent fall, dizziness, and orthostatic symptoms.
+Generate a deprescribing-focused framework:
+1) high-risk med classes to review first,
+2) stepwise taper principles,
+3) fall-risk mitigation counseling,
+4) documentation template for shared decision-making.
+```
+
+### 8) Abnormal liver tests in statin user
+
+```
+Primary care case: Patient on atorvastatin with new ALT/AST elevation (ALT 124, AST 96), asymptomatic, no jaundice. Also uses herbal supplements.
+Provide a brief differential, workup sequence, medication review approach, and follow-up plan structure for a progress note.
+```
+
+### 9) Pregnancy-safe medication counseling
+
+```
+Ob clinic consult: 10-week pregnancy, history of chronic hypertension and migraines. Current meds include lisinopril and topiramate from pre-pregnancy period.
+Draft a concise counseling and medication safety framework:
+- major risk categories to address,
+- immediate medication review priorities,
+- documentation points for counseling and referral.
+```
+
+### 10) Behavioral health + insomnia
+
+```
+Family medicine case: 42-year-old with generalized anxiety, insomnia, and daily alcohol use for sleep. No suicidal ideation reported.
+Provide a practical outpatient management outline:
+- risk screening priorities,
+- nonpharmacologic first-line options,
+- medication class considerations,
+- follow-up and safety-net instructions.
+```
+
+### 11) Pediatrics fever + dehydration risk
+
+```
+Peds call note: 3-year-old with fever for 2 days, reduced oral intake, fewer wet diapers, and intermittent vomiting.
+Create a parent-facing triage note:
+- warning signs for urgent care/ED,
+- hydration advice,
+- home monitoring checklist,
+- when to reassess in clinic.
+Keep language simple and safe.
+```
+
+### 12) Preventive care gap closure
+
+```
+Panel management task: build a concise care-gap outreach plan for adults with diabetes missing A1c, eye exam, urine albumin/creatinine, and statin review.
+Provide:
+- prioritized outreach workflow,
+- script ideas for staff calls/messages,
+- documentation fields to capture,
+- metrics to track monthly.
+```
+
+---
+
 ## 1. Full clinical + PHI (baseline)
 
 **Goal:** Multiple PHI types in one message; expect **redacted user message** to the model and **6+ spans** (depending on engine).

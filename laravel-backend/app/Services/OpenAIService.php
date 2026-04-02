@@ -25,6 +25,8 @@ class OpenAIService
 
         try {
             $response = Http::withToken($key)
+                ->asJson()
+                ->acceptJson()
                 ->timeout(60)
                 ->post('https://api.openai.com/v1/chat/completions', [
                     'model' => config('clinguard.openai_model', 'gpt-4o-mini'),

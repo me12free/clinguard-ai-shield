@@ -67,14 +67,14 @@ class PolicyAndRolesTest extends TestCase
     public function test_users_index_returns_403_for_security_admin(): void
     {
         $user = $this->createUserWithRole('security_admin');
-        $response = $this->actingAs($user, 'sanctum')->getJson('/api/users');
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/admin/users');
         $response->assertForbidden();
     }
 
     public function test_users_index_returns_200_for_system_admin(): void
     {
         $user = $this->createUserWithRole('system_admin');
-        $response = $this->actingAs($user, 'sanctum')->getJson('/api/users');
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/admin/users');
         $response->assertOk();
         $response->assertJsonStructure(['data']);
     }

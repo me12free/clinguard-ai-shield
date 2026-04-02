@@ -4,13 +4,11 @@ use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AuditEventController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\ConversationController;
-use App\Http\Controllers\Api\ReportController;
-use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\DetectionController;
 use App\Http\Controllers\Api\HelloController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\PolicyController;
-use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RoleListController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +27,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
             'email' => $user->email,
             'organization_id' => $user->organization_id,
             'role' => $user->role ? [
+                'id' => $user->role->id,
                 'role_name' => $user->role->role_name,
                 'permissions' => $user->role->permissions,
             ] : null,
@@ -44,6 +43,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('/chat', ChatController::class);
 
     Route::get('/conversations', [ConversationController::class, 'index']);
+    Route::get('/reports/summary', [ReportController::class, 'summary']);
+    Route::get('/reports/export', [ReportController::class, 'exportPdf']);
 
     Route::get('/policies', [PolicyController::class, 'index']);
     Route::post('/policies', [PolicyController::class, 'store']);

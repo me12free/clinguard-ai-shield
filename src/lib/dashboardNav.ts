@@ -4,6 +4,7 @@ import {
   ClipboardList,
   LayoutDashboard,
   MessageSquare,
+  PieChart,
   ScanSearch,
   Shield,
   Users,
@@ -15,6 +16,7 @@ export type DashboardSectionId =
   | "phi"
   | "policies"
   | "audit"
+  | "reports"
   | "organizations"
   | "users";
 
@@ -57,6 +59,12 @@ const ALL: Record<DashboardSectionId, Omit<NavItem, "id">> = {
     icon: ClipboardList,
     description: "Compliance and activity trail",
   },
+  reports: {
+    label: "Reports",
+    shortLabel: "Reports",
+    icon: PieChart,
+    description: "Role-based metrics and exports",
+  },
   organizations: {
     label: "Organizations",
     shortLabel: "Orgs",
@@ -79,9 +87,9 @@ function item(id: DashboardSectionId): NavItem {
 export function navItemsForRole(roleName: string | undefined): NavItem[] {
   switch (roleName) {
     case "clinician":
-      return [item("clinical"), item("phi")];
+      return [item("clinical"), item("phi"), item("reports")];
     case "security_admin":
-      return [item("home"), item("clinical"), item("phi"), item("policies"), item("audit")];
+      return [item("home"), item("clinical"), item("phi"), item("policies"), item("audit"), item("reports")];
     case "system_admin":
       return [
         item("home"),
@@ -89,11 +97,12 @@ export function navItemsForRole(roleName: string | undefined): NavItem[] {
         item("phi"),
         item("policies"),
         item("audit"),
+        item("reports"),
         item("organizations"),
         item("users"),
       ];
     default:
-      return [item("clinical"), item("phi")];
+      return [item("clinical"), item("phi"), item("reports")];
   }
 }
 

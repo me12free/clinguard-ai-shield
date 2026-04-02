@@ -36,8 +36,11 @@ class DetectionAndChatTest extends TestCase
                 ->once()
                 ->with('Patient John Doe SSN 123-45-6789.')
                 ->andReturn([
-                    ['start' => 8, 'end' => 16, 'category' => 'NAME', 'text' => 'John Doe'],
-                    ['start' => 21, 'end' => 32, 'category' => 'SSN', 'text' => '123-45-6789'],
+                    'spans' => [
+                        ['start' => 8, 'end' => 16, 'category' => 'NAME', 'text' => 'John Doe'],
+                        ['start' => 21, 'end' => 32, 'category' => 'SSN', 'text' => '123-45-6789'],
+                    ],
+                    'engine_error' => null,
                 ]);
         });
 
@@ -63,7 +66,7 @@ class DetectionAndChatTest extends TestCase
             ['start' => 21, 'end' => 32, 'category' => 'SSN', 'text' => '123-45-6789'],
         ];
         $this->mock(DetectionService::class, function ($mock) use ($spans) {
-            $mock->shouldReceive('detect')->once()->andReturn($spans);
+            $mock->shouldReceive('detect')->once()->andReturn(['spans' => $spans, 'engine_error' => null]);
             $mock->shouldReceive('ragQuery')->once()->andReturn([['content' => 'Relevant guideline.']]);
         });
         $this->mock(OpenAIService::class, function ($mock) {
