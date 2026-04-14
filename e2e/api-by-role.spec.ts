@@ -1,102 +1,83 @@
 import { test, expect } from "@playwright/test";
 
-const API_URL = process.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
+/** Same-origin `/api/*` so Vite dev proxy forwards to Laravel (`VITE_PROXY_TARGET`). */
 async function apiGet(page: import("@playwright/test").Page, path: string): Promise<number> {
-  return page.evaluate(
-    async ({ base, p }) => {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${base}${p}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return res.status;
-    },
-    { base: API_URL, p: path }
-  );
+  return page.evaluate(async (p) => {
+    const token = localStorage.getItem("auth_token");
+    const res = await fetch(p, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    return res.status;
+  }, path);
 }
 
 async function apiExportPdfStatus(page: import("@playwright/test").Page): Promise<number> {
-  return page.evaluate(
-    async ({ base }) => {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${base}/api/reports/export`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return res.status;
-    },
-    { base: API_URL }
-  );
+  return page.evaluate(async () => {
+    const token = localStorage.getItem("auth_token");
+    const res = await fetch("/api/reports/export", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    return res.status;
+  });
+}
+
+async function signIn(page: import("@playwright/test").Page, email: string, password: string) {
+  await page.goto("/login", { waitUntil: "domcontentloaded" });
+  await page.getByPlaceholder("you@organization.org").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
 }
 
 test.describe("API access by role E2E", () => {
-  test("clinician: can access conversations, cannot access policies/audit/users/organizations", async ({ page }) => {
-    await page.goto("/login");
-    await page.getByPlaceholder("Email").fill("clinician@test.com");
-    await page.getByPlaceholder("Password").fill("password");
-    await page.getByRole("button", { name: "Login" }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
+  test("clinician: conversations OK; policies/audit/admin users/orgs forbidden", async ({ page }) => {
+    await signIn(page, "sarah.chen@clinguard.local", "password");
 
     await expect(await apiGet(page, "/api/conversations")).toBe(200);
     await expect(await apiGet(page, "/api/policies")).toBe(403);
     await expect(await apiGet(page, "/api/audit-events")).toBe(403);
-    await expect(await apiGet(page, "/api/users")).toBe(403);
+    await expect(await apiGet(page, "/api/admin/users")).toBe(403);
     await expect(await apiGet(page, "/api/organizations")).toBe(403);
     await expect(await apiGet(page, "/api/reports/summary")).toBe(200);
   });
 
-  test("security_admin: can access policies and audit, cannot access users/organizations", async ({ page }) => {
-    await page.goto("/login");
-    await page.getByPlaceholder("Email").fill("security@test.com");
-    await page.getByPlaceholder("Password").fill("password");
-    await page.getByRole("button", { name: "Login" }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
+  test("security_admin: policies and audit OK; admin users/orgs forbidden", async ({ page }) => {
+    await signIn(page, "marcus.webb@clinguard.local", "password");
 
     await expect(await apiGet(page, "/api/conversations")).toBe(200);
     await expect(await apiGet(page, "/api/policies")).toBe(200);
     await expect(await apiGet(page, "/api/audit-events")).toBe(200);
-    await expect(await apiGet(page, "/api/users")).toBe(403);
+    await expect(await apiGet(page, "/api/admin/users")).toBe(403);
     await expect(await apiGet(page, "/api/organizations")).toBe(403);
     await expect(await apiGet(page, "/api/reports/summary")).toBe(200);
   });
 
-  test("system_admin: can access all role-protected endpoints", async ({ page }) => {
-    await page.goto("/login");
-    await page.getByPlaceholder("Email").fill("admin@test.com");
-    await page.getByPlaceholder("Password").fill("password");
-    await page.getByRole("button", { name: "Login" }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
+  test("system_admin: can access role-protected endpoints", async ({ page }) => {
+    await signIn(page, "priya.nair@clinguard.local", "password");
 
     await expect(await apiGet(page, "/api/conversations")).toBe(200);
     await expect(await apiGet(page, "/api/policies")).toBe(200);
     await expect(await apiGet(page, "/api/audit-events")).toBe(200);
-    await expect(await apiGet(page, "/api/users")).toBe(200);
+    await expect(await apiGet(page, "/api/admin/users")).toBe(200);
     await expect(await apiGet(page, "/api/organizations")).toBe(200);
     await expect(await apiGet(page, "/api/reports/summary")).toBe(200);
   });
 
-  test("all roles receive 200 from reports PDF export when backend supports it", async ({ page }) => {
-    await page.goto("/login");
-    await page.getByPlaceholder("Email").fill("admin@test.com");
-    await page.getByPlaceholder("Password").fill("password");
-    await page.getByRole("button", { name: "Login" }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
+  test("admin receives 200 or 503 from reports PDF export (DomPDF optional)", async ({ page }) => {
+    await signIn(page, "priya.nair@clinguard.local", "password");
     const status = await apiExportPdfStatus(page);
-    expect([200, 500]).toContain(status);
+    expect([200, 503]).toContain(status);
   });
 
   test("all roles can access /api/user (profile)", async ({ page }) => {
     for (const cred of [
-      { email: "clinician@test.com", password: "password" },
-      { email: "security@test.com", password: "password" },
-      { email: "admin@test.com", password: "password" },
+      { email: "sarah.chen@clinguard.local", password: "password" },
+      { email: "marcus.webb@clinguard.local", password: "password" },
+      { email: "priya.nair@clinguard.local", password: "password" },
     ]) {
-      await page.goto("/login");
-      await page.getByPlaceholder("Email").fill(cred.email);
-      await page.getByPlaceholder("Password").fill(cred.password);
-      await page.getByRole("button", { name: "Login" }).click();
-      await expect(page).toHaveURL(/\/dashboard/);
+      await signIn(page, cred.email, cred.password);
       await expect(await apiGet(page, "/api/user")).toBe(200);
-      await page.getByRole("button", { name: /Log out|Logout/i }).click();
+      await page.getByRole("button", { name: /Sign out/i }).click();
     }
   });
 });
